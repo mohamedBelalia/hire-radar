@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Enum, Integer, String, Text
+from sqlalchemy import Column, DateTime, Enum, Integer, String, Text
 
 from core import database as db
 
@@ -12,6 +12,7 @@ class User(db.Model):
     email = Column(String(150), unique=True, nullable=False)
     password_hash = Column(Text)
     role = Column(Enum("employer", "candidate"))
+    created_at = Column(DateTime, server_default=db.text("CURRENT_TIMESTAMP"))
 
     def __repr__(self):
         return f"<Name : {self.first_name}>"

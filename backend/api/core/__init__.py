@@ -2,12 +2,14 @@ import os
 
 from dotenv import load_dotenv
 from flask import Flask
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
 load_dotenv()
 
 
 database = SQLAlchemy()
+db_migration = Migrate()
 
 
 def create_app(config_type=os.getenv("CONFIG_TYPE")):
@@ -22,3 +24,7 @@ def create_app(config_type=os.getenv("CONFIG_TYPE")):
 
 def initailize_extension(app):
     database.init_app(app)
+
+    db_migration.init_app(app, database)
+
+    import core.models  # noqa:F401

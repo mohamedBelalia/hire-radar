@@ -1,13 +1,13 @@
 import TopNavbar from '@/components/TopNavbar';
-import LeftSidebar from '@/components/LeftSidebar';
-import RightSidebar from '@/components/RightSidebar';
-import PostCreator from '@/components/PostCreator';
-import FeedPost from '@/components/FeedPost';
+import LeftSidebar from '@/app/(home)/components/LeftSidebar';
+import RightSidebar from '@/app/(home)/components/RightSidebar';
+import PostCreator from '@/app/(home)/components/PostCreator';
+import FeedPost from '@/app/(home)/components/FeedPost';
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <TopNavbar />
+      {/* <TopNavbar /> */}
       
       <div className="flex pt-16">
         <LeftSidebar />
