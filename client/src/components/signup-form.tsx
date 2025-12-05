@@ -13,16 +13,18 @@ import {
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import OAuth from "./o-auth"
+import { signup } from "@/features/auth/api"
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
 
-  const [form, setForm] = useState({
-    name: "",
+  const [form, setForm] = useState<ISignupRequest>({
+    full_name: "",
     email: "",
     password: "",
+    role: "candidate",
     confirmPassword: ""
   })
 
@@ -37,7 +39,7 @@ export function SignupForm({
   function validate() {
     let errs: any = {}
 
-    if (!form.name.trim()) errs.name = "Full name is required."
+    if (!form.full_name.trim()) errs.name = "Full name is required."
     if (!form.email.trim()) errs.email = "Email is required."
     else if (!/\S+@\S+\.\S+/.test(form.email))
       errs.email = "Enter a valid email."
@@ -56,20 +58,31 @@ export function SignupForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const validationErrors = validate()
+    setLoading(true)
 
+    const validationErrors = validate()
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors)
+      setLoading(false)
       return
     }
 
-    setLoading(true)
-
-    await new Promise(resolve => setTimeout(resolve, 1500))
-
-    setLoading(false)
-    toast.success("Account created successfully!")
+    try {
+      const res = await signup(form)
+      console.log(res);
+      
+      toast.success("Account created successfully!")
+    } catch (err: any) {
+      if (err.response && err.response.data) {
+        setErrors({ email: err.response.data.error })
+      } else {
+        setErrors({ password: "Something went wrong" })
+      }
+    } finally {
+      setLoading(false)
+    }
   }
+
 
   return (
     <form
@@ -88,15 +101,15 @@ export function SignupForm({
         <Field>
           <FieldLabel htmlFor="name">Full Name</FieldLabel>
           <Input
-            id="name"
+            id="full_name"
             type="text"
             placeholder="John Doe"
-            value={form.name}
+            value={form.full_name}
             onChange={handleChange}
             required
           />
-          {errors.name && (
-            <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+          {errors.full_name && (
+            <p className="text-red-500 text-sm mt-1">{errors.full_name}</p>
           )}
         </Field>
 

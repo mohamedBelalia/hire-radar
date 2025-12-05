@@ -12,7 +12,9 @@ DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 DB_NAME = os.getenv("DB_NAME")
 
-DATABASE_URL = f"postgresql://neondb_owner:npg_c0hpzU7ylWsO@ep-orange-base-agrz5od1-pooler.c-2.eu-central-1.aws.neon.tech/hireradar?sslmode=require&channel_binding=require"
+DATABASE_URL = (
+    f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+)
 
 engine = create_engine(DATABASE_URL, echo=True) 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

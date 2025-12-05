@@ -148,7 +148,7 @@ def signup():
             return jsonify({"error": "Email already exists"}), 400
 
         password_hash = generate_password_hash(password)
-        new_user = User(full_name=name, email=email, password_hash=password_hash, role=role)
+        new_user = User(full_name=name, email=email, password=password_hash, role=role)
 
         db.add(new_user)
         db.commit()
@@ -161,7 +161,6 @@ def signup():
         )
 
         return jsonify({"token": token, "user": {
-            "id": new_user.id,
             "full_name": new_user.full_name,
             "email": new_user.email,
             "role": new_user.role
@@ -179,7 +178,7 @@ def login():
     db = SessionLocal()
     try:
         user = db.query(User).filter_by(email=email).first()
-        if not user or not check_password_hash(user.password_hash, password):
+        if not user or not check_password_hash(user.password, password):
             return jsonify({"error": "Invalid email or password"}), 400
 
         token = jwt.encode(
@@ -196,3 +195,6 @@ def login():
         }})
     finally:
         db.close()
+
+
+
