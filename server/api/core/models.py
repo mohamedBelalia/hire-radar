@@ -1,18 +1,34 @@
-from sqlalchemy import Column, DateTime, Enum, Integer, String, Text
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Enum, MetaData
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql import func
+import os
+from dotenv import load_dotenv
 
-from core import database as db
+load_dotenv()
 
+DB_USER = os.getenv("DB_USERNAME")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
+DB_NAME = os.getenv("DB_NAME")
 
-class User(db.Model):
+DATABASE_URL = (
+    f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+)
+
+engine = create_engine(DATABASE_URL, echo=True)
+Base = declarative_base(metadata=MetaData(schema="public"))
+
+class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
-    first_name = Column(String(100), nullable=False)
-    last_name = Column(String(100), nullable=False)
+    full_name = Column(String(100), nullable=False)
     email = Column(String(150), unique=True, nullable=False)
-    password_hash = Column(Text)
-    role = Column(Enum("employer", "candidate"))
-    created_at = Column(DateTime, server_default=db.text("CURRENT_TIMESTAMP"))
+    password = Column(Text)
+    role = Column(Enum("employer", "candidate", name="user_roles"), nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
 
-    def __repr__(self):
-        return f"<Name : {self.first_name}>"
+Base.metadata.create_all(engine)
+
+print("Users table created successfully!")
