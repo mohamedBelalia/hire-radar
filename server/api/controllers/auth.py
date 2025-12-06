@@ -16,6 +16,7 @@ GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 JWT_SECRET = os.getenv("JWT_SECRET", "secret123")
 GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
 
+
 def get_db():
     db = SessionLocal()
     try:
@@ -45,7 +46,7 @@ def google_login():
     )
 
     session["state"] = state
-    return jsonify({"auth_url":authorization_url})
+    return jsonify({"auth_url": authorization_url})
 
 
 def google_callback():
@@ -90,7 +91,7 @@ def google_callback():
                 email=email,
                 password=None,
                 role="candidate",
-                image=picture
+                image=picture,
             )
             db.add(user)
             db.commit()
@@ -105,20 +106,24 @@ def google_callback():
             algorithm="HS256",
         )
 
-        return jsonify({
-            "token": token,
-            "user": {
-                "id": user.id,
-                "email": user.email,
-                "full_name": user.full_name,
-                "image": user.image,
-                "role": user.role
-            }
-        }), 200
+        return (
+            jsonify(
+                {
+                    "token": token,
+                    "user": {
+                        "id": user.id,
+                        "email": user.email,
+                        "full_name": user.full_name,
+                        "image": user.image,
+                        "role": user.role,
+                    },
+                }
+            ),
+            200,
+        )
 
     finally:
         db.close()
-
 
 
 def get_current_user():
@@ -129,7 +134,7 @@ def get_current_user():
 
     token = auth.split(" ")[1]
     db = SessionLocal()
-    
+
     try:
         decoded = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
         print(decoded)
@@ -137,13 +142,15 @@ def get_current_user():
         if not user:
             return jsonify({"error": "User not found"}), 404
 
-        return jsonify({
-            "id": user.id,
-            "full_name": user.full_name,
-            "email": user.email,
-            "role": user.role,
-            "image": user.image
-        })
+        return jsonify(
+            {
+                "id": user.id,
+                "full_name": user.full_name,
+                "email": user.email,
+                "role": user.role,
+                "image": user.image,
+            }
+        )
 
     except jwt.ExpiredSignatureError:
         print("expired")
@@ -177,11 +184,7 @@ def signup():
 
         password_hash = generate_password_hash(password)
         new_user = User(
-            full_name=name,
-            email=email,
-            password=password_hash,
-            role=role,
-            image=None
+            full_name=name, email=email, password=password_hash, role=role, image=None
         )
 
         db.add(new_user)
@@ -191,24 +194,23 @@ def signup():
         token = jwt.encode(
             {"id": new_user.id, "exp": datetime.utcnow() + timedelta(hours=24)},
             JWT_SECRET,
-            algorithm="HS256"
+            algorithm="HS256",
         )
 
-        return jsonify({
-            "token": token,
-            "user": {
-                "id": new_user.id,
-                "full_name": new_user.full_name,
-                "email": new_user.email,
-                "role": new_user.role,
-                "image": new_user.image
+        return jsonify(
+            {
+                "token": token,
+                "user": {
+                    "id": new_user.id,
+                    "full_name": new_user.full_name,
+                    "email": new_user.email,
+                    "role": new_user.role,
+                    "image": new_user.image,
+                },
             }
-        })
+        )
     finally:
         db.close()
-
-
-
 
 
 def login():
@@ -225,20 +227,20 @@ def login():
         token = jwt.encode(
             {"id": user.id, "exp": datetime.utcnow() + timedelta(hours=24)},
             JWT_SECRET,
-            algorithm="HS256"
+            algorithm="HS256",
         )
 
-        return jsonify({
-            "token": token,
-            "user": {
-                "id": user.id,
-                "full_name": user.full_name,
-                "email": user.email,
-                "role": user.role,
-                "image": user.image
+        return jsonify(
+            {
+                "token": token,
+                "user": {
+                    "id": user.id,
+                    "full_name": user.full_name,
+                    "email": user.email,
+                    "role": user.role,
+                    "image": user.image,
+                },
             }
-        })
+        )
     finally:
         db.close()
-
-

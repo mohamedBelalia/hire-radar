@@ -1,5 +1,13 @@
 from flask import Blueprint
-from controllers.auth import google_login, google_callback, get_current_user, logout, signup, login, logout
+from controllers.auth import (
+    google_login,
+    google_callback,
+    get_current_user,
+    logout,
+    signup,
+    login,
+    logout,
+)
 
 auth = Blueprint("auth", __name__)
 

@@ -9,7 +9,7 @@ load_dotenv()
 
 app = Flask(__name__)
 Base.metadata.create_all(bind=engine)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
 CORS(
     app,

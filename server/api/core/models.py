@@ -1,4 +1,13 @@
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Enum, MetaData
+from sqlalchemy import (
+    create_engine,
+    Column,
+    Integer,
+    String,
+    Text,
+    DateTime,
+    Enum,
+    MetaData,
+)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
 import os
@@ -12,12 +21,11 @@ DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 DB_NAME = os.getenv("DB_NAME")
 
-DATABASE_URL = (
-    f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-)
+DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 engine = create_engine(DATABASE_URL, echo=True)
 Base = declarative_base(metadata=MetaData(schema="public"))
+
 
 class User(Base):
     __tablename__ = "users"
@@ -29,6 +37,7 @@ class User(Base):
     role = Column(Enum("employer", "candidate", name="user_roles"), nullable=False)
     image = Column(Text)
     created_at = Column(DateTime, server_default=func.now())
+
 
 Base.metadata.create_all(engine)
 
