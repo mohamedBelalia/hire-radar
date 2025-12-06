@@ -19,7 +19,7 @@ def get_db():
 def search_jobs():
     """Search and filter jobs"""
     db: Session = next(get_db())
-    
+
     try:
         # Get query parameters
         search = request.args.get("search", "").strip()
@@ -28,23 +28,23 @@ def search_jobs():
         skill = request.args.get("skill", "").strip()
         page = int(request.args.get("page", 1))
         limit = int(request.args.get("limit", 10))
-        
+
         # Start with base query
         query = db.query(Job)
-        
+
         # Apply search filter
         if search:
             search_filter = or_(
                 Job.title.ilike(f"%{search}%"),
                 Job.description.ilike(f"%{search}%"),
-                Job.company_name.ilike(f"%{search}%")
+                Job.company_name.ilike(f"%{search}%"),
             )
             query = query.filter(search_filter)
-        
+
         # Apply location filter
         if location:
             query = query.filter(Job.location.ilike(f"%{location}%"))
-        
+
         # Apply salary filter
         if salary_min:
             try:
@@ -52,32 +52,37 @@ def search_jobs():
                 query = query.filter(Job.salary_min >= min_salary)
             except (ValueError, TypeError):
                 pass
-        
+
         # Apply skill filter
         if skill:
             query = query.filter(Job.skills.contains([skill]))
-        
+
         # Get total count before pagination
         total = query.count()
-        
+
         # Apply pagination
         offset = (page - 1) * limit
         jobs = query.order_by(Job.posted_at.desc()).offset(offset).limit(limit).all()
-        
+
         # Calculate total pages
         total_pages = (total + limit - 1) // limit
-        
+
         # Convert to JSON format
         jobs_data = [job_to_dict(job) for job in jobs]
-        
-        return jsonify({
-            "jobs": jobs_data,
-            "total": total,
-            "page": page,
-            "limit": limit,
-            "total_pages": total_pages
-        }), 200
-        
+
+        return (
+            jsonify(
+                {
+                    "jobs": jobs_data,
+                    "total": total,
+                    "page": page,
+                    "limit": limit,
+                    "total_pages": total_pages,
+                }
+            ),
+            200,
+        )
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
@@ -87,15 +92,15 @@ def search_jobs():
 def get_job_by_id(job_id: int):
     """Get a single job by ID"""
     db: Session = next(get_db())
-    
+
     try:
         job = db.query(Job).filter(Job.id == job_id).first()
-        
+
         if not job:
             return jsonify({"error": "Job not found"}), 404
-        
+
         return jsonify(job_to_dict(job)), 200
-        
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
@@ -105,16 +110,16 @@ def get_job_by_id(job_id: int):
 def create_job():
     """Create a new job posting"""
     db: Session = next(get_db())
-    
+
     try:
         data = request.get_json()
-        
+
         # Validate required fields
         required_fields = ["title", "description", "company_name", "employer_id"]
         for field in required_fields:
             if field not in data:
                 return jsonify({"error": f"Missing required field: {field}"}), 400
-        
+
         # Create new job
         job = Job(
             title=data["title"],
@@ -122,23 +127,33 @@ def create_job():
             company_name=data["company_name"],
             employer_id=data["employer_id"],
             location=data.get("location"),
-            salary_min=Decimal(str(data["salary_min"])) if data.get("salary_min") else None,
-            salary_max=Decimal(str(data["salary_max"])) if data.get("salary_max") else None,
+            salary_min=(
+                Decimal(str(data["salary_min"])) if data.get("salary_min") else None
+            ),
+            salary_max=(
+                Decimal(str(data["salary_max"])) if data.get("salary_max") else None
+            ),
             salary_currency=data.get("salary_currency", "USD"),
             employment_type=data.get("employment_type"),
             experience_level=data.get("experience_level"),
             skills=data.get("skills", []),
             requirements=data.get("requirements"),
             benefits=data.get("benefits"),
-            application_deadline=datetime.fromisoformat(data["application_deadline"].replace("Z", "+00:00")) if data.get("application_deadline") else None,
+            application_deadline=(
+                datetime.fromisoformat(
+                    data["application_deadline"].replace("Z", "+00:00")
+                )
+                if data.get("application_deadline")
+                else None
+            ),
         )
-        
+
         db.add(job)
         db.commit()
         db.refresh(job)
-        
+
         return jsonify(job_to_dict(job)), 201
-        
+
     except Exception as e:
         db.rollback()
         return jsonify({"error": str(e)}), 500
@@ -149,15 +164,15 @@ def create_job():
 def update_job(job_id: int):
     """Update an existing job"""
     db: Session = next(get_db())
-    
+
     try:
         job = db.query(Job).filter(Job.id == job_id).first()
-        
+
         if not job:
             return jsonify({"error": "Job not found"}), 404
-        
+
         data = request.get_json()
-        
+
         # Update fields
         if "title" in data:
             job.title = data["title"]
@@ -168,9 +183,13 @@ def update_job(job_id: int):
         if "location" in data:
             job.location = data["location"]
         if "salary_min" in data:
-            job.salary_min = Decimal(str(data["salary_min"])) if data["salary_min"] else None
+            job.salary_min = (
+                Decimal(str(data["salary_min"])) if data["salary_min"] else None
+            )
         if "salary_max" in data:
-            job.salary_max = Decimal(str(data["salary_max"])) if data["salary_max"] else None
+            job.salary_max = (
+                Decimal(str(data["salary_max"])) if data["salary_max"] else None
+            )
         if "salary_currency" in data:
             job.salary_currency = data["salary_currency"]
         if "employment_type" in data:
@@ -184,13 +203,19 @@ def update_job(job_id: int):
         if "benefits" in data:
             job.benefits = data["benefits"]
         if "application_deadline" in data:
-            job.application_deadline = datetime.fromisoformat(data["application_deadline"].replace("Z", "+00:00")) if data["application_deadline"] else None
-        
+            job.application_deadline = (
+                datetime.fromisoformat(
+                    data["application_deadline"].replace("Z", "+00:00")
+                )
+                if data["application_deadline"]
+                else None
+            )
+
         db.commit()
         db.refresh(job)
-        
+
         return jsonify(job_to_dict(job)), 200
-        
+
     except Exception as e:
         db.rollback()
         return jsonify({"error": str(e)}), 500
@@ -201,18 +226,18 @@ def update_job(job_id: int):
 def delete_job(job_id: int):
     """Delete a job"""
     db: Session = next(get_db())
-    
+
     try:
         job = db.query(Job).filter(Job.id == job_id).first()
-        
+
         if not job:
             return jsonify({"error": "Job not found"}), 404
-        
+
         db.delete(job)
         db.commit()
-        
+
         return jsonify({"message": "Job deleted successfully"}), 200
-        
+
     except Exception as e:
         db.rollback()
         return jsonify({"error": str(e)}), 500
@@ -237,8 +262,9 @@ def job_to_dict(job: Job) -> dict:
         "skills": job.skills or [],
         "requirements": job.requirements,
         "benefits": job.benefits,
-        "application_deadline": job.application_deadline.isoformat() if job.application_deadline else None,
+        "application_deadline": (
+            job.application_deadline.isoformat() if job.application_deadline else None
+        ),
         "posted_at": job.posted_at.isoformat() if job.posted_at else None,
         "updated_at": job.updated_at.isoformat() if job.updated_at else None,
     }
-

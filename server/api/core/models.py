@@ -39,7 +39,14 @@ class Job(Base):
     salary_max = Column(Numeric(10, 2))
     salary_currency = Column(String(10), default="USD")
     employment_type = Column(
-        Enum("full-time", "part-time", "contract", "internship", "remote", name="employment_types")
+        Enum(
+            "full-time",
+            "part-time",
+            "contract",
+            "internship",
+            "remote",
+            name="employment_types",
+        )
     )
     experience_level = Column(
         Enum("entry", "mid", "senior", "executive", name="experience_levels")
@@ -49,7 +56,9 @@ class Job(Base):
     benefits = Column(Text)
     application_deadline = Column(DateTime)
     posted_at = Column(DateTime, server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
+    updated_at = Column(
+        DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
+    )
 
     # Relationship
     employer = relationship("User", foreign_keys=[employer_id])
