@@ -89,7 +89,7 @@ body {
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -97,12 +97,40 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D1D5DB;
-  border-radius: 3px;
+  background: rgba(147, 51, 234, 0.3);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9CA3AF;
+  background: rgba(147, 51, 234, 0.5);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.4);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.6);
+}
+
+/* Gradient animation */
+@keyframes gradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 3s ease infinite;
+}
+
+/* Pulse animation delay */
+.delay-1000 {
+  animation-delay: 1s;
 }
 
 .dark {
