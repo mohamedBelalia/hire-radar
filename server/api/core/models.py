@@ -11,7 +11,7 @@ class User(db.Model):
     last_name = Column(String(100), nullable=False)
     email = Column(String(150), unique=True, nullable=False)
     password_hash = Column(Text)
-    role = Column(Enum("employer", "candidate"))
+    role = Column(Enum("employer", "candidate", name="user_role_enum"))
     created_at = Column(DateTime, server_default=db.text("CURRENT_TIMESTAMP"))
 
     def __repr__(self):
