@@ -16,10 +16,10 @@ export function useSignUp() {
     })
 }
 
-export function useCurrentUser() {
+export function useCurrentUser(token?: string) {
   return useQuery<User>({
     queryKey: ["currentUser"],
-    queryFn: me,
+    queryFn: () => me(token),
     staleTime: 1000 * 60 * 5,
     retry: false,
   });

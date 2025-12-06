@@ -111,11 +111,12 @@ import { useCurrentUser } from '@/features/auth/hook';
 
 export default function Home(){
 
-  const { data: user, isLoading, error } = useCurrentUser();
+  const token = localStorage.getItem("token") || undefined
+  const { data, isLoading, error } = useCurrentUser(token);
+  
+  if (isLoading) return <div className='mt-10 mx-auto w-[50%] flex justify-center gap-2 text-xl'>Loading...</div>;
+  if (error) return <div className='mt-10 mx-auto w-[50%] flex justify-center gap-2 text-xl'>No user logged in</div>;
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>No user logged in</div>;
-
-  return <div className='mt-10 mx-auto w-[50%] flex justify-center gap-2 text-xl'>Logged in as <strong className='text-blue-500'> {user?.full_name}</strong></div>;
+  return <div className='mt-10 mx-auto w-[50%] flex justify-center gap-2 text-xl'>Logged in as <strong className='text-blue-500'> {data?.full_name}</strong></div>;
 
 }

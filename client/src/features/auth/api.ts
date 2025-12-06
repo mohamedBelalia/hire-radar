@@ -20,11 +20,15 @@ export const oAuth = async () => {
   return response;
 };
 
-export const me = async () => {
-  const response = await apiClient.get("/auth/me",{
-    headers: {
-      Authorization: `Bearer ${getToken()}`
-    }
-  })
-  return response.data;
-}
+export const me = async (token?: string) => {
+  try {
+    const response = await apiClient.get("/auth/me", {
+      headers: {
+        Authorization: `Bearer ${token || getToken()}`,
+      },
+    });
+    return response.data;
+  } catch (err) {
+    return null; 
+  }
+};

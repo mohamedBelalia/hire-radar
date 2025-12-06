@@ -27,6 +27,7 @@ class User(Base):
     email = Column(String(150), unique=True, nullable=False)
     password = Column(Text)
     role = Column(Enum("employer", "candidate", name="user_roles"), nullable=False)
+    image = Column(Text)
     created_at = Column(DateTime, server_default=func.now())
 
 Base.metadata.create_all(engine)
