@@ -1,24 +1,24 @@
-'use client'
+"use client";
 
-import TopNavbar from '@/components/TopNavbar';
-import LeftSidebar from '@/app/(home)/components/LeftSidebar';
-import RightSidebar from '@/app/(home)/components/RightSidebar';
-import PostCreator from '@/app/(home)/components/PostCreator';
-import FeedPost from '@/app/(home)/components/FeedPost';
-import { useCurrentUser } from '@/features/auth/hook';
+import TopNavbar from "@/components/TopNavbar";
+import LeftSidebar from "@/app/(home)/components/LeftSidebar";
+import RightSidebar from "@/app/(home)/components/RightSidebar";
+import PostCreator from "@/app/(home)/components/PostCreator";
+import FeedPost from "@/app/(home)/components/FeedPost";
+import { useCurrentUser } from "@/features/auth/hook";
 
 // export default function Home() {
 //   return (
 //     <div className="min-h-screen bg-gray-50">
 //       {/* <TopNavbar /> */}
-      
+
 //       <div className="flex pt-16">
 //         <LeftSidebar />
-        
+
 //         {/* Main Content Area */}
 //         <main className="flex-1 mx-auto max-w-2xl px-4 py-6 ml-64 mr-80">
 //           <PostCreator />
-          
+
 //           {/* Feed Posts */}
 //           <FeedPost
 //             author={{
@@ -84,7 +84,7 @@ import { useCurrentUser } from '@/features/auth/hook';
 //             likes={99}
 //             comments={8}
 //           />
-          
+
 //           <FeedPost
 //             author={{
 //               name: 'Soufiane Boukir',
@@ -101,22 +101,33 @@ import { useCurrentUser } from '@/features/auth/hook';
 //             comments={12}
 //           />
 //         </main>
-        
+
 //         <RightSidebar />
 //       </div>
 //     </div>
 //   );
 // }
 
-
-export default function Home(){
-
-  const token = localStorage.getItem("token") || undefined
+export default function Home() {
+  const token = localStorage.getItem("token") || undefined;
   const { data, isLoading, error } = useCurrentUser(token);
-  
-  if (isLoading) return <div className='mt-10 mx-auto w-[50%] flex justify-center gap-2 text-xl'>Loading...</div>;
-  if (error) return <div className='mt-10 mx-auto w-[50%] flex justify-center gap-2 text-xl'>No user logged in</div>;
 
-  return <div className='mt-10 mx-auto w-[50%] flex justify-center gap-2 text-xl'>Logged in as <strong className='text-blue-500'> {data?.full_name}</strong></div>;
+  if (isLoading)
+    return (
+      <div className="mt-10 mx-auto w-[50%] flex justify-center gap-2 text-xl">
+        Loading...
+      </div>
+    );
+  if (error)
+    return (
+      <div className="mt-10 mx-auto w-[50%] flex justify-center gap-2 text-xl">
+        No user logged in
+      </div>
+    );
 
+  return (
+    <div className="mt-10 mx-auto w-[50%] flex justify-center gap-2 text-xl">
+      Logged in as <strong className="text-blue-500"> {data?.full_name}</strong>
+    </div>
+  );
 }

@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { Calendar, MessageCircle, ChevronUp } from 'lucide-react';
+import { Calendar, MessageCircle, ChevronUp } from "lucide-react";
 
 export default function RightSidebar() {
   const suggestedPeople = [
-    { name: 'Steve Jobs', title: 'CEO of Apple', avatar: 'SJ' },
-    { name: 'Ryan Roslansky', title: 'CEO of Linkedin', avatar: 'RR' },
-    { name: 'Dylan Field', title: 'CEO of Figma', avatar: 'DF' },
+    { name: "Steve Jobs", title: "CEO of Apple", avatar: "SJ" },
+    { name: "Ryan Roslansky", title: "CEO of Linkedin", avatar: "RR" },
+    { name: "Dylan Field", title: "CEO of Figma", avatar: "DF" },
   ];
 
   return (
@@ -35,8 +35,12 @@ export default function RightSidebar() {
                   {person.avatar}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-sm truncate">{person.name}</h4>
-                  <p className="text-xs text-gray-500 truncate">{person.title}</p>
+                  <h4 className="font-semibold text-sm truncate">
+                    {person.name}
+                  </h4>
+                  <p className="text-xs text-gray-500 truncate">
+                    {person.title}
+                  </p>
                 </div>
                 <button className="bg-purple-600 text-white px-4 py-1.5 rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium whitespace-nowrap">
                   Connect
@@ -44,7 +48,10 @@ export default function RightSidebar() {
               </div>
             ))}
           </div>
-          <a href="#" className="block text-center text-sm text-purple-600 hover:text-purple-700 mt-4">
+          <a
+            href="#"
+            className="block text-center text-sm text-purple-600 hover:text-purple-700 mt-4"
+          >
             See All
           </a>
         </div>
@@ -63,9 +70,14 @@ export default function RightSidebar() {
                 <div className="w-8 h-8 rounded bg-gradient-to-br from-pink-400 to-purple-500"></div>
                 <span className="text-sm font-medium">UI Design</span>
               </div>
-              <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">+99</span>
+              <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                +99
+              </span>
             </div>
-            <a href="#" className="flex items-center gap-2 text-purple-600 hover:text-purple-700 text-sm p-2">
+            <a
+              href="#"
+              className="flex items-center gap-2 text-purple-600 hover:text-purple-700 text-sm p-2"
+            >
               <span className="w-8 h-8 rounded bg-gray-200 flex items-center justify-center text-gray-600">
                 +
               </span>
@@ -82,7 +94,9 @@ export default function RightSidebar() {
               <span className="font-semibold text-sm">Messages</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">6</span>
+              <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                6
+              </span>
               <button className="text-gray-400 hover:text-gray-600">
                 <ChevronUp className="w-4 h-4" />
               </button>
@@ -93,4 +107,3 @@ export default function RightSidebar() {
     </aside>
   );
 }
-

@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { toast } from "sonner"
-import OAuth from "./o-auth"
-import { signup } from "@/features/auth/api"
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import OAuth from "./o-auth";
+import { signup } from "@/features/auth/api";
 import {
   Select,
   SelectContent,
@@ -22,73 +22,72 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "./ui/select"
+} from "./ui/select";
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
-
   const [form, setForm] = useState<ISignupRequest>({
     full_name: "",
     email: "",
     password: "",
     role: "",
-    confirmPassword: ""
-  })
+    confirmPassword: "",
+  });
 
-  const [errors, setErrors] = useState<any>({})
-  const [loading, setLoading] = useState(false)
+  const [errors, setErrors] = useState<any>({});
+  const [loading, setLoading] = useState(false);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setForm({ ...form, [e.target.id]: e.target.value })
-    setErrors({ ...errors, [e.target.id]: "" })
+    setForm({ ...form, [e.target.id]: e.target.value });
+    setErrors({ ...errors, [e.target.id]: "" });
   }
 
   function validate() {
-    let errs: any = {}
+    let errs: any = {};
 
-    if (!form.full_name.trim()) errs.full_name = "Full name is required."
-    if (!form.role) errs.role = "Please select a role."
+    if (!form.full_name.trim()) errs.full_name = "Full name is required.";
+    if (!form.role) errs.role = "Please select a role.";
 
-    if (!form.email.trim()) errs.email = "Email is required."
+    if (!form.email.trim()) errs.email = "Email is required.";
     else if (!/\S+@\S+\.\S+/.test(form.email))
-      errs.email = "Enter a valid email."
+      errs.email = "Enter a valid email.";
 
-    if (!form.password) errs.password = "Password is required."
+    if (!form.password) errs.password = "Password is required.";
     else if (form.password.length < 8)
-      errs.password = "Password must be at least 8 characters."
+      errs.password = "Password must be at least 8 characters.";
 
     if (!form.confirmPassword)
-      errs.confirmPassword = "Please confirm your password."
+      errs.confirmPassword = "Please confirm your password.";
     else if (form.password !== form.confirmPassword)
-      errs.confirmPassword = "Passwords do not match."
+      errs.confirmPassword = "Passwords do not match.";
 
-    return errs
+    return errs;
   }
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
 
-    const validationErrors = validate()
+    const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors)
-      setLoading(false)
-      return
+      setErrors(validationErrors);
+      setLoading(false);
+      return;
     }
 
     try {
-      const res = await signup(form)
-      toast.success("Account created successfully!")
+      const res = await signup(form);
+      toast.success("Account created successfully!");
     } catch (err: any) {
       if (err.response && err.response.data) {
-        setErrors({ email: err.response.data.error })
+        setErrors({ email: err.response.data.error });
       } else {
-        setErrors({ password: "Something went wrong" })
+        setErrors({ password: "Something went wrong" });
       }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -107,7 +106,6 @@ export function SignupForm({
         </div>
 
         <div className="flex gap-2">
-
           <Field>
             <FieldLabel htmlFor="full_name">Full Name</FieldLabel>
             <Input
@@ -128,8 +126,8 @@ export function SignupForm({
             <Select
               value={form.role}
               onValueChange={(value) => {
-                setForm({ ...form, role: value })
-                setErrors({ ...errors, role: "" })
+                setForm({ ...form, role: value });
+                setErrors({ ...errors, role: "" });
               }}
             >
               <SelectTrigger className="w-[180px]">
@@ -177,7 +175,9 @@ export function SignupForm({
             onChange={handleChange}
             required
           />
-          <FieldDescription>Must be at least 8 characters long.</FieldDescription>
+          <FieldDescription>
+            Must be at least 8 characters long.
+          </FieldDescription>
           {errors.password && (
             <p className="text-red-500 text-sm mt-1">{errors.password}</p>
           )}
@@ -194,7 +194,9 @@ export function SignupForm({
           />
           <FieldDescription>Please confirm your password.</FieldDescription>
           {errors.confirmPassword && (
-            <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+            <p className="text-red-500 text-sm mt-1">
+              {errors.confirmPassword}
+            </p>
           )}
         </Field>
 
@@ -214,5 +216,5 @@ export function SignupForm({
         </Field>
       </FieldGroup>
     </form>
-  )
+  );
 }

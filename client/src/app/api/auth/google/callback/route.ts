@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
 
   const response = await apiClient.get(`/auth/google/callback?code=${code}`);
   const data = response.data;
-  
+
   const response2 = NextResponse.redirect(process.env.NEXT_APP_URL!);
   response2.cookies.set("token", data.token, { path: "/" });
 

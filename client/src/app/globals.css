@@ -3,12 +3,12 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --purple-primary: #8B5CF6;
-  --purple-light: #A78BFA;
-  --pink-accent: #EC4899;
-  --gray-light: #F9FAFB;
-  --gray-border: #E5E7EB;
-  --gray-text: #6B7280;
+  --purple-primary: #8b5cf6;
+  --purple-light: #a78bfa;
+  --pink-accent: #ec4899;
+  --gray-light: #f9fafb;
+  --gray-border: #e5e7eb;
+  --gray-text: #6b7280;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -97,12 +97,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D1D5DB;
+  background: #d1d5db;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9CA3AF;
+  background: #9ca3af;
 }
 
 .dark {

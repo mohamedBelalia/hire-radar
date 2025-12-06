@@ -1,6 +1,5 @@
-
-import { SignupForm } from "@/components/signup-form"
-import Image from "next/image"
+import { SignupForm } from "@/components/signup-form";
+import Image from "next/image";
 
 export default function SignupPage() {
   return (
@@ -9,7 +8,12 @@ export default function SignupPage() {
         <div className="flex justify-center gap-2 md:justify-start">
           <a href="#" className="flex items-center gap-2 font-medium">
             <div className=" size-6 items-center justify-center rounded-md">
-              <Image src={'/radar.svg'} alt="hire-radar" width={25} height={25}/>
+              <Image
+                src={"/radar.svg"}
+                alt="hire-radar"
+                width={25}
+                height={25}
+              />
             </div>
             Hire-radar
           </a>
@@ -21,5 +25,5 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

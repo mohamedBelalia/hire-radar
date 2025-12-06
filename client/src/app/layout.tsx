@@ -18,7 +18,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Hire Radar - Professional Networking Platform",
-  description: "Connect with professionals, discover opportunities, and grow your career",
+  description:
+    "Connect with professionals, discover opportunities, and grow your career",
 };
 
 export default function RootLayout({

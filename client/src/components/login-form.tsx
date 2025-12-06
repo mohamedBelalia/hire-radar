@@ -1,44 +1,44 @@
-'use client'
+"use client";
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import OAuth from "./o-auth"
-import { useState } from "react"
-import { toast } from "sonner"
-import { login } from "@/features/auth/api"
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import OAuth from "./o-auth";
+import { useState } from "react";
+import { toast } from "sonner";
+import { login } from "@/features/auth/api";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
-  const [loading, setLoading] = useState(false)
-  const [email, setEmail] = useState("")      
-  const [password, setPassword] = useState("") 
-  const [error,setError] = useState('')
+  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
 
     try {
-      const res = await login(email, password) 
-      toast.success("Logged in successfully!")
+      const res = await login(email, password);
+      toast.success("Logged in successfully!");
     } catch (err: any) {
       if (err.response && err.response.data) {
-        setError(err.response.data.error || "Something went wrong")
+        setError(err.response.data.error || "Something went wrong");
       } else {
-        setError(err.message || "Something went wrong")
+        setError(err.message || "Something went wrong");
       }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -63,7 +63,7 @@ export function LoginForm({
             type="email"
             placeholder="m@example.com"
             required
-            value={email} 
+            value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
         </Field>
@@ -85,9 +85,7 @@ export function LoginForm({
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          {error && (
-            <p className="text-red-500 text-sm mt-1">{error}</p>
-          )}
+          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
         </Field>
 
         <Field>
@@ -109,5 +107,5 @@ export function LoginForm({
         </Field>
       </FieldGroup>
     </form>
-  )
+  );
 }

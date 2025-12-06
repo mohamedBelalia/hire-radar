@@ -1,6 +1,13 @@
-'use client';
+"use client";
 
-import { Pencil, Image as ImageIcon, Video, Calendar, FileText, Send } from 'lucide-react';
+import {
+  Pencil,
+  Image as ImageIcon,
+  Video,
+  Calendar,
+  FileText,
+  Send,
+} from "lucide-react";
 
 export default function PostCreator() {
   return (
@@ -43,4 +50,3 @@ export default function PostCreator() {
     </div>
   );
 }
-

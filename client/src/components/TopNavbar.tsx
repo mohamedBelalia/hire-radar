@@ -1,7 +1,15 @@
-'use client';
+"use client";
 
-import { Home, Users, Briefcase, Bell, MessageCircle, User, Search } from 'lucide-react';
-import Image from 'next/image';
+import {
+  Home,
+  Users,
+  Briefcase,
+  Bell,
+  MessageCircle,
+  User,
+  Search,
+} from "lucide-react";
+import Image from "next/image";
 
 export default function TopNavbar() {
   return (
@@ -11,15 +19,17 @@ export default function TopNavbar() {
           {/* Logo */}
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 flex items-center justify-center">
-              <Image 
-                src="/radar.svg" 
-                alt="Hire Radar Logo" 
-                width={40} 
+              <Image
+                src="/radar.svg"
+                alt="Hire Radar Logo"
+                width={40}
                 height={40}
                 className="w-10 h-10"
               />
             </div>
-            <span className="text-2xl font-bold text-purple-600">Hire Radar</span>
+            <span className="text-2xl font-bold text-purple-600">
+              Hire Radar
+            </span>
           </div>
 
           {/* Center Navigation Icons */}
@@ -66,4 +76,3 @@ export default function TopNavbar() {
     </nav>
   );
 }
-
