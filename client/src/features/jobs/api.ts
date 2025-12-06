@@ -31,3 +31,29 @@ export async function unsaveJob(jobId: string): Promise<SaveJobResponse> {
   const { data } = await apiClient.delete<SaveJobResponse>(`/jobs/${jobId}/save`);
   return data;
 }
+
+export async function getSavedJobs(candidateId: string): Promise<Job[]> {
+  const { data } = await apiClient.get<Job[]>(`/candidates/${candidateId}/saved-jobs`);
+  return data;
+}
+
+export async function applyToJob(jobId: string, applicationData?: { cover_letter?: string; cv_file?: File }): Promise<{ message: string; application_id: string }> {
+  const formData = new FormData();
+  if (applicationData?.cover_letter) {
+    formData.append('cover_letter', applicationData.cover_letter);
+  }
+  if (applicationData?.cv_file) {
+    formData.append('cv_file', applicationData.cv_file);
+  }
+
+  const { data } = await apiClient.post<{ message: string; application_id: string }>(
+    `/jobs/${jobId}/apply`,
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  );
+  return data;
+}

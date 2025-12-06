@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
-import { searchJobs, saveJob, unsaveJob, getJobById } from "./api";
+import { searchJobs, saveJob, unsaveJob, getJobById, getSavedJobs, applyToJob } from "./api";
 import { JobSearchParams } from "@/types/job";
 import { useMemo } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -87,6 +87,30 @@ export function useUnsaveJob() {
     onSuccess: (data, jobId) => {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
       queryClient.invalidateQueries({ queryKey: ["job", jobId] });
+      queryClient.invalidateQueries({ queryKey: ["saved-jobs"] });
+    },
+  });
+}
+
+// Get saved jobs for a candidate
+export function useSavedJobs(candidateId: string) {
+  return useQuery({
+    queryKey: ["saved-jobs", candidateId],
+    queryFn: () => getSavedJobs(candidateId),
+    enabled: !!candidateId,
+    staleTime: 30000,
+  });
+}
+
+// Apply to job mutation
+export function useApplyToJob() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ jobId, applicationData }: { jobId: string; applicationData?: { cover_letter?: string; cv_file?: File } }) =>
+      applyToJob(jobId, applicationData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
     },
   });
 }
