@@ -5,7 +5,7 @@ The system analyzes data from both sides to match candidates with the most relev
 
 ---
 
-## 🚀 Tech Stack
+## Tech Stack
 
 ### **Frontend**
 - Next.js 14 (App Router)
@@ -31,7 +31,7 @@ The system analyzes data from both sides to match candidates with the most relev
 
 ---
 
-## 📌 Project Features
+## Project Features
 
 ### **Candidate**
 - Create account & fill profile
@@ -56,7 +56,7 @@ The system analyzes data from both sides to match candidates with the most relev
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 hireradar/
 │
@@ -78,7 +78,7 @@ hireradar/
 
 ---
 
-## 🧱 Database Schema (PostgreSQL)
+## Database Schema (PostgreSQL)
 
 Main tables:
 
@@ -96,7 +96,7 @@ A detailed UML diagram is included in the project documentation.
 
 ---
 
-## 🔗 API Endpoints (Overview)
+## API Endpoints (Overview)
 
 ### **Auth**
 - `POST /auth/register`
@@ -129,15 +129,15 @@ More details are available in the `/docs` folder.
 
 ---
 
-## 👥 Team Members
+## Team Members
 
-- **Mohamed Belalia** – Frontend Lead + System Architecture  
-- **Soufiane** – Backend Lead + API + Database  
-- **Moad** – AI/ML Engineer + Integration
+- **Mohamed Belalia** – AI & data science student
+- **Soufiane** – AI & data science student
+- **Moad** – AI & data science student
 
 ---
 
-## 🛠️ Development Setup
+## Development Setup
 
 ### **Requirements**
 - Node.js ≥ 18
