@@ -28,6 +28,12 @@ export default function PostCreator() {
       <div className="flex items-start gap-4">
         {isLoading ? (
           <div className="w-14 h-14 rounded-full bg-gray-300 dark:bg-gray-700 animate-pulse flex-shrink-0"></div>
+        ) : currentUser?.image ? (
+          <img
+            src={currentUser.image}
+            alt={currentUser.full_name || "User"}
+            className="w-14 h-14 rounded-full object-cover flex-shrink-0 shadow-lg ring-2 ring-white/50 dark:ring-gray-700/50"
+          />
         ) : (
           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-base flex-shrink-0 shadow-lg ring-2 ring-white/50 dark:ring-gray-700/50">
             {userInitials}

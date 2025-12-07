@@ -5,6 +5,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from config.db import Base, engine
 from routes.auth import auth
+from routes.job import job
 import os
 
 
@@ -29,6 +30,7 @@ CORS(
 )
 
 app.register_blueprint(auth, url_prefix="/api/auth")
+app.register_blueprint(job, url_prefix="/api/jobs")
 
 
 @app.route("/")

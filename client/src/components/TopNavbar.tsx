@@ -10,15 +10,30 @@ import {
   Search,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useCurrentUser } from "@/features/auth/hook";
 import ThemeToggle from "./ThemeToggle";
 
 export default function TopNavbar() {
+  const pathname = usePathname();
+  const { data: currentUser } = useCurrentUser();
+
+  // Determine profile URL based on user role
+  const profileUrl =
+    currentUser?.role === "candidate"
+      ? "/dashboard/candidate/profile"
+      : currentUser?.role === "employer"
+        ? "/dashboard/employer/profile"
+        : "/dashboard/candidate/profile"; // Default to candidate
+
+  const isActive = (path: string) => pathname === path;
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50 z-50 shadow-lg dark:shadow-purple-900/10">
       <div className="max-w-[1920px] mx-auto px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-6">
           {/* Logo */}
-          <div className="flex items-center gap-3 flex-shrink-0">
+          <Link href="/" className="flex items-center gap-3 flex-shrink-0 hover:opacity-80 transition-opacity">
             <div className="w-10 h-10 flex items-center justify-center">
               <Image
                 src="/radar.svg"
@@ -31,28 +46,38 @@ export default function TopNavbar() {
             <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent dark:from-purple-400 dark:via-pink-400 dark:to-purple-400">
               Hire Radar
             </span>
-          </div>
+          </Link>
 
           {/* Center Navigation Icons */}
           <div className="flex items-center gap-2">
-            <button
-              className="p-3 text-purple-600 dark:text-purple-400 hover:bg-purple-500/10 dark:hover:bg-purple-500/20 rounded-xl transition-all duration-200 group"
+            <Link
+              href="/"
+              className={`p-3 rounded-xl transition-all duration-200 group ${
+                isActive("/")
+                  ? "text-purple-600 dark:text-purple-400 bg-purple-500/10 dark:bg-purple-500/20"
+                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-500/10 dark:hover:bg-gray-500/20"
+              }`}
               aria-label="Home"
             >
               <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            </button>
+            </Link>
             <button
               className="p-3 text-gray-600 dark:text-gray-400 hover:bg-gray-500/10 dark:hover:bg-gray-500/20 rounded-xl transition-all duration-200 group"
               aria-label="Users"
             >
               <Users className="w-5 h-5 group-hover:scale-110 transition-transform" />
             </button>
-            <button
-              className="p-3 text-gray-600 dark:text-gray-400 hover:bg-gray-500/10 dark:hover:bg-gray-500/20 rounded-xl transition-all duration-200 group"
+            <Link
+              href="/jobs/search"
+              className={`p-3 rounded-xl transition-all duration-200 group ${
+                pathname?.startsWith("/jobs")
+                  ? "text-purple-600 dark:text-purple-400 bg-purple-500/10 dark:bg-purple-500/20"
+                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-500/10 dark:hover:bg-gray-500/20"
+              }`}
               aria-label="Jobs"
             >
               <Briefcase className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            </button>
+            </Link>
             <button
               className="relative p-3 text-gray-600 dark:text-gray-400 hover:bg-gray-500/10 dark:hover:bg-gray-500/20 rounded-xl transition-all duration-200 group"
               aria-label="Notifications"
@@ -71,12 +96,17 @@ export default function TopNavbar() {
                 6
               </span>
             </button>
-            <button
-              className="p-3 text-gray-600 dark:text-gray-400 hover:bg-gray-500/10 dark:hover:bg-gray-500/20 rounded-xl transition-all duration-200 group"
+            <Link
+              href={profileUrl}
+              className={`p-3 rounded-xl transition-all duration-200 group ${
+                pathname?.includes("/profile")
+                  ? "text-purple-600 dark:text-purple-400 bg-purple-500/10 dark:bg-purple-500/20"
+                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-500/10 dark:hover:bg-gray-500/20"
+              }`}
               aria-label="Profile"
             >
               <User className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            </button>
+            </Link>
           </div>
 
           {/* Search Bar */}

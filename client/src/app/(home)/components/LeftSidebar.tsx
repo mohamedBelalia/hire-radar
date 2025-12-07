@@ -9,6 +9,7 @@ import {
   Settings,
   Plus,
 } from "lucide-react";
+import Link from "next/link";
 import { useCurrentUser } from "@/features/auth/hook";
 import { useMemo } from "react";
 
@@ -32,6 +33,14 @@ export default function LeftSidebar() {
       : currentUser?.role === "employer"
         ? "Employer"
         : "User";
+
+  // Determine profile URL based on user role
+  const profileUrl =
+    currentUser?.role === "candidate"
+      ? "/dashboard/candidate/profile"
+      : currentUser?.role === "employer"
+        ? "/dashboard/employer/profile"
+        : "/dashboard/candidate/profile"; // Default to candidate
 
   const hashtags = [
     "work",
@@ -63,19 +72,29 @@ export default function LeftSidebar() {
             </div>
           ) : (
             <>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-base shadow-lg ring-2 ring-white/50 dark:ring-gray-700/50 flex-shrink-0">
-                  {userInitials}
+              <Link href={profileUrl} className="block">
+                <div className="flex items-center gap-3 mb-4 cursor-pointer hover:opacity-80 transition-opacity">
+                  {currentUser?.image ? (
+                    <img
+                      src={currentUser.image}
+                      alt={currentUser.full_name || "User"}
+                      className="w-14 h-14 rounded-full object-cover shadow-lg ring-2 ring-white/50 dark:ring-gray-700/50 flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-base shadow-lg ring-2 ring-white/50 dark:ring-gray-700/50 flex-shrink-0">
+                      {userInitials}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-sm truncate text-gray-900 dark:text-white">
+                      {userDisplayName}
+                    </h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate capitalize">
+                      {userTitle}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-sm truncate text-gray-900 dark:text-white">
-                    {userDisplayName}
-                  </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate capitalize">
-                    {userTitle}
-                  </p>
-                </div>
-              </div>
+              </Link>
             </>
           )}
           <div className="mb-4">

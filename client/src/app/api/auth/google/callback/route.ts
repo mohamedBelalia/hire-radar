@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(errorUrl.toString());
     }
 
-    const response = await apiClient.get(`/api/auth/google/callback?code=${code}`);
+    const response = await apiClient.get(`/auth/google/callback?code=${code}`);
     const data = response.data;
 
     if (!data || !data.token) {

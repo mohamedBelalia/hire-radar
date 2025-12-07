@@ -101,9 +101,17 @@ export default function FeedPost({
 
       {/* Comment Input */}
       <div className="flex items-center gap-3">
-        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-lg ring-2 ring-white/50 dark:ring-gray-700/50">
-          {userInitials}
-        </div>
+        {currentUser?.image ? (
+          <img
+            src={currentUser.image}
+            alt={currentUser.full_name || "User"}
+            className="w-11 h-11 rounded-full object-cover flex-shrink-0 shadow-lg ring-2 ring-white/50 dark:ring-gray-700/50"
+          />
+        ) : (
+          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-lg ring-2 ring-white/50 dark:ring-gray-700/50">
+            {userInitials}
+          </div>
+        )}
         <div className="flex-1 flex items-center gap-2 px-5 py-3 border border-gray-300/50 dark:border-gray-700/50 rounded-xl focus-within:ring-2 focus-within:ring-purple-500/50 dark:focus-within:ring-purple-400/50 focus-within:border-transparent transition-all bg-white/50 dark:bg-gray-700/50 backdrop-blur-md hover:bg-white/70 dark:hover:bg-gray-700/70">
           <input
             type="text"
