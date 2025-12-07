@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+
 load_dotenv()
 
 from flask import Flask, jsonify
@@ -22,6 +23,7 @@ def init_db():
         print(f"Warning: Could not create database tables: {e}")
         print("Make sure PostgreSQL is running and the database is accessible.")
 
+
 CORS(
     app,
     supports_credentials=True,
@@ -43,6 +45,7 @@ def home():
 @app.route("/auth/google/callback")
 def handle_incorrect_oauth_callback():
     from flask import redirect, request
+
     # Redirect to Next.js frontend route handler with all query params
     frontend_url = f"http://localhost:3000/api/auth/google/callback?{request.query_string.decode()}"
     return redirect(frontend_url, code=302)

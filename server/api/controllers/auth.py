@@ -29,8 +29,10 @@ def get_db():
 
 def google_login():
     # Ensure redirect URI is set (must point to Next.js frontend, not Flask backend)
-    redirect_uri = GOOGLE_REDIRECT_URI or "http://localhost:3000/api/auth/google/callback"
-    
+    redirect_uri = (
+        GOOGLE_REDIRECT_URI or "http://localhost:3000/api/auth/google/callback"
+    )
+
     flow = Flow.from_client_config(
         {
             "web": {
@@ -60,8 +62,10 @@ def google_callback():
         return jsonify({"error": "Missing authorization code"}), 400
 
     token_url = "https://oauth2.googleapis.com/token"
-    redirect_uri = GOOGLE_REDIRECT_URI or "http://localhost:3000/api/auth/google/callback"
-    
+    redirect_uri = (
+        GOOGLE_REDIRECT_URI or "http://localhost:3000/api/auth/google/callback"
+    )
+
     token_data = {
         "code": code,
         "client_id": GOOGLE_CLIENT_ID,
