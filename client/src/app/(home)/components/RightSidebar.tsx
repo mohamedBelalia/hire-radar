@@ -7,10 +7,8 @@ import { useMemo } from "react";
 import Link from "next/link";
 
 export default function RightSidebar() {
-  const {
-    data: recommendedJobsData,
-    isLoading: isLoadingRecommended,
-  } = useRecommendedJobs(5);
+  const { data: recommendedJobsData, isLoading: isLoadingRecommended } =
+    useRecommendedJobs(5);
 
   const recommendedJobs = recommendedJobsData?.jobs || [];
 

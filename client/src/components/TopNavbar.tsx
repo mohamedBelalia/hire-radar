@@ -33,7 +33,10 @@ export default function TopNavbar() {
       <div className="max-w-[1920px] mx-auto px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-6">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 flex-shrink-0 hover:opacity-80 transition-opacity">
+          <Link
+            href="/"
+            className="flex items-center gap-3 flex-shrink-0 hover:opacity-80 transition-opacity"
+          >
             <div className="w-10 h-10 flex items-center justify-center">
               <Image
                 src="/radar.svg"

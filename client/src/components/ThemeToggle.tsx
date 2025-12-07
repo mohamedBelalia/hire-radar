@@ -11,7 +11,7 @@ export default function ThemeToggle() {
   useEffect(() => {
     // Use setTimeout to defer state update to next tick
     const timer = setTimeout(() => {
-    setMounted(true);
+      setMounted(true);
     }, 0);
     return () => clearTimeout(timer);
   }, []);

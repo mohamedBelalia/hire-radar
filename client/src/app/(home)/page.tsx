@@ -115,15 +115,13 @@ export default function Home() {
               ))}
 
             {/* Empty State */}
-            {!isLoadingJobs &&
-              !isJobsError &&
-              jobFeedPosts.length === 0 && (
-                <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl p-12 text-center">
-                  <p className="text-gray-600 dark:text-gray-400 text-lg">
-                    No jobs available at the moment. Check back later!
-                  </p>
-                </div>
-              )}
+            {!isLoadingJobs && !isJobsError && jobFeedPosts.length === 0 && (
+              <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl p-12 text-center">
+                <p className="text-gray-600 dark:text-gray-400 text-lg">
+                  No jobs available at the moment. Check back later!
+                </p>
+              </div>
+            )}
           </div>
         </main>
 

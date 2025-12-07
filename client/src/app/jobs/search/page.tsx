@@ -9,6 +9,7 @@ import JobCardSkeleton from "@/components/jobs/JobCardSkeleton";
 import JobFilters from "@/components/jobs/JobFilters";
 import EmptyState from "@/components/jobs/EmptyState";
 import ApplyModal from "@/components/jobs/ApplyModal";
+import TopNavbar from "@/components/TopNavbar";
 import { useInfiniteJobs } from "@/features/jobs/hooks";
 import { Job } from "@/types/job";
 import { toast } from "sonner";
@@ -68,7 +69,8 @@ export default function SearchJobsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 via-pink-50/20 to-white dark:from-gray-950 dark:via-purple-950/30 dark:via-pink-950/20 dark:to-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <TopNavbar />
+      <div className="pt-16 max-w-7xl mx-auto px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
