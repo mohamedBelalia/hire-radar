@@ -1,7 +1,7 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
-from api.config.db import Base, engine
-from api.routes.auth import auth
+from config.db import Base, engine
+from routes.auth import auth
 import os
 from dotenv import load_dotenv
 

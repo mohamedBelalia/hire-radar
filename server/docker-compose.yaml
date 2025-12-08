@@ -6,9 +6,6 @@ services:
     container_name: hire_api
     ports:
       - "5000:5000"
-    environment:
-      - FLASK_APP=api.server:app
-      - FLASK_ENV=development
     env_file:
       - env_vars/flask.env
     volumes:
@@ -35,6 +32,3 @@ services:
       - "8080:8080"
     depends_on:
       - db
-
-volumes:
-  pip-cache:
