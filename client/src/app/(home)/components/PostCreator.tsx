@@ -11,7 +11,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCurrentUser } from "@/features/auth/hook";
 
 export default function PostCreator() {
@@ -30,16 +30,20 @@ export default function PostCreator() {
     <Card className="border-border">
       <CardContent className="p-4">
       <div className="flex items-start gap-3">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-foreground text-background font-semibold">
-              {currentUser ? getInitials(currentUser.full_name) : "ME"}
-            </AvatarFallback>
-          </Avatar>
+        <Avatar className="h-10 w-10">
+          <AvatarImage
+            src={currentUser?.image || undefined}
+            alt={currentUser?.full_name || "User"}
+          />
+          <AvatarFallback className="bg-foreground text-background font-semibold">
+            {currentUser ? getInitials(currentUser.full_name) : "ME"}
+          </AvatarFallback>
+        </Avatar>
         <div className="flex-1">
-            <Input
+          <Input
             type="text"
             placeholder="Write something..."
-              className="mb-3 bg-background border-border"
+            className="mb-3 bg-background border-border"
           />
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">

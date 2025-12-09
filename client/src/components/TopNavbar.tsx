@@ -1,7 +1,8 @@
 "use client";
 
-import { Search, Bell, User, LogOut, Briefcase, Bookmark } from "lucide-react";
+import { Search, Bell, User, LogOut, Bookmark } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useCurrentUser } from "@/features/auth/hook";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { getToken } from "@/lib";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function TopNavbar() {
   const pathname = usePathname();
@@ -71,7 +72,7 @@ export default function TopNavbar() {
           href="/"
           className="flex items-center gap-2 font-bold text-xl tracking-tight hover:opacity-80 transition-opacity"
         >
-          <Briefcase className="h-6 w-6" />
+          <Image src="/radar.svg" alt="Hire Radar" width={28} height={28} />
           <span className="hidden sm:inline">Hire Radar</span>
         </Link>
 
@@ -108,6 +109,8 @@ export default function TopNavbar() {
           >
             <Search className="h-5 w-5" />
           </Link>
+
+          <ThemeToggle />
 
           {/* Notifications - Placeholder */}
           <button

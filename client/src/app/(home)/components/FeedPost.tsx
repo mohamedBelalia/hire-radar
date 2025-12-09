@@ -12,7 +12,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCurrentUser } from "@/features/auth/hook";
 
 interface FeedPostProps {
@@ -20,6 +20,7 @@ interface FeedPostProps {
     name: string;
     title: string;
     avatar: string;
+    avatarUrl?: string | null;
   };
   title: string;
   content?: React.ReactNode;
@@ -51,11 +52,12 @@ export default function FeedPost({
       {/* Post Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10">
-              <AvatarFallback className="bg-foreground text-background font-semibold">
-                {getInitials(author.name)}
-              </AvatarFallback>
-            </Avatar>
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={author.avatarUrl || undefined} alt={author.name} />
+            <AvatarFallback className="bg-foreground text-background font-semibold">
+              {getInitials(author.name)}
+            </AvatarFallback>
+          </Avatar>
           <div>
             <h3 className="font-semibold text-sm">{author.name}</h3>
               <p className="text-xs text-muted-foreground">{author.title}</p>
@@ -93,10 +95,14 @@ export default function FeedPost({
       {/* Comment Input */}
       <div className="flex items-center gap-2">
           <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-foreground text-background font-semibold text-xs">
-              {currentUser ? getInitials(currentUser.full_name) : "ME"}
-            </AvatarFallback>
-          </Avatar>
+          <AvatarImage
+            src={currentUser?.image || undefined}
+            alt={currentUser?.full_name || "User"}
+          />
+          <AvatarFallback className="bg-foreground text-background font-semibold text-xs">
+            {currentUser ? getInitials(currentUser.full_name) : "ME"}
+          </AvatarFallback>
+        </Avatar>
           <div className="flex-1 flex items-center gap-2 px-3 py-2 border border-border rounded-lg bg-background">
             <Input
             type="text"
