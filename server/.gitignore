@@ -1,1 +1,16 @@
 env_vars
+# Python
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+.next/
+
+# Environment
+.env
+.venv/
+
+# Build
+dist/
+build/
