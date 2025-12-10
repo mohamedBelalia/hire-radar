@@ -1,34 +1,17 @@
-version: "3.9"
 
 services:
-  api:
-    build: .
-    container_name: hire_api
-    ports:
-      - "5000:5000"
-    env_file:
-      - env_vars/flask.env
-    volumes:
-      - .:/app
-    depends_on:
-      - db
-
   db:
     image: postgres:16-alpine
-    container_name: hire_db
     restart: always
     env_file:
-      - env_vars/postgres.env
+      - ./env_vars/postgres.env
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - ./scripts:/docker-entrypoint-initdb.d
 
   adminer:
     image: adminer
-    container_name: hire_adminer
     restart: always
     ports:
       - "8080:8080"
-    depends_on:
-      - db

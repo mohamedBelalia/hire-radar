@@ -1,4 +1,5 @@
 Wheel-Version: 1.0
-Generator: flit 3.12.0
-Root-Is-Purelib: true
-Tag: py3-none-any
+Generator: setuptools (80.9.0)
+Root-Is-Purelib: false
+Tag: cp313-cp313-win_amd64
+

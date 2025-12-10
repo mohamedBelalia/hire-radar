@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-from controllers.auth import (
+from api.controllers.auth import (
     get_current_user,
     google_callback,
     google_login,
