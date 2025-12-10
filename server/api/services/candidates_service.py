@@ -12,30 +12,32 @@ def get_all_candidates():
         candidates = session.query(User).filter(User.role == "candidate").all()
         result = []
         for c in candidates:
-            result.append({
-                "id": c.id,
-                "full_name": c.full_name,
-                "email": c.email,
-                "phone": c.phone,
-                "location": c.location,
-                "bio": c.bio,
-                "headline": c.headLine,
-                "resume_url": c.resume_url,
-                "skills": [skill.name for skill in c.skills],
-            })
+            result.append(
+                {
+                    "id": c.id,
+                    "full_name": c.full_name,
+                    "email": c.email,
+                    "phone": c.phone,
+                    "location": c.location,
+                    "bio": c.bio,
+                    "headline": c.headLine,
+                    "resume_url": c.resume_url,
+                    "skills": [skill.name for skill in c.skills],
+                }
+            )
         return result
     finally:
         session.close()
 
 
-
 def get_candidate_by_id(candidate_id: int):
     session = SessionLocal()
     try:
-        candidate = session.query(User).filter(
-            User.id == candidate_id,
-            User.role == "candidate"
-        ).first()
+        candidate = (
+            session.query(User)
+            .filter(User.id == candidate_id, User.role == "candidate")
+            .first()
+        )
         if not candidate:
             return None
 
@@ -57,7 +59,8 @@ def get_candidate_by_id(candidate_id: int):
                     "start_date": edu.start_date,
                     "end_date": edu.end_date,
                     "description": edu.description,
-                } for edu in candidate.educations
+                }
+                for edu in candidate.educations
             ],
             "experiences": [
                 {
@@ -66,26 +69,33 @@ def get_candidate_by_id(candidate_id: int):
                     "start_date": exp.start_date,
                     "end_date": exp.end_date,
                     "description": exp.description,
-                } for exp in candidate.experiences
-            ]
+                }
+                for exp in candidate.experiences
+            ],
         }
     finally:
         session.close()
 
 
-
 def update_candidate_info(candidate_id: int, update_data: dict):
     session = SessionLocal()
     try:
-        candidate = session.query(User).filter(
-            User.id == candidate_id,
-            User.role == "candidate"
-        ).first()
+        candidate = (
+            session.query(User)
+            .filter(User.id == candidate_id, User.role == "candidate")
+            .first()
+        )
         if not candidate:
             return None
 
-
-        allowed_fields = ["full_name", "phone", "location", "bio", "headLine", "resume_url"]
+        allowed_fields = [
+            "full_name",
+            "phone",
+            "location",
+            "bio",
+            "headLine",
+            "resume_url",
+        ]
         for field in allowed_fields:
             if field in update_data:
                 setattr(candidate, field, update_data[field])
@@ -105,15 +115,14 @@ def update_candidate_info(candidate_id: int, update_data: dict):
         session.close()
 
 
-
-
 def save_candidate_cv(candidate_id: int, resume_url: str):
     session = SessionLocal()
     try:
-        candidate = session.query(User).filter(
-            User.id == candidate_id,
-            User.role == "candidate"
-        ).first()
+        candidate = (
+            session.query(User)
+            .filter(User.id == candidate_id, User.role == "candidate")
+            .first()
+        )
         if not candidate:
             return None
 
@@ -124,8 +133,6 @@ def save_candidate_cv(candidate_id: int, resume_url: str):
         session.close()
 
 
-
-
 def get_candidate_cv_path(candidate_id: int):
     """
     Returns the CV file path for a candidate if exists
@@ -134,5 +141,7 @@ def get_candidate_cv_path(candidate_id: int):
         filename = f"cv_{candidate_id}.{ext}"
         file_path = os.path.join(UPLOAD_FOLDER, filename)
         if os.path.exists(file_path):
-            return filename  # just return filename, controller handles send_from_directory
+            return (
+                filename  # just return filename, controller handles send_from_directory
+            )
     return None

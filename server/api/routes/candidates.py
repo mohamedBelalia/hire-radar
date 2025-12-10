@@ -4,7 +4,7 @@ from api.controllers.candidates import (
     get_candidate,
     update_candidate,
     upload_cv,
-    get_candidate_cv
+    get_candidate_cv,
 )
 
 candidates = Blueprint("candidates", __name__)
@@ -14,4 +14,4 @@ candidates.get("/")(list_candidates)
 candidates.get("/<int:id>")(get_candidate)
 candidates.put("/<int:id>")(update_candidate)
 candidates.post("/<int:id>/upload-cv")(upload_cv)
-candidates.get("/<int:id>/cv")(get_candidate_cv) 
+candidates.get("/<int:id>/cv")(get_candidate_cv)
