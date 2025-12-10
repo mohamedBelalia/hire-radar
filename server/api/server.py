@@ -1,7 +1,8 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
-from config.db import Base, engine
-from routes.auth import auth
+from api.config.db import Base, engine
+from api.routes.auth import auth
+from api.routes.candidates import candidates
 import os
 from dotenv import load_dotenv
 
@@ -21,9 +22,12 @@ CORS(
 app.register_blueprint(auth, url_prefix="/api/auth")
 
 
+app.register_blueprint(candidates, url_prefix="/api/candidates")
+
+
 @app.route("/")
 def home():
-    return jsonify({"message": "Server is running", "status": "ok"})
+    return jsonify({"message": "Server is running", "status": "oAAAk"})
 
 
 if __name__ == "__main__":

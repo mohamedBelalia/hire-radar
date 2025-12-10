@@ -6,7 +6,7 @@ services:
     env_file:
       - ./env_vars/postgres.env
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - ./scripts:/docker-entrypoint-initdb.d
 

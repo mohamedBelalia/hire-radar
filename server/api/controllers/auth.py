@@ -1,246 +1,157 @@
-from flask import request, jsonify, redirect, session
-from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, timedelta
-import jwt
-from dotenv import load_dotenv
-from config.db import SessionLocal
-from core.models import User
-from google_auth_oauthlib.flow import Flow
 import os
+from datetime import datetime, timedelta
+
+import jwt
 import requests
+from dotenv import load_dotenv
+from flask import jsonify, request, session
+from google_auth_oauthlib.flow import Flow
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from api.config.db import SessionLocal
+from api.core.models import User
 
 load_dotenv()
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-JWT_SECRET = os.getenv("JWT_SECRET", "secret123")
-GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
+JWT_SECRET = os.getenv("JWT_SECRET")
+REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
+# ---------------------------
+#   🔥 GOOGLE LOGIN
+# ---------------------------
 def google_login():
-    flow = Flow.from_client_config(
-        {
-            "web": {
-                "client_id": GOOGLE_CLIENT_ID,
-                "client_secret": GOOGLE_CLIENT_SECRET,
-                "redirect_uris": ["http://localhost:5000/api/auth/google/callback"],
-                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                "token_uri": "https://oauth2.googleapis.com/token",
-            }
-        },
-        scopes=["openid", "email", "profile"],
+    flow = Flow.from_client_secrets_file(
+        "client_secret.json",
+        scopes=["https://www.googleapis.com/auth/userinfo.email", "openid"],
+        redirect_uri=REDIRECT_URI,
     )
 
-    flow.redirect_uri = "http://localhost:3000/api/auth/google/callback"
+    auth_url, _ = flow.authorization_url(prompt="consent")
 
-    authorization_url, state = flow.authorization_url(
-        access_type="offline", include_granted_scopes="true"
-    )
-
-    session["state"] = state
-    return jsonify({"auth_url": authorization_url})
+    return jsonify({"auth_url": auth_url})
 
 
+# ---------------------------
+#   🔥 GOOGLE CALLBACK
+# ---------------------------
 def google_callback():
-    code = request.args.get("code")
-    if not code:
-        return jsonify({"error": "Missing authorization code"}), 400
+    flow = Flow.from_client_secrets_file(
+        "client_secret.json",
+        scopes=["https://www.googleapis.com/auth/userinfo.email", "openid"],
+        redirect_uri=REDIRECT_URI,
+    )
 
-    token_url = "https://oauth2.googleapis.com/token"
-    token_data = {
-        "code": code,
-        "client_id": GOOGLE_CLIENT_ID,
-        "client_secret": GOOGLE_CLIENT_SECRET,
-        "redirect_uri": GOOGLE_REDIRECT_URI,
-        "grant_type": "authorization_code",
-    }
+    flow.fetch_token(authorization_response=request.url)
 
-    token_res = requests.post(token_url, data=token_data).json()
-    access_token = token_res.get("access_token")
+    credentials = flow.credentials
 
-    if not access_token:
-        return jsonify({"error": "Token exchange failed", "details": token_res}), 400
-
-    user_info = requests.get(
+    r = requests.get(
         "https://www.googleapis.com/oauth2/v2/userinfo",
-        headers={"Authorization": f"Bearer {access_token}"},
-    ).json()
+        headers={"Authorization": f"Bearer {credentials.token}"},
+    )
 
-    email = user_info.get("email")
+    data = r.json()
+    email = data.get("email")
+
     if not email:
-        return jsonify({"error": "Google did not return an email"}), 400
-
-    name = user_info.get("name", "")
-    picture = user_info.get("picture", "")
+        return jsonify({"error": "Failed to fetch email"}), 400
 
     db = SessionLocal()
-    try:
-        user = db.query(User).filter(User.email == email).first()
+    user = db.query(User).filter_by(email=email).first()
 
-        if not user:
-            user = User(
-                full_name=name,
-                email=email,
-                password=None,
-                role="candidate",
-                image=picture,
-            )
-            db.add(user)
-            db.commit()
-            db.refresh(user)
-        else:
-            user.image = picture
-            db.commit()
+    if not user:
+        user = User(email=email)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
 
-        token = jwt.encode(
-            {"id": user.id, "exp": datetime.utcnow() + timedelta(hours=24)},
-            JWT_SECRET,
-            algorithm="HS256",
-        )
+    # Create JWT
+    token = jwt.encode(
+        {"id": user.id, "exp": datetime.utcnow() + timedelta(days=7)},
+        JWT_SECRET,
+        algorithm="HS256",
+    )
 
-        return (
-            jsonify(
-                {
-                    "token": token,
-                    "user": {
-                        "id": user.id,
-                        "email": user.email,
-                        "full_name": user.full_name,
-                        "image": user.image,
-                        "role": user.role,
-                    },
-                }
-            ),
-            200,
-        )
-
-    finally:
-        db.close()
+    return jsonify({"token": token, "email": email})
 
 
+# ---------------------------
+#   🔥 GET CURRENT USER
+# ---------------------------
 def get_current_user():
-    auth = request.headers.get("Authorization")
-    print(auth)
-    if not auth or not auth.startswith("Bearer "):
-        return jsonify({"error": "Missing or invalid Authorization header"}), 401
+    auth_header = request.headers.get("Authorization")
 
-    token = auth.split(" ")[1]
-    db = SessionLocal()
+    if not auth_header:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    token = auth_header.replace("Bearer ", "")
 
     try:
-        decoded = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
-        print(decoded)
-        user = db.query(User).get(decoded["id"])
-        if not user:
-            return jsonify({"error": "User not found"}), 404
-
-        return jsonify(
-            {
-                "id": user.id,
-                "full_name": user.full_name,
-                "email": user.email,
-                "role": user.role,
-                "image": user.image,
-            }
-        )
-
-    except jwt.ExpiredSignatureError:
-        print("expired")
-        return jsonify({"error": "Token expired"}), 401
-    except Exception:
-        print("invalid")
+        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+    except:
         return jsonify({"error": "Invalid token"}), 401
-    finally:
-        db.close()
+
+    db = SessionLocal()
+    user = db.query(User).filter_by(id=payload["id"]).first()
+
+    return jsonify({"id": user.id, "email": user.email})
 
 
-def logout():
-    session.clear()
-    return jsonify({"message": "Logged out"})
-
-
+# ---------------------------
+#   🔥 SIGNUP
+# ---------------------------
 def signup():
     data = request.json
-    name = data.get("full_name")
+
     email = data.get("email")
     password = data.get("password")
-    role = data.get("role", "candidate")
 
-    if not name or not email or not password:
+    if not email or not password:
         return jsonify({"error": "Missing fields"}), 400
 
     db = SessionLocal()
-    try:
-        if db.query(User).filter_by(email=email).first():
-            return jsonify({"error": "Email already exists"}), 400
 
-        password_hash = generate_password_hash(password)
-        new_user = User(
-            full_name=name, email=email, password=password_hash, role=role, image=None
-        )
+    if db.query(User).filter_by(email=email).first():
+        return jsonify({"error": "User already exists"}), 400
 
-        db.add(new_user)
-        db.commit()
-        db.refresh(new_user)
+    user = User(email=email, password=generate_password_hash(password))
 
-        token = jwt.encode(
-            {"id": new_user.id, "exp": datetime.utcnow() + timedelta(hours=24)},
-            JWT_SECRET,
-            algorithm="HS256",
-        )
+    db.add(user)
+    db.commit()
 
-        return jsonify(
-            {
-                "token": token,
-                "user": {
-                    "id": new_user.id,
-                    "full_name": new_user.full_name,
-                    "email": new_user.email,
-                    "role": new_user.role,
-                    "image": new_user.image,
-                },
-            }
-        )
-    finally:
-        db.close()
+    return jsonify({"message": "User created"})
 
 
+# ---------------------------
+#   🔥 LOGIN
+# ---------------------------
 def login():
     data = request.json
+
     email = data.get("email")
     password = data.get("password")
 
     db = SessionLocal()
-    try:
-        user = db.query(User).filter_by(email=email).first()
-        if not user or not check_password_hash(user.password, password):
-            return jsonify({"error": "Invalid email or password"}), 400
+    user = db.query(User).filter_by(email=email).first()
 
-        token = jwt.encode(
-            {"id": user.id, "exp": datetime.utcnow() + timedelta(hours=24)},
-            JWT_SECRET,
-            algorithm="HS256",
-        )
+    if not user or not check_password_hash(user.password, password):
+        return jsonify({"error": "Invalid credentials"}), 401
 
-        return jsonify(
-            {
-                "token": token,
-                "user": {
-                    "id": user.id,
-                    "full_name": user.full_name,
-                    "email": user.email,
-                    "role": user.role,
-                    "image": user.image,
-                },
-            }
-        )
-    finally:
-        db.close()
+    token = jwt.encode(
+        {"id": user.id, "exp": datetime.utcnow() + timedelta(days=7)},
+        JWT_SECRET,
+        algorithm="HS256",
+    )
+
+    return jsonify({"token": token, "email": user.email})
+
+
+# ---------------------------
+#   🔥 LOGOUT
+# ---------------------------
+def logout():
+    session.clear()
+    return jsonify({"message": "Logged out"})

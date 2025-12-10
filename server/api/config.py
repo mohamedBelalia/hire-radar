@@ -14,15 +14,23 @@ class Config:
 class DevelopmentConfig(Config):
     DEBUG = True
 
-    url_object = URL.create(
-        "postgresql+psycopg2",  # this is the used driver to connect with the db & manage connection to it
+    SQLALCHEMY_DATABASE_URI = URL.create(
+        "postgresql+psycopg2",
         username=os.getenv("DB_USERNAME"),
         password=os.getenv("DB_PASSWORD"),
         host=os.getenv("DB_HOST"),
         database=os.getenv("DB_NAME"),
     )
 
-    SQLALCHEMY_DATABASE_URI = url_object
+    # url_object = URL.create(
+    #     "postgresql+psycopg2",  # this is the used driver to connect with the db & manage connection to it
+    #     username=os.getenv("DB_USERNAME"),
+    #     password=os.getenv("DB_PASSWORD"),
+    #     host=os.getenv("DB_HOST"),
+    #     database=os.getenv("DB_NAME"),
+    # )
+
+    # SQLALCHEMY_DATABASE_URI = url_object
 
 
 class ProductionConfig(Config):
