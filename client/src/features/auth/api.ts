@@ -1,4 +1,4 @@
-import { getToken, setToken } from "@/lib";
+import { getToken, removeToken, setToken } from "@/lib";
 import apiClient from "@/lib/apiClient";
 
 export async function login(email: string, password: string) {
@@ -37,3 +37,9 @@ export const me = async (token?: string) => {
     return null;
   }
 };
+
+
+export const logout = async () =>{
+  removeToken()
+  return true;
+}

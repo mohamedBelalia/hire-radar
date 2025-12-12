@@ -6,6 +6,7 @@ import RightSidebar from "@/app/(home)/components/RightSidebar";
 import PostCreator from "@/app/(home)/components/PostCreator";
 import FeedPost from "@/app/(home)/components/FeedPost";
 import { useCurrentUser } from "@/features/auth/hook";
+import { getToken } from "@/lib";
 
 // export default function Home() {
 //   return (
@@ -109,9 +110,9 @@ import { useCurrentUser } from "@/features/auth/hook";
 // }
 
 export default function Home() {
-  const token = localStorage.getItem("token") || undefined;
-  const { data, isLoading, error } = useCurrentUser(token);
-
+  const token = getToken();
+  const { data, isLoading, error } = useCurrentUser(token!);
+  
   if (isLoading)
     return (
       <div className="mt-10 mx-auto w-[50%] flex justify-center gap-2 text-xl">

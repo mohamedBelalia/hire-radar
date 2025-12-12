@@ -14,6 +14,7 @@ import OAuth from "./o-auth";
 import { useState } from "react";
 import { toast } from "sonner";
 import { login } from "@/features/auth/api";
+import { useRouter } from "next/navigation";
 
 export function LoginForm({
   className,
@@ -23,6 +24,7 @@ export function LoginForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -30,6 +32,11 @@ export function LoginForm({
 
     try {
       const res = await login(email, password);
+      if(res.user.role === 'admin'){
+        router.push(`/admin/users`)
+      }else{
+        router.push(`/`)
+      }
       toast.success("Logged in successfully!");
     } catch (err: any) {
       if (err.response && err.response.data) {
