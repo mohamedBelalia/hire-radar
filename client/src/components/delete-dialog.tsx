@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "./ui/button"
 import { useState } from "react"
-import { deleteCategory, deleteSkill, deleteUser } from "@/services/admin"
+import { deleteAdmin, deleteCategory, deleteJob, deleteSkill, deleteUser } from "@/services/admin"
 import { getToken } from "@/lib"
 import { toast } from "sonner"
 
@@ -37,9 +37,18 @@ const DeleteDialog = ({ variant, toDelete, onDelete, id }: DeleteDialogProps) =>
                     }
                     break
 
-                case "skill":
-                    const res2 = await deleteSkill(getToken()!, id)
+                case "job":
+                    const res2 = await deleteJob(getToken()!, id)
                     if (res2.status === 200) {
+                        toast.success("Job deleted successfully")
+                        onDelete(id)
+                        setOpen(false)
+                    }
+                    break
+
+                case "skill":
+                    const res3 = await deleteSkill(getToken()!, id)
+                    if (res3.status === 200) {
                         toast.success("Skill deleted successfully")
                         onDelete(id)
                         setOpen(false)
@@ -47,9 +56,18 @@ const DeleteDialog = ({ variant, toDelete, onDelete, id }: DeleteDialogProps) =>
                     break
 
                 case "category":
-                    const res3 = await deleteCategory(getToken()!, id)
-                    if (res3.status === 200) {
+                    const res4 = await deleteCategory(getToken()!, id)
+                    if (res4.status === 200) {
                         toast.success("Category deleted successfully")
+                        onDelete(id)
+                        setOpen(false)
+                    }
+                    break
+
+                case "admin":
+                    const res5 = await deleteAdmin(getToken()!, id)
+                    if (res5.status === 200) {
+                        toast.success("Admin deleted successfully")
                         onDelete(id)
                         setOpen(false)
                     }

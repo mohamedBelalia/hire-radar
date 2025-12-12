@@ -7,3 +7,7 @@ export function setToken(token: string) {
 export function getToken():string | null {
   return Cookies.get("token") || null;
 }
+
+export function removeToken() {
+  Cookies.remove("token");
+}

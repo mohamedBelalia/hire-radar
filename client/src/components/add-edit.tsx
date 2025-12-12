@@ -156,3 +156,133 @@ export function EditSkillCategory({ toEdit, id, oldValue }: { toEdit: string, id
     </Dialog>
   )
 }
+
+
+
+
+
+import { addAdmin } from "@/services/admin"
+
+export function AddAdminDialog({ onAdded }: { onAdded?: (data?: any) => void }) {
+  const [loading, setLoading] = useState(false)
+  const [fullName, setFullName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+
+  const handleAddAdmin = async () => {
+    if (!fullName.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
+      toast.error("All fields are required")
+      return
+    }
+
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match")
+      return
+    }
+
+    setLoading(true)
+
+    try {
+      const res = await addAdmin(getToken()!, {
+        full_name: fullName,
+        email,
+        password,
+      })
+
+      if (res.status === 201) {
+        toast.success("New admin added successfully")
+        onAdded?.(res.data.admin)
+      }
+    } catch (error: any) {
+      if (error.response?.data?.error) {
+        toast.error(`Error: ${error.response.data.error}`)
+      } else {
+        toast.error("Something went wrong. Please try again.")
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Dialog>
+      <form>
+        <DialogTrigger asChild>
+          <Button className="ml-auto cursor-pointer" variant="outline">
+            <Plus />
+          </Button>
+        </DialogTrigger>
+
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Add New Admin</DialogTitle>
+            <DialogDescription>
+              Fill the form to add a new admin user.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4">
+            <div className="grid gap-3">
+              <Label>Full Name</Label>
+              <Input
+                placeholder="John Doe"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+              />
+            </div>
+
+            <div className="grid gap-3">
+              <Label>Email</Label>
+              <Input
+                type="email"
+                placeholder="admin@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+
+            <div className="grid gap-3">
+              <Label>Password</Label>
+              <Input
+                type="password"
+                placeholder="********"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+
+            <div className="grid gap-3">
+              <Label>Confirm Password</Label>
+              <Input
+                type="password"
+                placeholder="********"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button
+              type="button"
+              disabled={
+                loading ||
+                !fullName.trim() ||
+                !email.trim() ||
+                !password.trim() ||
+                !confirmPassword.trim()
+              }
+              onClick={handleAddAdmin}
+            >
+              {loading ? "Adding..." : "Add Admin"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </form>
+    </Dialog>
+  )
+}

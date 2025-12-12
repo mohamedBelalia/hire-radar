@@ -5,6 +5,8 @@ import {
   Brain,
   BriefcaseBusiness,
   ChartBar,
+  Contact,
+  HelpCircle,
   LayoutDashboard,
   Map,
   PieChart,
@@ -67,14 +69,14 @@ const data = {
       icon: UserStar,
     },
     {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
+      name: "Help",
+      url: "/help",
+      icon: HelpCircle,
     },
     {
-      name: "Travel",
-      url: "#",
-      icon: Map,
+      name: "Contact",
+      url: "/contact",
+      icon: Contact,
     },
   ],
 }
@@ -104,7 +106,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSettings settings={data.settings} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   )

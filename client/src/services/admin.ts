@@ -9,9 +9,17 @@ export const getUsers = async (token: string | null) =>{
     return response;
 }
 
-
 export const getJobs = async (token: string | null) =>{
     const response = await apiClient.get(`/admin/jobs`,{
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+    return response;
+}
+
+export const deleteJob = async (token: string, id: number) =>{
+    const response = await apiClient.delete(`/admin/jobs/${id}`,{
         headers: {
             Authorization: `Bearer ${token}`
         }
@@ -80,4 +88,33 @@ export const deleteCategory = async (token: string, id: number) =>{
         }
     });
     return response;
+}
+
+export const getAdmins = async (token: string) =>{
+    const response = await apiClient.get(`/admin/admins`,{
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+    return response;
+}
+
+
+export const addAdmin = (token: string, data: any) => {
+  const response = apiClient.post("/admin/add-admin", data, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+  return response
+}
+
+
+export const deleteAdmin = async (token: string, id: number) =>{
+    const response = await apiClient.delete(`/admin/${id}`,{
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+    return response
 }

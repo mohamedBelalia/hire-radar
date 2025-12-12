@@ -1,12 +1,8 @@
 "use client"
 
 import {
-  BadgeCheck,
-  Bell,
   ChevronsUpDown,
-  CreditCard,
   LogOut,
-  Sparkles,
 } from "lucide-react"
 
 import {
@@ -17,7 +13,6 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -31,22 +26,21 @@ import {
 } from "@/components/ui/sidebar"
 import { getToken } from "@/lib"
 import { useCurrentUser } from "@/features/auth/hook"
+import { logout } from "@/features/auth/api"
+import { useRouter } from "next/navigation"
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string
-    email: string
-    avatar: string
-  }
-}) {
+export function NavUser(){
   const { isMobile } = useSidebar()
   const token = getToken()
   const { data, isLoading, error } = useCurrentUser(token!);
+  const router = useRouter()
 
   if(isLoading) return null
 
+  const signOutFromApp = async () =>{
+    logout()
+    router.push(`/login`)
+  }
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -86,29 +80,7 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={signOutFromApp}>
               <LogOut />
               Log out
             </DropdownMenuItem>

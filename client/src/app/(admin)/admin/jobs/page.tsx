@@ -40,8 +40,8 @@ const page = () => {
     }
   }
 
-  const handleDelete = (userId: number) =>{    
-    setJobs(prev => prev.filter(j => j.id !== userId)) 
+  const handleDelete = (jobId: number) =>{    
+    setJobs(prev => prev.filter(j => j.id !== jobId)) 
   }
 
   useEffect(() =>{
@@ -57,7 +57,7 @@ const page = () => {
         content={'job'} 
         columns={columns} 
         actions={[
-        { label: "Delete", onClick: (userId: number) => handleDelete(userId), variant: "destructive" },
+        { label: "Delete", onClick: (jobId: number) => handleDelete(jobId), variant: "destructive" },
       ]} />
     </div>
   )
