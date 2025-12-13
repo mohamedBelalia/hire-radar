@@ -8,45 +8,73 @@ import {
   FileText,
   Send,
 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useCurrentUser } from "@/features/auth/hook";
 
 export default function PostCreator() {
+  const { data: currentUser } = useCurrentUser();
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4 shadow-sm">
-      <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold flex-shrink-0">
-          ME
-        </div>
-        <div className="flex-1">
-          <input
-            type="text"
-            placeholder="Write something..."
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent mb-3"
-          />
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button className="flex items-center gap-2 text-gray-600 hover:text-purple-600 transition-colors">
-                <ImageIcon className="w-5 h-5" />
-                <span className="text-sm">Photo</span>
-              </button>
-              <button className="flex items-center gap-2 text-gray-600 hover:text-purple-600 transition-colors">
-                <Video className="w-5 h-5" />
-                <span className="text-sm">Video</span>
-              </button>
-              <button className="flex items-center gap-2 text-gray-600 hover:text-purple-600 transition-colors">
-                <Calendar className="w-5 h-5" />
-                <span className="text-sm">Event</span>
-              </button>
-              <button className="flex items-center gap-2 text-gray-600 hover:text-purple-600 transition-colors">
-                <FileText className="w-5 h-5" />
-                <span className="text-sm">Article</span>
-              </button>
+    <Card className="border-border">
+      <CardContent className="p-4">
+        <div className="flex items-start gap-3">
+          <Avatar className="h-10 w-10">
+            <AvatarImage
+              src={
+                currentUser?.image && currentUser.image.trim() !== ""
+                  ? currentUser.image
+                  : undefined
+              }
+              alt={currentUser?.full_name || "User"}
+            />
+            <AvatarFallback className="bg-foreground text-background font-semibold">
+              {currentUser ? getInitials(currentUser.full_name) : "ME"}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <Input
+              type="text"
+              placeholder="Write something..."
+              className="mb-3 bg-background border-border"
+            />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                  <ImageIcon className="w-5 h-5" />
+                  <span className="text-sm">Photo</span>
+                </button>
+                <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                  <Video className="w-5 h-5" />
+                  <span className="text-sm">Video</span>
+                </button>
+                <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                  <Calendar className="w-5 h-5" />
+                  <span className="text-sm">Event</span>
+                </button>
+                <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                  <FileText className="w-5 h-5" />
+                  <span className="text-sm">Article</span>
+                </button>
+              </div>
+              <Button className="bg-foreground text-background hover:bg-foreground/90">
+                <Send className="w-4 h-4" />
+              </Button>
             </div>
-            <button className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2">
-              <Send className="w-4 h-4" />
-            </button>
           </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

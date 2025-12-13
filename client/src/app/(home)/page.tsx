@@ -1,134 +1,144 @@
 "use client";
 
+import { useMemo } from "react";
 import TopNavbar from "@/components/TopNavbar";
 import LeftSidebar from "@/app/(home)/components/LeftSidebar";
 import RightSidebar from "@/app/(home)/components/RightSidebar";
 import PostCreator from "@/app/(home)/components/PostCreator";
 import FeedPost from "@/app/(home)/components/FeedPost";
+import { useRecentJobs } from "@/features/jobs/hooks";
 import { useCurrentUser } from "@/features/auth/hook";
-import { getToken } from "@/lib";
-
-// export default function Home() {
-//   return (
-//     <div className="min-h-screen bg-gray-50">
-//       {/* <TopNavbar /> */}
-
-//       <div className="flex pt-16">
-//         <LeftSidebar />
-
-//         {/* Main Content Area */}
-//         <main className="flex-1 mx-auto max-w-2xl px-4 py-6 ml-64 mr-80">
-//           <PostCreator />
-
-//           {/* Feed Posts */}
-//           <FeedPost
-//             author={{
-//               name: 'Mouad EL.',
-//               title: 'UI/UX Designer',
-//               avatar: 'ME'
-//             }}
-//             title="-Healthy Tracking App"
-//             content={
-//               <div className="grid grid-cols-2 gap-4 my-4">
-//                 <div className="bg-gray-100 rounded-lg p-4 border border-gray-200">
-//                   <div className="space-y-3">
-//                     <h4 className="font-semibold text-sm">Welcome, Visitor</h4>
-//                     <div>
-//                       <p className="text-xs text-gray-600 mb-2">Popular Categories</p>
-//                       <div className="flex flex-wrap gap-2">
-//                         {['Mountain', 'Beach', 'Forest', 'City', 'Jungle'].map((cat) => (
-//                           <span key={cat} className="px-2 py-1 bg-white text-xs rounded border border-gray-200">
-//                             {cat}
-//                           </span>
-//                         ))}
-//                       </div>
-//                     </div>
-//                     <div>
-//                       <p className="text-xs text-gray-600 mb-2">Recommended</p>
-//                       <div className="space-y-2">
-//                         <div className="bg-white p-2 rounded border border-gray-200">
-//                           <div className="w-full h-24 bg-gray-300 rounded mb-2"></div>
-//                           <p className="text-xs font-semibold">Sphinx</p>
-//                           <p className="text-xs text-gray-500">$123</p>
-//                         </div>
-//                         <div className="bg-white p-2 rounded border border-gray-200">
-//                           <div className="w-full h-24 bg-gray-300 rounded mb-2"></div>
-//                           <p className="text-xs font-semibold">Pyramids</p>
-//                           <p className="text-xs text-gray-500">$345</p>
-//                         </div>
-//                       </div>
-//                     </div>
-//                   </div>
-//                 </div>
-//                 <div className="bg-gray-100 rounded-lg p-4 border border-gray-200">
-//                   <div className="space-y-3">
-//                     <div className="w-full h-32 bg-gray-300 rounded mb-2"></div>
-//                     <h4 className="font-semibold text-sm">Sphinx</h4>
-//                     <div className="space-y-1 text-xs text-gray-600">
-//                       <p>Distance: 5km</p>
-//                       <p>Temperature: 25°C</p>
-//                       <p>Rating: ⭐⭐⭐⭐⭐</p>
-//                     </div>
-//                     <p className="text-xs text-gray-600">About the trip: A wonderful experience...</p>
-//                     <div className="flex gap-2">
-//                       <button className="flex-1 px-3 py-1.5 bg-white border border-gray-300 rounded text-xs hover:bg-gray-50">
-//                         Preview
-//                       </button>
-//                       <button className="flex-1 px-3 py-1.5 bg-purple-600 text-white rounded text-xs hover:bg-purple-700">
-//                         Book Now
-//                       </button>
-//                     </div>
-//                   </div>
-//                 </div>
-//               </div>
-//             }
-//             likes={99}
-//             comments={8}
-//           />
-
-//           <FeedPost
-//             author={{
-//               name: 'Soufiane Boukir',
-//               title: 'Web Developer',
-//               avatar: 'SB'
-//             }}
-//             title="-Photo is perfect"
-//             content={
-//               <div className="w-full h-64 bg-gradient-to-br from-green-200 to-green-400 rounded-lg my-4 flex items-center justify-center">
-//                 <span className="text-gray-600">Nature Photo</span>
-//               </div>
-//             }
-//             likes={42}
-//             comments={12}
-//           />
-//         </main>
-
-//         <RightSidebar />
-//       </div>
-//     </div>
-//   );
-// }
+import JobCardSkeleton from "@/components/jobs/JobCardSkeleton";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function Home() {
-  const token = getToken();
-  const { data, isLoading, error } = useCurrentUser(token!);
-  
-  if (isLoading)
-    return (
-      <div className="mt-10 mx-auto w-[50%] flex justify-center gap-2 text-xl">
-        Loading...
-      </div>
-    );
-  if (error)
-    return (
-      <div className="mt-10 mx-auto w-[50%] flex justify-center gap-2 text-xl">
-        No user logged in
-      </div>
-    );
+  const { data: currentUser } = useCurrentUser();
+  const {
+    data: jobsData,
+    isLoading: isLoadingJobs,
+    isError: isJobsError,
+  } = useRecentJobs(10);
+
+  const jobs = jobsData?.jobs || [];
+
+  // Format job as feed post
+  const jobFeedPosts = useMemo(() => {
+    return jobs.map((job) => {
+      // If current user is the employer who posted this job, use their image
+      const isCurrentUserJob =
+        currentUser?.role === "employer" && currentUser?.id === job.employer_id;
+      const avatarUrl =
+        isCurrentUserJob &&
+        currentUser?.image &&
+        currentUser.image.trim() !== ""
+          ? currentUser.image
+          : undefined;
+
+      return {
+        id: job.id,
+        author: {
+          name: job.company_name || job.company || "Company",
+          title: job.employment_type
+            ? `${job.employment_type.replace("-", " ")} • ${job.location || "Remote"}`
+            : job.location || "Remote",
+          avatar: (job.company_name || job.company || "C")
+            .split(" ")
+            .map((n: string) => n[0])
+            .join("")
+            .toUpperCase()
+            .slice(0, 2),
+          avatarUrl: avatarUrl || undefined,
+        },
+        title: job.title,
+        content: (
+          <div className="my-6">
+            <p className="text-muted-foreground mb-4 line-clamp-3">
+              {job.description}
+            </p>
+            {job.skills && job.skills.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {job.skills.slice(0, 6).map((skill, index) => (
+                  <span
+                    key={index}
+                    className="px-3 py-1 bg-muted text-muted-foreground rounded-lg text-xs font-semibold"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        ),
+        likes: 0,
+        comments: 0,
+        job: job,
+      };
+    });
+  }, [jobs, currentUser]);
 
   return (
-    <div className="mt-10 mx-auto w-[50%] flex justify-center gap-2 text-xl">
-      Logged in as <strong className="text-blue-500"> {data?.full_name}</strong>
+    <div className="min-h-screen bg-background transition-colors duration-300">
+      <TopNavbar />
+
+      <div className="flex relative pt-16">
+        {/* Left Sidebar */}
+        <LeftSidebar />
+
+        {/* Main Content Area */}
+        <main className="flex-1 min-w-0 px-8 py-8 ml-64 mr-96">
+          <div className="space-y-6 max-w-4xl">
+            <PostCreator />
+
+            {/* Loading State */}
+            {isLoadingJobs && (
+              <div className="space-y-6">
+                {[1, 2, 3].map((i) => (
+                  <JobCardSkeleton key={i} />
+                ))}
+              </div>
+            )}
+
+            {/* Error State */}
+            {isJobsError && (
+              <Card className="border-border">
+                <CardContent className="p-6">
+                  <p className="text-destructive">
+                    Failed to load jobs. Please try again.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Feed Posts - Jobs */}
+            {!isLoadingJobs &&
+              !isJobsError &&
+              jobFeedPosts.map((post) => (
+                <FeedPost
+                  key={post.id}
+                  author={post.author}
+                  title={post.title}
+                  content={post.content}
+                  likes={post.likes}
+                  comments={post.comments}
+                />
+              ))}
+
+            {/* Empty State */}
+            {!isLoadingJobs && !isJobsError && jobFeedPosts.length === 0 && (
+              <Card className="border-border">
+                <CardContent className="p-12 text-center">
+                  <p className="text-muted-foreground text-lg">
+                    No jobs available at the moment. Check back later!
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </main>
+
+        {/* Right Sidebar */}
+        <RightSidebar />
+      </div>
     </div>
   );
 }

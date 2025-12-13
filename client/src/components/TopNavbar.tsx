@@ -1,76 +1,205 @@
 "use client";
 
+import { Search, Bell, User, LogOut, Bookmark } from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useCurrentUser } from "@/features/auth/hook";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  Home,
-  Users,
-  Briefcase,
-  Bell,
-  MessageCircle,
-  User,
-  Search,
-} from "lucide-react";
-import Image from "next/image";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function TopNavbar() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { data: currentUser } = useCurrentUser();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(
+        `/jobs/search?search=${encodeURIComponent(searchQuery.trim())}`,
+      );
+    } else {
+      router.push("/jobs/search");
+    }
+  };
+
+  const handleLogout = () => {
+    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    router.push("/login");
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  // Note: employer_id is not available from /auth/me endpoint
+  // Using user.id as fallback for employer profile
+  const profileUrl =
+    currentUser?.role === "candidate"
+      ? "/dashboard/candidate/profile"
+      : currentUser?.role === "employer"
+        ? "/dashboard/employer/profile"
+        : "/dashboard/candidate/profile";
+
+  // Note: candidate_id is not available from /auth/me endpoint
+  // Saved jobs endpoint doesn't exist in backend yet anyway
+  const savedJobsUrl =
+    currentUser?.role === "candidate" ? "/dashboard/candidate/saved-jobs" : "#";
+
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50 shadow-sm">
-      <div className="max-w-[1920px] mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 flex items-center justify-center">
-              <Image
-                src="/radar.svg"
-                alt="Hire Radar Logo"
-                width={40}
-                height={40}
-                className="w-10 h-10"
-              />
-            </div>
-            <span className="text-2xl font-bold text-purple-600">
-              Hire Radar
-            </span>
-          </div>
+    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-16 items-center justify-between px-4 md:px-6">
+        {/* Logo */}
+        <Link
+          href="/"
+          className="flex items-center gap-2 font-bold text-xl tracking-tight hover:opacity-80 transition-opacity"
+        >
+          <img
+            src="/radar.svg"
+            alt="Hire Radar"
+            width={28}
+            height={28}
+            className="invert dark:invert-0 border-0 bg-transparent outline-none"
+            style={{ display: "block" }}
+          />
+          <span className="hidden sm:inline">Hire Radar</span>
+        </Link>
 
-          {/* Center Navigation Icons */}
-          <div className="flex items-center gap-6">
-            <button className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
-              <Home className="w-5 h-5" />
-            </button>
-            <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-              <Users className="w-5 h-5" />
-            </button>
-            <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-              <Briefcase className="w-5 h-5" />
-            </button>
-            <button className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                9+
-              </span>
-            </button>
-            <button className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-              <MessageCircle className="w-5 h-5" />
-              <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                6
-              </span>
-            </button>
-            <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-              <User className="w-5 h-5" />
-            </button>
+        {/* Search Bar - Desktop */}
+        <form
+          onSubmit={handleSearch}
+          className="hidden md:flex flex-1 max-w-md mx-8"
+        >
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search jobs..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSearch(e);
+                }
+              }}
+              className="pl-9 h-9 bg-background border-border"
+              aria-label="Search jobs"
+            />
           </div>
+        </form>
 
-          {/* Search Bar */}
-          <div className="flex-1 max-w-md ml-8">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search for anything (Jobs)"
-                className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-purple-600" />
-            </div>
-          </div>
+        {/* Right Side Actions */}
+        <div className="flex items-center gap-2">
+          {/* Search Icon - Mobile */}
+          <Link
+            href="/jobs/search"
+            className="md:hidden p-2 rounded-md hover:bg-accent transition-colors"
+            aria-label="Search jobs"
+          >
+            <Search className="h-5 w-5" />
+          </Link>
+
+          <ThemeToggle />
+
+          {/* Notifications - Placeholder */}
+          <button
+            className="relative p-2 rounded-md hover:bg-accent transition-colors"
+            aria-label="Notifications"
+          >
+            <Bell className="h-5 w-5" />
+            <span className="absolute top-1 right-1 h-2 w-2 bg-foreground rounded-full" />
+          </button>
+
+          {/* User Avatar Dropdown */}
+          {currentUser ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="flex items-center gap-2 p-1 rounded-md hover:bg-accent transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
+                  aria-label="User menu"
+                >
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage
+                      src={
+                        currentUser.image && currentUser.image.trim() !== ""
+                          ? currentUser.image
+                          : undefined
+                      }
+                      alt={currentUser.full_name}
+                    />
+                    <AvatarFallback className="bg-foreground text-background text-xs font-semibold">
+                      {getInitials(currentUser.full_name)}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {currentUser.full_name}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {currentUser.email}
+                    </p>
+                    <Badge
+                      variant="secondary"
+                      className="mt-1 w-fit text-xs capitalize"
+                    >
+                      {currentUser.role}
+                    </Badge>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href={profileUrl} className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                  </Link>
+                </DropdownMenuItem>
+                {currentUser.role === "candidate" && (
+                  <DropdownMenuItem asChild>
+                    <Link href={savedJobsUrl} className="cursor-pointer">
+                      <Bookmark className="mr-2 h-4 w-4" />
+                      Saved Jobs
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="cursor-pointer text-destructive focus:text-destructive"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link
+              href="/login"
+              className="px-4 py-2 text-sm font-medium rounded-md border border-border bg-background hover:bg-accent transition-colors"
+            >
+              Login
+            </Link>
+          )}
         </div>
       </div>
     </nav>
