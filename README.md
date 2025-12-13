@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-
 # HireRadar – AI-Powered Recruitment Platform
 
 HireRadar is a web platform that connects employers and candidates using AI-driven job and profile recommendations.  
