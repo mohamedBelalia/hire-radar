@@ -5,6 +5,14 @@ import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
+/**
+ * Render the signup page with a header and centered signup form.
+ *
+ * If the URL contains an `error` query parameter on load, displays a mapped
+ * human-readable toast error message (falls back to "Authentication failed").
+ *
+ * @returns The React element that renders the signup page layout and SignupForm.
+ */
 export default function SignupPage() {
   const searchParams = useSearchParams();
 

@@ -25,6 +25,12 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 
+/**
+ * Renders a "Settings" sidebar group containing a menu of navigable settings items.
+ *
+ * @param settings - Array of menu items; each item must include `name` (label text), `url` (link href), and `icon` (a LucideIcon component) which are rendered as a linked menu entry.
+ * @returns A SidebarGroup JSX element with a labeled settings menu and a final "More" menu item.
+ */
 export function NavSettings({
   settings,
 }: {

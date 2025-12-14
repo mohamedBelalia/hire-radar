@@ -9,6 +9,13 @@ interface ErrorStateProps {
   onRetry?: () => void;
 }
 
+/**
+ * Render an error UI that shows an alert icon, a title, a message, and an optional retry button.
+ *
+ * @param message - Optional message to display; if omitted, shows "Failed to load profile. Please try again."
+ * @param onRetry - Optional callback invoked when the "Try Again" button is clicked
+ * @returns The rendered error state element
+ */
 export default function ErrorState({ message, onRetry }: ErrorStateProps) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] p-8">

@@ -7,6 +7,13 @@ import { useCurrentUser } from "@/features/auth/hook";
 import type { User } from "@/types";
 import { useEffect, useState } from "react";
 
+/**
+ * Render the profile settings page and synchronize the active tab with the URL hash and `"tab-change"` events.
+ *
+ * The component fetches the current user, maintains an `activeTab` state (defaults to `"profile"`), initializes it from the URL hash on mount, updates it when the hash changes or when a `"tab-change"` CustomEvent is dispatched, and cleans up listeners on unmount.
+ *
+ * @returns The profile settings page React element containing the header, sidebar, and content area with the active tab selected.
+ */
 export default function Page() {
   const { data } = useCurrentUser();
   const currentUser = data as User | undefined;

@@ -9,6 +9,12 @@ from datetime import datetime
 
 
 def get_db():
+    """
+    Provide a SQLAlchemy database session for use by callers and ensure the session is closed when finished.
+    
+    Yields:
+        Session: A SQLAlchemy `Session` object for database operations; the session is closed when the generator exits.
+    """
     db = SessionLocal()
     try:
         yield db
@@ -17,7 +23,27 @@ def get_db():
 
 
 def search_jobs():
-    """Search and filter jobs"""
+    """
+    Search for jobs using optional filters and return paginated results.
+    
+    Supports query parameters:
+    - search: full-text-like match against title, description, and company_name.
+    - location: case-insensitive substring match against job location.
+    - salary_min: numeric minimum salary filter (ignored if not parseable).
+    - skill: required skill contained in the job's skills list.
+    - page: 1-based page number (defaults to 1).
+    - limit: number of items per page (defaults to 10).
+    
+    Returns:
+    A JSON response with keys:
+    - `jobs`: list of job dictionaries (serialized via job_to_dict).
+    - `total`: total number of matching jobs before pagination.
+    - `page`: current page number.
+    - `limit`: items per page.
+    - `total_pages`: total number of pages.
+    
+    On error returns a JSON object `{"error": "<message>"}` with HTTP 500.
+    """
     db: Session = next(get_db())
 
     try:
@@ -90,7 +116,17 @@ def search_jobs():
 
 
 def get_job_by_id(job_id: int):
-    """Get a single job by ID"""
+    """
+    Fetch a Job by its integer ID and return its serialized representation.
+    
+    Returns a JSON response containing the job data when found, a JSON error message with HTTP 404 if the job does not exist, or a JSON error message with HTTP 500 on unexpected errors.
+    
+    Parameters:
+        job_id (int): Primary key of the Job to retrieve.
+    
+    Returns:
+        flask.Response: JSON response with either the job dictionary or an error message and the corresponding HTTP status code.
+    """
     db: Session = next(get_db())
 
     try:
@@ -108,7 +144,30 @@ def get_job_by_id(job_id: int):
 
 
 def create_job():
-    """Create a new job posting"""
+    """
+    Create a new job posting from JSON payload and persist it to the database.
+    
+    Expects a JSON request body with the following fields:
+    	title (str): Required. Job title.
+    	description (str): Required. Job description.
+    	company_name (str): Required. Employer or company name.
+    	employer_id (int or str): Required. Identifier of the employer.
+    	location (str): Optional. Job location.
+    	salary_min (number or str): Optional. Minimum salary; will be converted to Decimal.
+    	salary_max (number or str): Optional. Maximum salary; will be converted to Decimal.
+    	salary_currency (str): Optional. Currency code for salary; defaults to "USD".
+    	employment_type (str): Optional. Employment type (e.g., "full-time").
+    	experience_level (str): Optional. Required experience level.
+    	skills (list): Optional. List of required skills; defaults to empty list.
+    	requirements (str): Optional. Additional requirements.
+    	benefits (str): Optional. Benefits information.
+    	application_deadline (str): Optional. ISO 8601 timestamp (UTC or with "Z"); parsed to datetime.
+    
+    Returns:
+    	On success: JSON representation of the created job (as produced by `job_to_dict`) and HTTP 201.
+    	On client error (missing required field): JSON `{"error": "..."} ` and HTTP 400.
+    	On server error: JSON `{"error": "<error message>"}` and HTTP 500.
+    """
     db: Session = next(get_db())
 
     try:
@@ -162,7 +221,19 @@ def create_job():
 
 
 def update_job(job_id: int):
-    """Update an existing job"""
+    """
+    Update fields of an existing Job identified by job_id.
+    
+    Only fields present in the request JSON are changed. Salary fields are converted to Decimal when provided; `application_deadline` is parsed from ISO 8601 (accepts trailing "Z" as UTC) or cleared to None when an empty value is supplied.
+    
+    Parameters:
+        job_id (int): ID of the Job to update.
+    
+    Returns:
+        response (flask.Response): On success returns the updated job as a JSON-compatible dictionary with HTTP 200.
+            If the job does not exist, returns `{"error": "Job not found"}` with HTTP 404.
+            If an unexpected error occurs, returns `{"error": <message>}` with HTTP 500.
+    """
     db: Session = next(get_db())
 
     try:
@@ -224,7 +295,15 @@ def update_job(job_id: int):
 
 
 def delete_job(job_id: int):
-    """Delete a job"""
+    """
+    Delete a Job record identified by job_id.
+    
+    Parameters:
+        job_id (int): The unique identifier of the Job to delete.
+    
+    Returns:
+        tuple: A JSON response and HTTP status code. On success returns `{"message": "Job deleted successfully"}` with status `200`. If the job does not exist returns `{"error": "Job not found"}` with status `404`. On unexpected errors returns `{"error": "<error message>"}` with status `500`.
+    """
     db: Session = next(get_db())
 
     try:
@@ -246,7 +325,19 @@ def delete_job(job_id: int):
 
 
 def job_to_dict(job: Job) -> dict:
-    """Convert Job model to dictionary matching frontend Job type"""
+    """
+    Convert a Job model instance into a JSON-serializable dictionary for frontend consumption.
+    
+    Parameters:
+        job (Job): Job model instance to serialize.
+    
+    Returns:
+        dict: Serialized job with these observable transformations:
+            - id and employer_id as strings
+            - salary_min and salary_max as floats or None
+            - skills as a list (empty list if unset)
+            - application_deadline, posted_at, and updated_at as ISO 8601 strings or None
+    """
     return {
         "id": str(job.id),
         "title": job.title,

@@ -9,6 +9,16 @@ interface EmptyStateProps {
   onClearFilters?: () => void;
 }
 
+/**
+ * Render an empty-state card for job listings.
+ *
+ * Shows an icon, title, and context-sensitive message. If filters are active and
+ * a clear-callback is provided, renders a "Clear Filters" button that invokes the callback.
+ *
+ * @param hasFilters - Whether filters are currently applied; controls the message and button visibility
+ * @param onClearFilters - Optional callback invoked when the "Clear Filters" button is clicked
+ * @returns The React element representing the empty-state UI for job search results
+ */
 export default function EmptyState({
   hasFilters,
   onClearFilters,

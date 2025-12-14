@@ -25,6 +25,16 @@ interface SavedJobsSidebarProps {
   savedJobsCount?: number;
 }
 
+/**
+ * Client-side React sidebar for the candidate "Saved Jobs" dashboard.
+ *
+ * Renders a profile summary (avatar, name, role), statistics (including a badge for saved jobs),
+ * navigation links with an active state, quick actions, filter buttons (placeholders), and an
+ * account settings link.
+ *
+ * @param savedJobsCount - Number displayed for "Saved Jobs" in the Statistics section; defaults to 0.
+ * @returns The sidebar JSX element for the saved-jobs dashboard. 
+ */
 export default function SavedJobsSidebar({
   savedJobsCount = 0,
 }: SavedJobsSidebarProps) {

@@ -5,6 +5,11 @@ import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 
+/**
+ * Renders a theme toggle button that switches between "dark" and "light" themes and shows a Sun icon when the active theme is dark and a Moon icon otherwise.
+ *
+ * @returns The React element for the theme toggle button.
+ */
 export function ThemeToggle() {
   const { setTheme, theme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);

@@ -17,6 +17,13 @@ import { Plus } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
+/**
+ * Render a dialog UI that lets the user add either a skill or a category.
+ *
+ * @param toAdd - Either `"skill"` or `"category"`, selects which type of item to create.
+ * @param onAdded - Optional callback invoked after a successful skill add with the API response data.
+ * @returns The dialog JSX element for adding the selected item
+ */
 export function AddSkillCategory({ toAdd, onAdded }: { toAdd: string, onAdded: (data?: any) => void }) {
 
     const [loading,setLoading] = useState(false)
@@ -88,6 +95,17 @@ export function AddSkillCategory({ toAdd, onAdded }: { toAdd: string, onAdded: (
 }
 
 
+/**
+ * Render a dialog that edits the name of a skill or category.
+ *
+ * Allows editing the provided `oldValue`, performs the update when submitted,
+ * and displays success or error toasts based on the outcome.
+ *
+ * @param toEdit - Either `"skill"` or `"category"`, determines which item type to edit
+ * @param id - Numeric identifier of the item to update
+ * @param oldValue - Initial name value shown in the input
+ * @returns A dialog UI for editing the specified item's name
+ */
 export function EditSkillCategory({ toEdit, id, oldValue }: { toEdit: string, id: number, oldValue: string }) {
 
     const [loading,setLoading] = useState(false)
@@ -163,6 +181,15 @@ export function EditSkillCategory({ toEdit, id, oldValue }: { toEdit: string, id
 
 import { addAdmin } from "@/services/admin"
 
+/**
+ * Renders a dialog form to add a new admin user.
+ *
+ * Validates that all fields are provided and that password and confirm password match,
+ * displays success or error toasts, and invokes `onAdded` with the created admin object when the server responds with 201.
+ *
+ * @param onAdded - Optional callback invoked with the new admin data after successful creation.
+ * @returns The AddAdminDialog React element.
+ */
 export function AddAdminDialog({ onAdded }: { onAdded?: (data?: any) => void }) {
   const [loading, setLoading] = useState(false)
   const [fullName, setFullName] = useState("")

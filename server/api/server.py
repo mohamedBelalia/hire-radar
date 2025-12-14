@@ -30,6 +30,12 @@ app.register_blueprint(candidates, url_prefix="/api/candidates")
 
 @app.route("/")
 def home():
+    """
+    Return a JSON response indicating the server is running.
+    
+    Returns:
+        Response: JSON object with keys "message" (string) and "status" (string), e.g. {"message": "Server is running", "status": "oAAAk"}.
+    """
     return jsonify({"message": "Server is running", "status": "oAAAk"})
 
 

@@ -16,6 +16,15 @@ import { toast } from "sonner";
 import { login } from "@/features/auth/api";
 import { useRouter } from "next/navigation";
 
+/**
+ * Renders a login form that authenticates a user with email and password.
+ *
+ * Shows inline and toast error messages on failure, disables inputs while submitting,
+ * and navigates to the application root on successful authentication.
+ *
+ * @param props - Standard form element props; `className` is merged into the form's classes.
+ * @returns The rendered login form element.
+ */
 export function LoginForm({
   className,
   ...props

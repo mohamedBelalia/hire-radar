@@ -1,6 +1,11 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
+/**
+ * Renders a skeleton placeholder for a job card layout.
+ *
+ * @returns A JSX element containing a Card with Skeleton placeholders for the title, subtitle, descriptive lines, metadata/badges, and footer action areas.
+ */
 export default function JobCardSkeleton() {
   return (
     <Card className="border-border bg-card">

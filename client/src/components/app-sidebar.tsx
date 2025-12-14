@@ -81,6 +81,12 @@ const data = {
   ],
 }
 
+/**
+ * Render the application sidebar including branding, main navigation, settings, and the user area.
+ *
+ * @param props - Props to forward to the underlying Sidebar component (e.g., className, style, or other Sidebar-specific props).
+ * @returns The sidebar element composed of a header with logo/brand, main navigation, settings section, and footer user area.
+ */
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar variant="inset" {...props}>

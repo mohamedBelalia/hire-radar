@@ -9,6 +9,13 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
+/**
+ * Renders a secondary sidebar navigation group containing a vertical list of link items.
+ *
+ * @param items - Array of navigation entries; each entry provides `title` (display text), `url` (href), and `icon` (Lucide icon component) for the link.
+ * @param props - Additional props are forwarded to the underlying `SidebarGroup`.
+ * @returns A `SidebarGroup` element containing a `SidebarMenu` with each item rendered as a button-wrapped link showing its icon and title.
+ */
 export function NavSecondary({
   items,
   ...props
