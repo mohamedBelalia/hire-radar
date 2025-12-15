@@ -41,11 +41,14 @@ export default function ProfileHeader({
               <Avatar className="h-16 w-16">
                 <AvatarImage
                   src={
-                    user?.image && user.image.trim() !== ""
+                    user?.image && user.image.trim() !== "" && user.image !== "null" && user.image !== "undefined"
                       ? user.image
                       : undefined
                   }
                   alt={user?.full_name || "Profile"}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
                 />
                 <AvatarFallback className="bg-foreground text-background text-lg font-semibold">
                   {user ? getInitials(user.full_name) : "ME"}

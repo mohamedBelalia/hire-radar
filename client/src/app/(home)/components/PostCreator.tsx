@@ -33,11 +33,14 @@ export default function PostCreator() {
           <Avatar className="h-10 w-10">
             <AvatarImage
               src={
-                currentUser?.image && currentUser.image.trim() !== ""
+                currentUser?.image && currentUser.image.trim() !== "" && currentUser.image !== "null" && currentUser.image !== "undefined"
                   ? currentUser.image
                   : undefined
               }
               alt={currentUser?.full_name || "User"}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
             />
             <AvatarFallback className="bg-foreground text-background font-semibold">
               {currentUser ? getInitials(currentUser.full_name) : "ME"}

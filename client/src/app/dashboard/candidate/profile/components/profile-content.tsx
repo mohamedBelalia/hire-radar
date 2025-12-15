@@ -30,6 +30,7 @@ import { useCurrentUser } from "@/features/auth/hook";
 import {
   useCandidateProfile,
   useUpdateCandidateProfile,
+  useUploadCandidateCV,
 } from "@/features/profile/hooks";
 import {
   useEmployerProfile,
@@ -37,6 +38,7 @@ import {
 } from "@/features/profile/hooks";
 import type { User } from "@/types";
 import { useCurrentUserId } from "@/hooks/useCurrentUserId";
+import UploadCV from "@/components/profile/UploadCV";
 
 interface ProfileContentProps {
   defaultTab?: string;
@@ -81,6 +83,7 @@ export default function ProfileContent({
     useEmployerProfile(userId);
   const updateCandidate = useUpdateCandidateProfile(userId);
   const updateEmployer = useUpdateEmployerProfile(userId);
+  const uploadCV = useUploadCandidateCV(userId);
 
   const isLoading =
     currentUser?.role === "candidate" ? isLoadingCandidate : isLoadingEmployer;
@@ -333,6 +336,33 @@ export default function ProfileContent({
             </div>
           </CardContent>
         </Card>
+
+        {/* CV Upload Section - Only for Candidates */}
+        {currentUser?.role === "candidate" && (
+          <UploadCV
+            profile={
+              candidateProfile || {
+                id: userId || "",
+                full_name: currentUser?.full_name || "",
+                email: currentUser?.email || "",
+                skills: [],
+                cv_url: undefined,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              }
+            }
+            onUpload={async (file) => {
+              try {
+                await uploadCV.mutateAsync(file);
+                toast.success("CV uploaded successfully!");
+              } catch (error) {
+                toast.error("Failed to upload CV. Please try again.");
+                throw error;
+              }
+            }}
+            isUploading={uploadCV.isPending}
+          />
+        )}
       </TabsContent>
 
       {/* Security Tab */}

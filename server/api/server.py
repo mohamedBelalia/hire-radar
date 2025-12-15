@@ -2,11 +2,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 from config.db import Base, engine
 from routes.auth import auth
 from routes.job import job
+from routes.candidates import candidates
+from routes.employers import employers
+from routes.applications import applications
 import os
 
 
@@ -33,11 +36,20 @@ CORS(
 
 app.register_blueprint(auth, url_prefix="/api/auth")
 app.register_blueprint(job, url_prefix="/api/jobs")
+app.register_blueprint(candidates, url_prefix="/api/candidates")
+app.register_blueprint(employers, url_prefix="/api/employers")
+app.register_blueprint(applications, url_prefix="/api/applications")
 
 
 @app.route("/")
 def home():
     return jsonify({"message": "Server is running", "status": "ok"})
+
+
+# Serve uploaded files
+@app.route("/uploads/<path:filename>")
+def serve_upload(filename):
+    return send_from_directory("uploads", filename)
 
 
 # Handle incorrect OAuth redirect URI (without /api prefix)

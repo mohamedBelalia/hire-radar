@@ -104,11 +104,14 @@ export default function FeedPost({
           <Avatar className="h-8 w-8">
             <AvatarImage
               src={
-                currentUser?.image && currentUser.image.trim() !== ""
+                currentUser?.image && currentUser.image.trim() !== "" && currentUser.image !== "null" && currentUser.image !== "undefined"
                   ? currentUser.image
                   : undefined
               }
               alt={currentUser?.full_name || "User"}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
             />
             <AvatarFallback className="bg-foreground text-background font-semibold text-xs">
               {currentUser ? getInitials(currentUser.full_name) : "ME"}

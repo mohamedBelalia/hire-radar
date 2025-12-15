@@ -92,11 +92,15 @@ export default function ProfileSidebar() {
               <Avatar className="h-20 w-20">
                 <AvatarImage
                   src={
-                    currentUser?.image && currentUser.image.trim() !== ""
+                    currentUser?.image && currentUser.image.trim() !== "" && currentUser.image !== "null" && currentUser.image !== "undefined"
                       ? currentUser.image
                       : undefined
                   }
                   alt={currentUser?.full_name || "Profile"}
+                  onError={(e) => {
+                    // Hide image on error, show fallback
+                    e.currentTarget.style.display = 'none';
+                  }}
                 />
                 <AvatarFallback className="text-2xl bg-foreground text-background">
                   {currentUser ? getInitials(currentUser.full_name) : "JD"}

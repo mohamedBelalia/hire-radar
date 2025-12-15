@@ -138,11 +138,14 @@ export default function TopNavbar() {
                   <Avatar className="h-8 w-8">
                     <AvatarImage
                       src={
-                        currentUser.image && currentUser.image.trim() !== ""
+                        currentUser.image && currentUser.image.trim() !== "" && currentUser.image !== "null" && currentUser.image !== "undefined"
                           ? currentUser.image
                           : undefined
                       }
                       alt={currentUser.full_name}
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
                     />
                     <AvatarFallback className="bg-foreground text-background text-xs font-semibold">
                       {getInitials(currentUser.full_name)}
