@@ -16,6 +16,15 @@ interface CompanyInfoProps {
   profile: EmployerProfile;
 }
 
+/**
+ * Render company information, optional external links, and an about section for an employer profile.
+ *
+ * Displays filtered contact and company details (email, phone, location, industry, company size, founded year),
+ * a "Links" subsection for website and LinkedIn when provided, and an "About Us" section for the profile description.
+ *
+ * @param profile - EmployerProfile whose fields are used: `email`, `phone`, `location`, `industry`, `company_size`, `founded_year`, `website`, `linkedin_url`, and `description`.
+ * @returns A React element containing the company information card, optional links, and optional about section.
+ */
 export default function CompanyInfo({ profile }: CompanyInfoProps) {
   const details = [
     { icon: Mail, label: "Email", value: profile.email },

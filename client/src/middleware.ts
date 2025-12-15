@@ -4,6 +4,12 @@ import type { NextRequest } from "next/server";
 // Protected routes that require authentication
 const protectedRoutes = ["/profile", "/saved", "/dashboard"];
 
+/**
+ * Guards protected routes by redirecting unauthenticated requests to the login page while preserving the original destination.
+ *
+ * @param req - The incoming Next.js request to check for an authentication token and pathname.
+ * @returns A NextResponse that redirects to `/login` with a `redirect` query parameter when access is blocked, or a response that allows the request to proceed otherwise.
+ */
 export default async function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
   const { pathname } = req.nextUrl;

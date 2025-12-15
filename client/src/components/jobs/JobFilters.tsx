@@ -16,6 +16,18 @@ interface JobFiltersProps {
   onClearFilters: () => void;
 }
 
+/**
+ * Renders a filters panel with controlled inputs for location, minimum salary, and skill.
+ *
+ * @param location - Current location filter value.
+ * @param salaryMin - Current minimum salary filter value.
+ * @param skill - Current skill filter value.
+ * @param onLocationChange - Called with the new location string when the location input changes.
+ * @param onSalaryMinChange - Called with the new salary string when the salary input changes.
+ * @param onSkillChange - Called with the new skill string when the skill input changes.
+ * @param onClearFilters - Called when the user clicks the "Clear" button to reset all filters.
+ * @returns A JSX element containing a Card with labeled inputs for Location, Minimum Salary, and Skill and a conditional "Clear" button when any filter is active.
+ */
 export default function JobFilters({
   location,
   salaryMin,

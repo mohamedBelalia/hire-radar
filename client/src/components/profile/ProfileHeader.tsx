@@ -11,6 +11,15 @@ interface ProfileHeaderProps {
   onImageClick?: () => void;
 }
 
+/**
+ * Renders a profile header for a candidate or employer including avatar, name/company, location and experience or industry, bio, and edit controls.
+ *
+ * @param profile - The CandidateProfile or EmployerProfile containing fields used for the avatar, title, meta info, and bio.
+ * @param role - "candidate" or "employer", selects which profile shape and metadata to display.
+ * @param onEditClick - Handler invoked when the "Edit Profile" button is clicked.
+ * @param onImageClick - Optional handler that, when provided, shows a camera button over the avatar to trigger image updates.
+ * @returns A JSX element representing the composed profile header UI.
+ */
 export default function ProfileHeader({
   profile,
   role,

@@ -5,6 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 
+/**
+ * Renders an empty-state UI shown when the user has no saved jobs.
+ *
+ * @returns A JSX element containing a centered card with a bookmark icon, heading, descriptive text, and a primary button linking to the jobs search page.
+ */
 export default function SavedJobsEmptyState() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[500px] p-8">

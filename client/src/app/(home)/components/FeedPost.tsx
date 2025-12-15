@@ -28,6 +28,18 @@ interface FeedPostProps {
   comments: number;
 }
 
+/**
+ * Render a social feed post with author header, title, optional content, action buttons, and a comment input.
+ *
+ * Uses the current user (from `useCurrentUser`) to populate the comment avatar/initials.
+ *
+ * @param author - Author metadata; expected to include `name`, `title`, `avatar` and an optional `avatarUrl` used for the avatar image.
+ * @param title - Post title text.
+ * @param content - Optional post content (React node) rendered below the title when provided.
+ * @param likes - Number of likes shown on the like button.
+ * @param comments - Number of comments shown on the comment button.
+ * @returns A JSX element representing the feed post UI.
+ */
 export default function FeedPost({
   author,
   title,

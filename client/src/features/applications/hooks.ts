@@ -3,7 +3,13 @@ import { applicationsApi } from "@/lib/api";
 import type { Application } from "@/types";
 import { toast } from "sonner";
 
-// Get all applications
+/**
+ * Fetches and caches the list of all applications.
+ *
+ * The result is cached and considered fresh for 2 minutes.
+ *
+ * @returns The query result for the applications list, containing the applications data and React Query metadata (status, error, etc.).
+ */
 export function useApplications() {
   return useQuery({
     queryKey: ["applications"],
@@ -12,7 +18,14 @@ export function useApplications() {
   });
 }
 
-// Get applications for a job
+/**
+ * Fetches applications for a specific job.
+ *
+ * The query is disabled when `jobId` is falsy and uses a 2-minute stale time.
+ *
+ * @param jobId - The numeric identifier of the job to fetch applications for.
+ * @returns The React Query result containing the applications for the specified job.
+ */
 export function useJobApplications(jobId: number) {
   return useQuery({
     queryKey: ["applications", "job", jobId],
@@ -22,7 +35,13 @@ export function useJobApplications(jobId: number) {
   });
 }
 
-// Update application status mutation
+/**
+ * Provide a mutation to update an application's status and refresh cached applications.
+ *
+ * Performs an API update for an application's status. On success, invalidates the ["applications"] query to refresh data and displays a success toast; on error, displays an error toast.
+ *
+ * @returns A React Query mutation object for performing the application status update.
+ */
 export function useUpdateApplication() {
   const queryClient = useQueryClient();
   return useMutation({

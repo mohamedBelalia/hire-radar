@@ -29,6 +29,15 @@ import { useCurrentUser } from "@/features/auth/hook"
 import { logout } from "@/features/auth/api"
 import { useRouter } from "next/navigation"
 
+/**
+ * Render a navigation user menu showing the current user's avatar, name, and email with a logout action.
+ *
+ * Renders nothing while user data is loading. When data is available, the component shows a dropdown trigger
+ * with the user's avatar and brief info; the dropdown contains a larger label with the same info and a
+ * "Log out" item that signs the user out and navigates to the login page.
+ *
+ * @returns The navigation menu element containing the user's avatar, full name, email, and a sign-out item.
+ */
 export function NavUser(){
   const { isMobile } = useSidebar()
   const token = getToken()

@@ -6,6 +6,12 @@ import {
   SaveJobResponse,
 } from "@/types/job";
 
+/**
+ * Search for jobs using optional filters and pagination.
+ *
+ * @param params - Optional filters: `search` (query string), `location`, `salary_min`, `skill`, `page`, and `limit`.
+ * @returns A JobSearchResponse containing matching jobs and pagination metadata.
+ */
 export async function searchJobs(
   params: JobSearchParams = {},
 ): Promise<JobSearchResponse> {
@@ -25,16 +31,34 @@ export async function searchJobs(
   return data;
 }
 
+/**
+ * Retrieve a job by its identifier.
+ *
+ * @param id - The job's unique identifier
+ * @returns The job object corresponding to the given `id`
+ */
 export async function getJobById(id: string): Promise<Job> {
   const { data } = await apiClient.get<Job>(`/jobs/${id}`);
   return data;
 }
 
+/**
+ * Save the specified job for the current user.
+ *
+ * @param jobId - The identifier of the job to save
+ * @returns The API response confirming the job was saved
+ */
 export async function saveJob(jobId: string): Promise<SaveJobResponse> {
   const { data } = await apiClient.post<SaveJobResponse>(`/jobs/${jobId}/save`);
   return data;
 }
 
+/**
+ * Remove a saved job for the current user.
+ *
+ * @param jobId - The identifier of the job to unsave
+ * @returns `SaveJobResponse` containing confirmation of the unsave operation
+ */
 export async function unsaveJob(jobId: string): Promise<SaveJobResponse> {
   const { data } = await apiClient.delete<SaveJobResponse>(
     `/jobs/${jobId}/save`,
@@ -42,6 +66,12 @@ export async function unsaveJob(jobId: string): Promise<SaveJobResponse> {
   return data;
 }
 
+/**
+ * Fetches saved jobs for a candidate.
+ *
+ * @param candidateId - The candidate's unique identifier
+ * @returns An array of `Job` objects representing jobs the candidate has saved
+ */
 export async function getSavedJobs(candidateId: string): Promise<Job[]> {
   const { data } = await apiClient.get<Job[]>(
     `/candidates/${candidateId}/saved-jobs`,
@@ -49,6 +79,13 @@ export async function getSavedJobs(candidateId: string): Promise<Job[]> {
   return data;
 }
 
+/**
+ * Submit an application for a job, optionally including a cover letter and CV file.
+ *
+ * @param jobId - The identifier of the job to apply to
+ * @param applicationData - Optional application fields: `cover_letter` text and `cv_file` (File) to upload
+ * @returns An object containing `message` and the created `application_id`
+ */
 export async function applyToJob(
   jobId: string,
   applicationData?: { cover_letter?: string; cv_file?: File },

@@ -18,6 +18,14 @@ import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
+/**
+ * Top navigation bar with logo, responsive search, theme toggle, notifications, and a user account menu.
+ *
+ * The search input navigates to /jobs/search and includes the entered query as `search` when non-empty.
+ * The logout action clears the authentication token cookie and redirects to /login.
+ *
+ * @returns The rendered navigation bar element containing branding, search, action icons, and user controls.
+ */
 export default function TopNavbar() {
   const pathname = usePathname();
   const router = useRouter();

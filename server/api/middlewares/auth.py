@@ -6,6 +6,20 @@ import os
 SECRET_KEY = os.getenv("JWT_SECRET")
 
 def admin_required(f):
+    """
+    Decorator that enforces that a Flask view is accessed only with a valid JWT containing role "admin" in the Authorization Bearer header.
+    
+    Parameters:
+        f (callable): Flask view function to wrap.
+    
+    Returns:
+        callable: Wrapped view function that:
+            - returns (json, 401) {"error": "Token missing"} if no Bearer token is provided,
+            - returns (json, 401) {"error": "Token expired"} if the token has expired,
+            - returns (json, 401) {"error": "Invalid token"} if the token cannot be decoded,
+            - returns (json, 403) {"error": "Admin access only"} if the token's `role` is not "admin",
+            - otherwise calls and returns the original view function's result.
+    """
     @wraps(f)
     def decorated(*args, **kwargs):
         token = None
