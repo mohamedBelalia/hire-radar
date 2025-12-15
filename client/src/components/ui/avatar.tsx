@@ -27,10 +27,15 @@ function AvatarImage({
   ...props
 }: React.ComponentProps<typeof AvatarPrimitive.Image>) {
   // Add crossOrigin for external images (like Google OAuth)
-  const imageProps = src && (src.startsWith("http://") || src.startsWith("https://"))
-    ? { ...props, crossOrigin: "anonymous" as const, referrerPolicy: "no-referrer" as const }
-    : props;
-  
+  const imageProps =
+    src && (src.startsWith("http://") || src.startsWith("https://"))
+      ? {
+          ...props,
+          crossOrigin: "anonymous" as const,
+          referrerPolicy: "no-referrer" as const,
+        }
+      : props;
+
   return (
     <AvatarPrimitive.Image
       data-slot="avatar-image"

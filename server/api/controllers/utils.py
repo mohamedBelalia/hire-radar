@@ -1,4 +1,5 @@
 """Utility functions for controllers"""
+
 from flask import request
 import jwt
 from config.db import SessionLocal
@@ -13,12 +14,12 @@ JWT_SECRET = os.getenv("JWT_SECRET", "secret123")
 def get_user_id_from_token() -> int:
     """Extract user ID from JWT token in Authorization header"""
     auth_header = request.headers.get("Authorization")
-    
+
     if not auth_header or not auth_header.startswith("Bearer "):
         raise ValueError("Missing or invalid Authorization header")
-    
+
     token = auth_header.split(" ")[1]
-    
+
     try:
         decoded = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
         return decoded["id"]

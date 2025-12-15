@@ -96,7 +96,7 @@ export default function SavedJobsSidebar({
                   src={getValidImageUrl(currentUser?.image)}
                   alt={currentUser?.full_name || "Profile"}
                   onError={(e) => {
-                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.style.display = "none";
                   }}
                 />
                 <AvatarFallback className="text-2xl bg-foreground text-background">

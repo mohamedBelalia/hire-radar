@@ -36,7 +36,7 @@ export default function PostCreator() {
               src={getValidImageUrl(currentUser?.image)}
               alt={currentUser?.full_name || "User"}
               onError={(e) => {
-                e.currentTarget.style.display = 'none';
+                e.currentTarget.style.display = "none";
               }}
             />
             <AvatarFallback className="bg-foreground text-background font-semibold">

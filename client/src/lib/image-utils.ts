@@ -5,11 +5,13 @@
 /**
  * Validates and returns a valid image URL, or undefined if invalid
  */
-export function getValidImageUrl(imageUrl: string | null | undefined): string | undefined {
+export function getValidImageUrl(
+  imageUrl: string | null | undefined,
+): string | undefined {
   if (!imageUrl) return undefined;
-  
+
   const trimmed = imageUrl.trim();
-  
+
   // Check for invalid string values
   if (
     trimmed === "" ||
@@ -19,7 +21,7 @@ export function getValidImageUrl(imageUrl: string | null | undefined): string | 
   ) {
     return undefined;
   }
-  
+
   // Check if it's a valid URL
   try {
     const url = new URL(trimmed);
@@ -44,10 +46,11 @@ export function getValidImageUrl(imageUrl: string | null | undefined): string | 
 export function isGoogleImage(url: string): boolean {
   try {
     const urlObj = new URL(url);
-    return urlObj.hostname.includes("googleusercontent.com") || 
-           urlObj.hostname.includes("google.com");
+    return (
+      urlObj.hostname.includes("googleusercontent.com") ||
+      urlObj.hostname.includes("google.com")
+    );
   } catch {
     return false;
   }
 }
-

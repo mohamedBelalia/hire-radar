@@ -89,7 +89,9 @@ class User(Base):
     full_name = Column(String(100), nullable=False)
     email = Column(String(150), unique=True, nullable=False)
     password = Column(Text)
-    role = Column(Enum("employer", "admin", "candidate", name="user_roles"), nullable=False)
+    role = Column(
+        Enum("employer", "admin", "candidate", name="user_roles"), nullable=False
+    )
     image = Column(Text)
     phone = Column(String(150))
     location = Column(String(200))

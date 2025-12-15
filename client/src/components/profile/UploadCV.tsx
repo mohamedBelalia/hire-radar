@@ -3,12 +3,7 @@
 import { useState } from "react";
 import { Upload, FileText, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CandidateProfile } from "@/types/profile";
 
 interface UploadCVProps {
@@ -156,10 +151,7 @@ export default function UploadCV({
               >
                 <X className="w-4 h-4" />
               </Button>
-              <Button
-                onClick={handleUpload}
-                disabled={isUploading}
-              >
+              <Button onClick={handleUpload} disabled={isUploading}>
                 {isUploading ? "Uploading..." : "Upload CV"}
               </Button>
             </div>

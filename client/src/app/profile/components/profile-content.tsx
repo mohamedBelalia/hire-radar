@@ -42,7 +42,9 @@ interface ProfileContentProps {
   defaultTab?: string;
 }
 
-export default function ProfileContent({ defaultTab = "profile" }: ProfileContentProps) {
+export default function ProfileContent({
+  defaultTab = "profile",
+}: ProfileContentProps) {
   const { data: currentUserData } = useCurrentUser();
   const currentUser = currentUserData as User | undefined;
   const userId = useCurrentUserId();
@@ -56,7 +58,10 @@ export default function ProfileContent({ defaultTab = "profile" }: ProfileConten
 
     window.addEventListener("tab-change", handleTabChange as EventListener);
     return () => {
-      window.removeEventListener("tab-change", handleTabChange as EventListener);
+      window.removeEventListener(
+        "tab-change",
+        handleTabChange as EventListener,
+      );
     };
   }, []);
 
@@ -101,7 +106,8 @@ export default function ProfileContent({ defaultTab = "profile" }: ProfileConten
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setFormData({
           firstName: candidateProfile.full_name?.split(" ")[0] || "",
-          lastName: candidateProfile.full_name?.split(" ").slice(1).join(" ") || "",
+          lastName:
+            candidateProfile.full_name?.split(" ").slice(1).join(" ") || "",
           email: candidateProfile.email || currentUser.email || "",
           role: "Product Designer",
         });
@@ -121,7 +127,8 @@ export default function ProfileContent({ defaultTab = "profile" }: ProfileConten
           firstName: currentUser.full_name?.split(" ")[0] || "",
           lastName: currentUser.full_name?.split(" ").slice(1).join(" ") || "",
           email: currentUser.email || "",
-          role: currentUser.role === "candidate" ? "Product Designer" : "Employer",
+          role:
+            currentUser.role === "candidate" ? "Product Designer" : "Employer",
         });
       }
     }

@@ -24,7 +24,9 @@ export default function ProfileHeader({
   const employerProfile = !isCandidate ? (profile as EmployerProfile) : null;
 
   // Use profile_picture first, then userImage (Google OAuth), then fallback to initials
-  const imageUrl = profile.profile_picture || (userImage && userImage.trim() !== "" ? userImage : null);
+  const imageUrl =
+    profile.profile_picture ||
+    (userImage && userImage.trim() !== "" ? userImage : null);
 
   return (
     <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl p-8 shadow-lg">

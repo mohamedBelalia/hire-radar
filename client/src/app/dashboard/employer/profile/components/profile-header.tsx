@@ -44,7 +44,7 @@ export default function ProfileHeader({
                   src={getValidImageUrl(user?.image)}
                   alt={user?.full_name || "Profile"}
                   onError={(e) => {
-                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.style.display = "none";
                   }}
                 />
                 <AvatarFallback className="bg-foreground text-background text-lg font-semibold">

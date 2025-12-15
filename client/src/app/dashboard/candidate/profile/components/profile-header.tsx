@@ -45,7 +45,7 @@ export default function ProfileHeader({
                   alt={user?.full_name || "Profile"}
                   onError={(e) => {
                     // Hide image on error, show fallback
-                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.style.display = "none";
                   }}
                 />
                 <AvatarFallback className="bg-foreground text-background text-lg font-semibold">

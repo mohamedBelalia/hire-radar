@@ -96,7 +96,7 @@ export default function ProfileSidebar() {
                   alt={currentUser?.full_name || "Profile"}
                   onError={(e) => {
                     // Hide image on error, show fallback
-                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.style.display = "none";
                   }}
                 />
                 <AvatarFallback className="text-2xl bg-foreground text-background">

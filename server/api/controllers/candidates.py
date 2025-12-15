@@ -19,19 +19,20 @@ def get_db():
 def get_candidate(candidate_id: int):
     """Get candidate profile with skills, education, and experience"""
     db: Session = next(get_db())
-    
+
     try:
-        user = db.query(User).filter(
-            User.id == candidate_id,
-            User.role == "candidate"
-        ).first()
-        
+        user = (
+            db.query(User)
+            .filter(User.id == candidate_id, User.role == "candidate")
+            .first()
+        )
+
         if not user:
             return jsonify({"error": "Candidate not found"}), 404
-        
+
         # Get skills
         skills = [{"id": skill.id, "name": skill.name} for skill in user.skills]
-        
+
         # Get education
         educations = [
             {
@@ -45,7 +46,7 @@ def get_candidate(candidate_id: int):
             }
             for edu in user.educations
         ]
-        
+
         # Get experience
         experiences = [
             {
@@ -58,30 +59,35 @@ def get_candidate(candidate_id: int):
             }
             for exp in user.experiences
         ]
-        
-        return jsonify({
-            "id": user.id,
-            "user_id": user.id,
-            "full_name": user.full_name,
-            "email": user.email,
-            "phone": user.phone,
-            "location": user.location,
-            "bio": user.bio,
-            "headline": user.headline,
-            "resume_url": user.resume_url,
-            "cv_file_path": user.resume_url,
-            "skills": skills,
-            "educations": educations,
-            "experiences": experiences,
-            "user": {
-                "id": user.id,
-                "full_name": user.full_name,
-                "email": user.email,
-                "role": user.role,
-                "image": user.image,
-            }
-        }), 200
-        
+
+        return (
+            jsonify(
+                {
+                    "id": user.id,
+                    "user_id": user.id,
+                    "full_name": user.full_name,
+                    "email": user.email,
+                    "phone": user.phone,
+                    "location": user.location,
+                    "bio": user.bio,
+                    "headline": user.headline,
+                    "resume_url": user.resume_url,
+                    "cv_file_path": user.resume_url,
+                    "skills": skills,
+                    "educations": educations,
+                    "experiences": experiences,
+                    "user": {
+                        "id": user.id,
+                        "full_name": user.full_name,
+                        "email": user.email,
+                        "role": user.role,
+                        "image": user.image,
+                    },
+                }
+            ),
+            200,
+        )
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
@@ -91,18 +97,19 @@ def get_candidate(candidate_id: int):
 def update_candidate(candidate_id: int):
     """Update candidate profile"""
     db: Session = next(get_db())
-    
+
     try:
-        user = db.query(User).filter(
-            User.id == candidate_id,
-            User.role == "candidate"
-        ).first()
-        
+        user = (
+            db.query(User)
+            .filter(User.id == candidate_id, User.role == "candidate")
+            .first()
+        )
+
         if not user:
             return jsonify({"error": "Candidate not found"}), 404
-        
+
         data = request.get_json()
-        
+
         # Update basic fields
         if "full_name" in data:
             user.full_name = data["full_name"]
@@ -114,13 +121,15 @@ def update_candidate(candidate_id: int):
             user.bio = data.get("bio")
         if "headline" in data:
             user.headline = data.get("headline")
-        
+
         # Update skills if provided
         if "skills" in data:
-            skill_ids = [s.get("id") if isinstance(s, dict) else s for s in data["skills"]]
+            skill_ids = [
+                s.get("id") if isinstance(s, dict) else s for s in data["skills"]
+            ]
             skills = db.query(Skill).filter(Skill.id.in_(skill_ids)).all()
             user.skills = skills
-        
+
         # Update education if provided
         if "educations" in data:
             # Delete existing educations
@@ -132,12 +141,24 @@ def update_candidate(candidate_id: int):
                     school_name=edu_data.get("school_name"),
                     degree=edu_data.get("degree"),
                     field_of_study=edu_data.get("field_of_study"),
-                    start_date=datetime.fromisoformat(edu_data["start_date"].replace("Z", "+00:00")) if edu_data.get("start_date") else None,
-                    end_date=datetime.fromisoformat(edu_data["end_date"].replace("Z", "+00:00")) if edu_data.get("end_date") else None,
+                    start_date=(
+                        datetime.fromisoformat(
+                            edu_data["start_date"].replace("Z", "+00:00")
+                        )
+                        if edu_data.get("start_date")
+                        else None
+                    ),
+                    end_date=(
+                        datetime.fromisoformat(
+                            edu_data["end_date"].replace("Z", "+00:00")
+                        )
+                        if edu_data.get("end_date")
+                        else None
+                    ),
                     description=edu_data.get("description"),
                 )
                 db.add(education)
-        
+
         # Update experience if provided
         if "experiences" in data:
             # Delete existing experiences
@@ -148,15 +169,27 @@ def update_candidate(candidate_id: int):
                     user_id=candidate_id,
                     job_title=exp_data.get("job_title"),
                     company=exp_data.get("company"),
-                    start_date=datetime.fromisoformat(exp_data["start_date"].replace("Z", "+00:00")) if exp_data.get("start_date") else None,
-                    end_date=datetime.fromisoformat(exp_data["end_date"].replace("Z", "+00:00")) if exp_data.get("end_date") else None,
+                    start_date=(
+                        datetime.fromisoformat(
+                            exp_data["start_date"].replace("Z", "+00:00")
+                        )
+                        if exp_data.get("start_date")
+                        else None
+                    ),
+                    end_date=(
+                        datetime.fromisoformat(
+                            exp_data["end_date"].replace("Z", "+00:00")
+                        )
+                        if exp_data.get("end_date")
+                        else None
+                    ),
                     description=exp_data.get("description"),
                 )
                 db.add(experience)
-        
+
         db.commit()
         db.refresh(user)
-        
+
         # Return updated profile
         skills = [{"id": skill.id, "name": skill.name} for skill in user.skills]
         educations = [
@@ -182,23 +215,28 @@ def update_candidate(candidate_id: int):
             }
             for exp in user.experiences
         ]
-        
-        return jsonify({
-            "id": user.id,
-            "user_id": user.id,
-            "full_name": user.full_name,
-            "email": user.email,
-            "phone": user.phone,
-            "location": user.location,
-            "bio": user.bio,
-            "headline": user.headline,
-            "resume_url": user.resume_url,
-            "cv_file_path": user.resume_url,
-            "skills": skills,
-            "educations": educations,
-            "experiences": experiences,
-        }), 200
-        
+
+        return (
+            jsonify(
+                {
+                    "id": user.id,
+                    "user_id": user.id,
+                    "full_name": user.full_name,
+                    "email": user.email,
+                    "phone": user.phone,
+                    "location": user.location,
+                    "bio": user.bio,
+                    "headline": user.headline,
+                    "resume_url": user.resume_url,
+                    "cv_file_path": user.resume_url,
+                    "skills": skills,
+                    "educations": educations,
+                    "experiences": experiences,
+                }
+            ),
+            200,
+        )
+
     except Exception as e:
         db.rollback()
         return jsonify({"error": str(e)}), 500
@@ -209,35 +247,41 @@ def update_candidate(candidate_id: int):
 def upload_cv(candidate_id: int):
     """Upload CV file for candidate"""
     db: Session = next(get_db())
-    
+
     try:
-        user = db.query(User).filter(
-            User.id == candidate_id,
-            User.role == "candidate"
-        ).first()
-        
+        user = (
+            db.query(User)
+            .filter(User.id == candidate_id, User.role == "candidate")
+            .first()
+        )
+
         if not user:
             return jsonify({"error": "Candidate not found"}), 404
-        
+
         if "cv" not in request.files and "cv_file" not in request.files:
             return jsonify({"error": "No file provided"}), 400
 
         file = request.files.get("cv") or request.files.get("cv_file")
-        
+
         if file.filename == "":
             return jsonify({"error": "No file selected"}), 400
 
         # Check file extension
         allowed_extensions = {"pdf", "doc", "docx"}
-        file_ext = file.filename.rsplit(".", 1)[1].lower() if "." in file.filename else ""
-        
+        file_ext = (
+            file.filename.rsplit(".", 1)[1].lower() if "." in file.filename else ""
+        )
+
         if file_ext not in allowed_extensions:
-            return jsonify({"error": "Invalid file type. Only PDF, DOC, DOCX allowed."}), 400
-        
+            return (
+                jsonify({"error": "Invalid file type. Only PDF, DOC, DOCX allowed."}),
+                400,
+            )
+
         # Create uploads directory if it doesn't exist
         upload_dir = "uploads/cvs"
         os.makedirs(upload_dir, exist_ok=True)
-        
+
         # Generate filename
         filename = f"cv_{candidate_id}.{file_ext}"
         filepath = os.path.join(upload_dir, filename)
@@ -249,13 +293,18 @@ def upload_cv(candidate_id: int):
         resume_url = f"/uploads/cvs/{filename}"
         user.resume_url = resume_url
         db.commit()
-        
-        return jsonify({
-            "message": "CV uploaded successfully",
-            "cv_file_path": resume_url,
-            "resume_url": resume_url,
-        }), 200
-        
+
+        return (
+            jsonify(
+                {
+                    "message": "CV uploaded successfully",
+                    "cv_file_path": resume_url,
+                    "resume_url": resume_url,
+                }
+            ),
+            200,
+        )
+
     except Exception as e:
         db.rollback()
         return jsonify({"error": str(e)}), 500
@@ -266,47 +315,60 @@ def upload_cv(candidate_id: int):
 def get_saved_jobs(candidate_id: int):
     """Get all saved jobs for a candidate"""
     db: Session = next(get_db())
-    
+
     try:
-        user = db.query(User).filter(
-            User.id == candidate_id,
-            User.role == "candidate"
-        ).first()
-        
+        user = (
+            db.query(User)
+            .filter(User.id == candidate_id, User.role == "candidate")
+            .first()
+        )
+
         if not user:
             return jsonify({"error": "Candidate not found"}), 404
-        
-        saved_jobs = db.query(SavedJob).filter(
-            SavedJob.user_id == candidate_id
-        ).all()
-        
+
+        saved_jobs = db.query(SavedJob).filter(SavedJob.user_id == candidate_id).all()
+
         jobs_data = []
         for saved_job in saved_jobs:
             job = saved_job.job
             if job:
-                jobs_data.append({
-                    "id": job.id,
-                    "title": job.title,
-                    "description": job.description,
-                    "company_name": job.company_name,
-                    "employer_id": job.employer_id,
-                    "location": job.location,
-                    "salary_min": float(job.salary_min) if job.salary_min else None,
-                    "salary_max": float(job.salary_max) if job.salary_max else None,
-                    "salary_currency": job.salary_currency,
-                    "employment_type": job.employment_type,
-                    "experience_level": job.experience_level,
-                    "skills": job.skills or [],
-                    "requirements": job.requirements,
-                    "benefits": job.benefits,
-                    "application_deadline": job.application_deadline.isoformat() if job.application_deadline else None,
-                    "posted_at": job.posted_at.isoformat() if job.posted_at else None,
-                    "updated_at": job.updated_at.isoformat() if job.updated_at else None,
-                    "saved_at": saved_job.saved_at.isoformat() if saved_job.saved_at else None,
-                })
-        
+                jobs_data.append(
+                    {
+                        "id": job.id,
+                        "title": job.title,
+                        "description": job.description,
+                        "company_name": job.company_name,
+                        "employer_id": job.employer_id,
+                        "location": job.location,
+                        "salary_min": float(job.salary_min) if job.salary_min else None,
+                        "salary_max": float(job.salary_max) if job.salary_max else None,
+                        "salary_currency": job.salary_currency,
+                        "employment_type": job.employment_type,
+                        "experience_level": job.experience_level,
+                        "skills": job.skills or [],
+                        "requirements": job.requirements,
+                        "benefits": job.benefits,
+                        "application_deadline": (
+                            job.application_deadline.isoformat()
+                            if job.application_deadline
+                            else None
+                        ),
+                        "posted_at": (
+                            job.posted_at.isoformat() if job.posted_at else None
+                        ),
+                        "updated_at": (
+                            job.updated_at.isoformat() if job.updated_at else None
+                        ),
+                        "saved_at": (
+                            saved_job.saved_at.isoformat()
+                            if saved_job.saved_at
+                            else None
+                        ),
+                    }
+                )
+
         return jsonify(jobs_data), 200
-        
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
@@ -316,32 +378,33 @@ def get_saved_jobs(candidate_id: int):
 def add_skill(candidate_id: int):
     """Add skill to candidate"""
     db: Session = next(get_db())
-    
+
     try:
-        user = db.query(User).filter(
-            User.id == candidate_id,
-            User.role == "candidate"
-        ).first()
-        
+        user = (
+            db.query(User)
+            .filter(User.id == candidate_id, User.role == "candidate")
+            .first()
+        )
+
         if not user:
             return jsonify({"error": "Candidate not found"}), 404
 
         data = request.get_json()
         skill_id = data.get("skill_id") or data.get("id")
-        
+
         if not skill_id:
             return jsonify({"error": "skill_id is required"}), 400
-        
+
         skill = db.query(Skill).filter(Skill.id == skill_id).first()
         if not skill:
             return jsonify({"error": "Skill not found"}), 404
-        
+
         if skill not in user.skills:
             user.skills.append(skill)
             db.commit()
-        
+
         return jsonify({"message": "Skill added successfully"}), 200
-        
+
     except Exception as e:
         db.rollback()
         return jsonify({"error": str(e)}), 500
@@ -352,26 +415,27 @@ def add_skill(candidate_id: int):
 def remove_skill(candidate_id: int, skill_id: int):
     """Remove skill from candidate"""
     db: Session = next(get_db())
-    
+
     try:
-        user = db.query(User).filter(
-            User.id == candidate_id,
-            User.role == "candidate"
-        ).first()
-        
+        user = (
+            db.query(User)
+            .filter(User.id == candidate_id, User.role == "candidate")
+            .first()
+        )
+
         if not user:
             return jsonify({"error": "Candidate not found"}), 404
-        
+
         skill = db.query(Skill).filter(Skill.id == skill_id).first()
         if not skill:
             return jsonify({"error": "Skill not found"}), 404
-        
+
         if skill in user.skills:
             user.skills.remove(skill)
             db.commit()
-        
+
         return jsonify({"message": "Skill removed successfully"}), 200
-        
+
     except Exception as e:
         db.rollback()
         return jsonify({"error": str(e)}), 500

@@ -8,6 +8,12 @@ from controllers.applications import (
 applications = Blueprint("applications", __name__)
 
 # Application routes
-applications.add_url_rule("", "get_all_applications", get_all_applications, methods=["GET"])
-applications.add_url_rule("/<int:application_id>", "get_application", get_application, methods=["GET"])
-applications.add_url_rule("/<int:application_id>", "update_application", update_application, methods=["PUT"])
+applications.add_url_rule(
+    "", "get_all_applications", get_all_applications, methods=["GET"]
+)
+applications.add_url_rule(
+    "/<int:application_id>", "get_application", get_application, methods=["GET"]
+)
+applications.add_url_rule(
+    "/<int:application_id>", "update_application", update_application, methods=["PUT"]
+)
