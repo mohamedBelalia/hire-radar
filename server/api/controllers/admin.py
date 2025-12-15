@@ -24,11 +24,16 @@ def get_platform_stats():
 
     db.close()
 
-    return jsonify({
-        "total_users": total_users,
-        "total_jobs": total_jobs,
-        "total_applications": total_applications,
-    }), 200
+    return (
+        jsonify(
+            {
+                "total_users": total_users,
+                "total_jobs": total_jobs,
+                "total_applications": total_applications,
+            }
+        ),
+        200,
+    )
 
 
 # ============================================================
@@ -37,11 +42,7 @@ def get_platform_stats():
 def get_all_users():
     db = SessionLocal()
 
-    users = (
-        db.query(User)
-        .filter(User.role != "admin")
-        .all()
-    )
+    users = db.query(User).filter(User.role != "admin").all()
 
     data = [
         {
@@ -60,7 +61,6 @@ def get_all_users():
 
     db.close()
     return jsonify(data), 200
-
 
 
 # ============================================================
@@ -139,6 +139,7 @@ def get_all_skills():
     db.close()
     return jsonify(data), 200
 
+
 # ============================================================
 # 7. POST /admin/skills → add skill
 # ============================================================
@@ -167,6 +168,7 @@ def add_skill():
     db.close()
 
     return jsonify({"id": new_skill.id, "name": new_skill.name})
+
 
 # ============================================================
 # 8. DELETE /admin/skills/<id> → Delete skill
@@ -323,9 +325,7 @@ def getAdmins():
 
     # Fetch all admins except the current one
     admins = (
-        db.query(User)
-        .filter(User.role == "admin", User.id != current_admin_id)
-        .all()
+        db.query(User).filter(User.role == "admin", User.id != current_admin_id).all()
     )
 
     data = [
@@ -340,7 +340,6 @@ def getAdmins():
 
     db.close()
     return jsonify(data), 200
-
 
 
 # ============================================================
@@ -374,20 +373,25 @@ def create_admin():
         db.commit()
         db.refresh(new_admin)
 
-        return jsonify({
-            "message": "Admin created successfully",
-            "admin": {
-                "id": new_admin.id,
-                "full_name": new_admin.full_name,
-                "email": new_admin.email,
-                "role": new_admin.role,
-            }
-        }), 201
+        return (
+            jsonify(
+                {
+                    "message": "Admin created successfully",
+                    "admin": {
+                        "id": new_admin.id,
+                        "full_name": new_admin.full_name,
+                        "email": new_admin.email,
+                        "role": new_admin.role,
+                    },
+                }
+            ),
+            201,
+        )
 
     except Exception as e:
         db.rollback()
         return jsonify({"error": str(e)}), 500
-    
+
     finally:
         db.close()
 

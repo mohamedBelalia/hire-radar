@@ -1,6 +1,7 @@
 from flask import jsonify, request
 from api.services.employers_service import list_employers, get_employer, update_employer
 
+
 def list_employers_controller():
     employers = list_employers()
     result = [
@@ -18,6 +19,7 @@ def list_employers_controller():
     ]
     return jsonify({"employers": result})
 
+
 def get_employer_controller(id):
     e = get_employer(id)
     if not e:
@@ -33,6 +35,7 @@ def get_employer_controller(id):
         "bio": e.bio,
     }
     return jsonify({"employer": result})
+
 
 def update_employer_controller(id):
     data = request.json

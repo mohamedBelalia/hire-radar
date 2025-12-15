@@ -16,7 +16,7 @@ from api.controllers.admin import (
     update_category,
     create_admin,
     delete_admin,
-    getAdmins
+    getAdmins,
 )
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")

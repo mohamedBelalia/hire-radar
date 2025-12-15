@@ -5,6 +5,7 @@ import os
 
 SECRET_KEY = os.getenv("JWT_SECRET")
 
+
 def admin_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
