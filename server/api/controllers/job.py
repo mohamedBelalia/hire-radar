@@ -2,8 +2,7 @@ from flask import request, jsonify
 from sqlalchemy import or_, and_
 from sqlalchemy.orm import Session
 from api.config.db import SessionLocal
-from config.db import SessionLocal
-from core.models import Job, User
+from api.core.models import Job, User
 from typing import Optional, List
 from decimal import Decimal
 from datetime import datetime
@@ -38,7 +37,7 @@ def search_jobs():
             search_filter = or_(
                 Job.title.ilike(f"%{search}%"),
                 Job.description.ilike(f"%{search}%"),
-                Job.company_name.ilike(f"%{search}%"),
+                Job.company.ilike(f"%{search}%"),
             )
             query = query.filter(search_filter)
 
@@ -46,13 +45,10 @@ def search_jobs():
         if location:
             query = query.filter(Job.location.ilike(f"%{location}%"))
 
-        # Apply salary filter
+        # Apply salary filter (salary_range is a string, so filtering is limited)
+        # Skip salary filtering for now as salary_range is stored as string in model
         if salary_min:
-            try:
-                min_salary = Decimal(salary_min)
-                query = query.filter(Job.salary_min >= min_salary)
-            except (ValueError, TypeError):
-                pass
+            pass
 
         # Apply skill filter
         if skill:
@@ -63,7 +59,7 @@ def search_jobs():
 
         # Apply pagination
         offset = (page - 1) * limit
-        jobs = query.order_by(Job.posted_at.desc()).offset(offset).limit(limit).all()
+        jobs = query.order_by(Job.created_at.desc()).offset(offset).limit(limit).all()
 
         # Calculate total pages
         total_pages = (total + limit - 1) // limit
@@ -116,7 +112,7 @@ def create_job():
         data = request.get_json()
 
         # Validate required fields
-        required_fields = ["title", "description", "company_name", "employer_id"]
+        required_fields = ["title", "description", "company", "employer_id"]
         for field in required_fields:
             if field not in data:
                 return jsonify({"error": f"Missing required field: {field}"}), 400
@@ -125,28 +121,12 @@ def create_job():
         job = Job(
             title=data["title"],
             description=data["description"],
-            company_name=data["company_name"],
+            company=data["company"],
             employer_id=data["employer_id"],
             location=data.get("location"),
-            salary_min=(
-                Decimal(str(data["salary_min"])) if data.get("salary_min") else None
-            ),
-            salary_max=(
-                Decimal(str(data["salary_max"])) if data.get("salary_max") else None
-            ),
-            salary_currency=data.get("salary_currency", "USD"),
-            employment_type=data.get("employment_type"),
-            experience_level=data.get("experience_level"),
-            skills=data.get("skills", []),
-            requirements=data.get("requirements"),
-            benefits=data.get("benefits"),
-            application_deadline=(
-                datetime.fromisoformat(
-                    data["application_deadline"].replace("Z", "+00:00")
-                )
-                if data.get("application_deadline")
-                else None
-            ),
+            salary_range=data.get("salary_range"),
+            emp_type=data.get("emp_type"),
+            category_id=data.get("category_id"),
         )
 
         db.add(job)
@@ -179,38 +159,16 @@ def update_job(job_id: int):
             job.title = data["title"]
         if "description" in data:
             job.description = data["description"]
-        if "company_name" in data:
-            job.company_name = data["company_name"]
+        if "company" in data:
+            job.company = data["company"]
         if "location" in data:
             job.location = data["location"]
-        if "salary_min" in data:
-            job.salary_min = (
-                Decimal(str(data["salary_min"])) if data["salary_min"] else None
-            )
-        if "salary_max" in data:
-            job.salary_max = (
-                Decimal(str(data["salary_max"])) if data["salary_max"] else None
-            )
-        if "salary_currency" in data:
-            job.salary_currency = data["salary_currency"]
-        if "employment_type" in data:
-            job.employment_type = data["employment_type"]
-        if "experience_level" in data:
-            job.experience_level = data["experience_level"]
-        if "skills" in data:
-            job.skills = data["skills"]
-        if "requirements" in data:
-            job.requirements = data["requirements"]
-        if "benefits" in data:
-            job.benefits = data["benefits"]
-        if "application_deadline" in data:
-            job.application_deadline = (
-                datetime.fromisoformat(
-                    data["application_deadline"].replace("Z", "+00:00")
-                )
-                if data["application_deadline"]
-                else None
-            )
+        if "salary_range" in data:
+            job.salary_range = data["salary_range"]
+        if "emp_type" in data:
+            job.emp_type = data["emp_type"]
+        if "category_id" in data:
+            job.category_id = data["category_id"]
 
         db.commit()
         db.refresh(job)
@@ -247,25 +205,17 @@ def delete_job(job_id: int):
 
 
 def job_to_dict(job: Job) -> dict:
-    """Convert Job model to dictionary matching frontend Job type"""
+    """Convert Job model to dictionary"""
     return {
         "id": str(job.id),
         "title": job.title,
         "description": job.description,
-        "company_name": job.company_name,
+        "company": job.company,
         "employer_id": str(job.employer_id),
+        "category_id": job.category_id,
         "location": job.location,
-        "salary_min": float(job.salary_min) if job.salary_min else None,
-        "salary_max": float(job.salary_max) if job.salary_max else None,
-        "salary_currency": job.salary_currency,
-        "employment_type": job.employment_type,
-        "experience_level": job.experience_level,
-        "skills": job.skills or [],
-        "requirements": job.requirements,
-        "benefits": job.benefits,
-        "application_deadline": (
-            job.application_deadline.isoformat() if job.application_deadline else None
-        ),
-        "posted_at": job.posted_at.isoformat() if job.posted_at else None,
+        "salary_range": job.salary_range,
+        "emp_type": job.emp_type,
+        "created_at": job.created_at.isoformat() if job.created_at else None,
         "updated_at": job.updated_at.isoformat() if job.updated_at else None,
     }
