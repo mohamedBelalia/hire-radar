@@ -232,7 +232,16 @@ def login():
     db = SessionLocal()
     try:
         user = db.query(User).filter_by(email=email).first()
-        if not user or not check_password_hash(user.password, password):
+        # Check if user exists and has a password (OAuth users don't have passwords)
+        if not user:
+            return jsonify({"error": "Invalid email or password"}), 400
+        
+        # If user has no password, they likely signed up via OAuth
+        if not user.password:
+            return jsonify({"error": "This account was created with Google. Please use Google Sign In."}), 400
+        
+        # Verify password hash
+        if not check_password_hash(user.password, password):
             return jsonify({"error": "Invalid email or password"}), 400
 
         token = jwt.encode(
