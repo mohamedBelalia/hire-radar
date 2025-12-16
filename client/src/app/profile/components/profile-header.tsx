@@ -72,7 +72,8 @@ export default function ProfileHeader({
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={
-                  uploadCandidateImage.isPending || uploadEmployerImage.isPending
+                  uploadCandidateImage.isPending ||
+                  uploadEmployerImage.isPending
                 }
                 aria-label="Change profile picture"
               >

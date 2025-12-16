@@ -7,19 +7,19 @@
  */
 function getApiBaseUrl(): string {
   if (typeof window === "undefined") return "";
-  
+
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
   if (apiBaseUrl) {
     // Remove trailing slash if present
     return apiBaseUrl.replace(/\/$/, "");
   }
-  
+
   // Fallback: assume backend is on same origin or default port
   // In development, backend is usually on port 5000
   if (window.location.port === "3000") {
     return "http://localhost:5000";
   }
-  
+
   return "";
 }
 
@@ -64,7 +64,7 @@ export function getValidImageUrl(
       // Relative URL - construct full URL using API base URL
       const apiBaseUrl = getApiBaseUrl();
       const fullUrl = apiBaseUrl ? `${apiBaseUrl}${trimmed}` : trimmed;
-      
+
       // Add cache-busting for uploaded images
       if (trimmed.includes("/uploads/")) {
         const separator = fullUrl.includes("?") ? "&" : "?";
