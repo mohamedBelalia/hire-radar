@@ -403,21 +403,27 @@ def get_connected_accounts():
 
         connected_accounts = {
             "github": bool(user.github_id),
-            "google": bool(user.email and not user.password),  # Google users don't have passwords
+            "google": bool(
+                user.email and not user.password
+            ),  # Google users don't have passwords
         }
 
         accounts = []
         if connected_accounts["github"]:
-            accounts.append({
-                "provider": "github",
-                "username": user.github_username,
-                "connected": True,
-            })
+            accounts.append(
+                {
+                    "provider": "github",
+                    "username": user.github_username,
+                    "connected": True,
+                }
+            )
         if connected_accounts["google"]:
-            accounts.append({
-                "provider": "google",
-                "connected": True,
-            })
+            accounts.append(
+                {
+                    "provider": "google",
+                    "connected": True,
+                }
+            )
 
         return jsonify({"connected_accounts": accounts})
     except jwt.ExpiredSignatureError:

@@ -110,12 +110,14 @@ export default function ProfileContent({
 
   // Map connected accounts to state
   const connectedAccounts = {
-    github: connectedAccountsData?.connected_accounts?.some(
-      (acc) => acc.provider === "github" && acc.connected,
-    ) || false,
-    google: connectedAccountsData?.connected_accounts?.some(
-      (acc) => acc.provider === "google" && acc.connected,
-    ) || false,
+    github:
+      connectedAccountsData?.connected_accounts?.some(
+        (acc) => acc.provider === "github" && acc.connected,
+      ) || false,
+    google:
+      connectedAccountsData?.connected_accounts?.some(
+        (acc) => acc.provider === "google" && acc.connected,
+      ) || false,
     twitter: false, // Not implemented yet
   };
 
@@ -227,7 +229,9 @@ export default function ProfileContent({
     }
   };
 
-  const handleConnectAccount = async (account: "github" | "google" | "twitter") => {
+  const handleConnectAccount = async (
+    account: "github" | "google" | "twitter",
+  ) => {
     if (account === "github") {
       try {
         const { auth_url } = await githubConnect();
