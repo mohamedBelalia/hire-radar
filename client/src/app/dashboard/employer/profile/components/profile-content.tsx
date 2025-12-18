@@ -16,7 +16,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -144,7 +143,6 @@ export default function ProfileContent({
   useEffect(() => {
     if (currentUser) {
       if (currentUser.role === "candidate" && candidateProfile) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setFormData({
           firstName: candidateProfile.full_name?.split(" ")[0] || "",
           lastName:
@@ -159,7 +157,6 @@ export default function ProfileContent({
         });
       } else if (currentUser.role === "employer" && employerProfile) {
         // For employers, show company name as first name
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setFormData({
           firstName: employerProfile.full_name?.split(" ")[0] || "",
           lastName:
@@ -174,7 +171,6 @@ export default function ProfileContent({
         });
       } else {
         // Fallback to currentUser data if profile not loaded yet
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setFormData({
           firstName: currentUser.full_name?.split(" ")[0] || "",
           lastName: currentUser.full_name?.split(" ").slice(1).join(" ") || "",

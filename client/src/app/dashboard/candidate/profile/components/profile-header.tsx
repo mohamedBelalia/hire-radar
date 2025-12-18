@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Calendar, Mail, MapPin } from "lucide-react";
+import { Camera, Calendar, Mail } from "lucide-react";
 import { getValidImageUrl } from "@/lib/image-utils";
 import { useUploadCandidateImage } from "@/features/profile/hooks";
 import { toast } from "sonner";
@@ -50,7 +50,6 @@ export default function ProfileHeader({
                   src={getValidImageUrl(user?.image)}
                   alt={user?.full_name || "Profile"}
                   onError={(e) => {
-                    // Hide image on error, show fallback
                     e.currentTarget.style.display = "none";
                   }}
                 />
@@ -65,6 +64,7 @@ export default function ProfileHeader({
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadImage.isPending}
+                aria-label="Change profile picture"
               >
                 <Camera className="h-3 w-3" />
               </Button>

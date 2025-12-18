@@ -93,7 +93,7 @@ export default function SearchJobsPage() {
       setIsApplyModalOpen(false);
       setSelectedJob(null);
       setCoverLetter("");
-    } catch (error) {
+    } catch {
       // Error is handled by the mutation
     }
   };
