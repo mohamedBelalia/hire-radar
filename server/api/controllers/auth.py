@@ -33,7 +33,6 @@ def get_db():
 
 
 def google_login():
-    # Ensure redirect URI is set (must point to Next.js frontend, not Flask backend)
     redirect_uri = (
         GOOGLE_REDIRECT_URI or "http://localhost:3000/api/auth/google/callback"
     )
@@ -237,11 +236,9 @@ def login():
     db = SessionLocal()
     try:
         user = db.query(User).filter_by(email=email).first()
-        # Check if user exists and has a password (OAuth users don't have passwords)
         if not user:
             return jsonify({"error": "Invalid email or password"}), 400
 
-        # If user has no password, they likely signed up via OAuth
         if not user.password:
             return (
                 jsonify(
@@ -252,7 +249,6 @@ def login():
                 400,
             )
 
-        # Verify password hash
         if not check_password_hash(user.password, password):
             return jsonify({"error": "Invalid email or password"}), 400
 
@@ -279,7 +275,6 @@ def login():
 
 
 def github_connect():
-    """Initiate GitHub OAuth flow for account linking"""
     auth = request.headers.get("Authorization")
     if not auth or not auth.startswith("Bearer "):
         return jsonify({"error": "Authentication required"}), 401
@@ -291,10 +286,8 @@ def github_connect():
     except:
         return jsonify({"error": "Invalid token"}), 401
 
-    # Store user_id in session for callback
     session["github_link_user_id"] = user_id
 
-    # GitHub OAuth authorization URL
     redirect_uri = GITHUB_REDIRECT_URI
     state = jwt.encode(
         {"user_id": user_id, "exp": datetime.utcnow() + timedelta(minutes=10)},
@@ -315,7 +308,6 @@ def github_connect():
 
 
 def github_callback():
-    """Handle GitHub OAuth callback and link account"""
     code = request.args.get("code")
     state = request.args.get("state")
     error = request.args.get("error")
@@ -326,14 +318,12 @@ def github_callback():
     if not code or not state:
         return redirect("http://localhost:3000/profile?error=missing_params")
 
-    # Verify state
     try:
         decoded_state = jwt.decode(state, JWT_SECRET, algorithms=["HS256"])
         user_id = decoded_state["user_id"]
     except:
         return redirect("http://localhost:3000/profile?error=invalid_state")
 
-    # Exchange code for access token
     token_url = "https://github.com/login/oauth/access_token"
     token_data = {
         "client_id": GITHUB_CLIENT_ID,
@@ -349,7 +339,6 @@ def github_callback():
     if not access_token:
         return redirect("http://localhost:3000/profile?error=token_failed")
 
-    # Get GitHub user info
     user_info = requests.get(
         "https://api.github.com/user",
         headers={"Authorization": f"Bearer {access_token}"},
@@ -361,19 +350,16 @@ def github_callback():
     if not github_id:
         return redirect("http://localhost:3000/profile?error=no_github_id")
 
-    # Link GitHub account to user
     db = SessionLocal()
     try:
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
             return redirect("http://localhost:3000/profile?error=user_not_found")
 
-        # Check if GitHub account is already linked to another user
         existing_user = db.query(User).filter(User.github_id == github_id).first()
         if existing_user and existing_user.id != user_id:
             return redirect("http://localhost:3000/profile?error=github_already_linked")
 
-        # Link GitHub account
         user.github_id = github_id
         user.github_username = github_username
         db.commit()
@@ -387,7 +373,6 @@ def github_callback():
 
 
 def get_connected_accounts():
-    """Get connected accounts for the current user"""
     auth = request.headers.get("Authorization")
     if not auth or not auth.startswith("Bearer "):
         return jsonify({"error": "Authentication required"}), 401
@@ -405,7 +390,7 @@ def get_connected_accounts():
             "github": bool(user.github_id),
             "google": bool(
                 user.email and not user.password
-            ),  # Google users don't have passwords
+            ),  
         }
 
         accounts = []
