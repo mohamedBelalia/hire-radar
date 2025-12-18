@@ -99,7 +99,8 @@ export function LoginForm({
             aria-invalid={error ? "true" : "false"}
             className={cn(
               "bg-background",
-              error && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20 dark:border-destructive"
+              error &&
+                "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20 dark:border-destructive",
             )}
           />
         </Field>
@@ -124,7 +125,8 @@ export function LoginForm({
             aria-invalid={error ? "true" : "false"}
             className={cn(
               "bg-background",
-              error && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20 dark:border-destructive"
+              error &&
+                "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20 dark:border-destructive",
             )}
           />
           {error && (
