@@ -1,6 +1,7 @@
 # Applications API Endpoints
 
 ## Overview
+
 The Applications API allows candidates to apply for jobs and employers to manage applications. All endpoints follow the existing codebase patterns with service, controller, and route layers.
 
 ---
@@ -8,9 +9,11 @@ The Applications API allows candidates to apply for jobs and employers to manage
 ## Endpoints
 
 ### 1. **POST /api/job/{job_id}/apply** - Candidate applies for a job
+
 Submit a job application as a candidate.
 
 **Request Body:**
+
 ```json
 {
   "user_id": 5,
@@ -20,11 +23,13 @@ Submit a job application as a candidate.
 ```
 
 **Fields:**
+
 - `user_id` (required): Candidate's user ID
 - `cover_letter` (optional): Cover letter text
 - `resume_url` (optional): Resume URL (defaults to candidate's saved resume if not provided)
 
 **Response (201):**
+
 ```json
 {
   "message": "Application submitted successfully",
@@ -53,11 +58,13 @@ Submit a job application as a candidate.
 ---
 
 ### 2. **GET /api/applications** - List all applications
+
 Retrieve all applications (admin/employer view).
 
 **Query Parameters:** None
 
 **Response (200):**
+
 ```json
 {
   "applications": [
@@ -88,12 +95,15 @@ Retrieve all applications (admin/employer view).
 ---
 
 ### 3. **GET /api/candidates/{candidate_id}/applications** - Get candidate's applications
+
 Retrieve all applications submitted by a specific candidate.
 
 **Path Parameters:**
+
 - `candidate_id` (required): Candidate's user ID
 
 **Response (200):**
+
 ```json
 {
   "applications": [
@@ -124,12 +134,15 @@ Retrieve all applications submitted by a specific candidate.
 ---
 
 ### 4. **GET /api/job/{job_id}/applicants** - Get all applicants for a job
+
 Retrieve all applicants for a specific job posting.
 
 **Path Parameters:**
+
 - `job_id` (required): Job ID
 
 **Response (200):**
+
 ```json
 {
   "applicants": [
@@ -160,12 +173,15 @@ Retrieve all applicants for a specific job posting.
 ---
 
 ### 5. **GET /api/applications/{application_id}** - Get specific application
+
 Retrieve details of a specific application.
 
 **Path Parameters:**
+
 - `application_id` (required): Application ID
 
 **Response (200):**
+
 ```json
 {
   "application": {
@@ -193,12 +209,15 @@ Retrieve details of a specific application.
 ---
 
 ### 6. **PUT /api/applications/{application_id}** - Update application status
+
 Update the status of an application (accepted, rejected, reviewed, pending).
 
 **Path Parameters:**
+
 - `application_id` (required): Application ID
 
 **Request Body:**
+
 ```json
 {
   "status": "accepted"
@@ -206,12 +225,14 @@ Update the status of an application (accepted, rejected, reviewed, pending).
 ```
 
 **Valid Status Values:**
+
 - `pending` - Initial state
 - `reviewed` - Application has been reviewed
 - `accepted` - Application accepted
 - `rejected` - Application rejected
 
 **Response (200):**
+
 ```json
 {
   "message": "Application updated successfully",
@@ -240,12 +261,15 @@ Update the status of an application (accepted, rejected, reviewed, pending).
 ---
 
 ### 7. **DELETE /api/applications/{application_id}** - Delete application
+
 Delete an application.
 
 **Path Parameters:**
+
 - `application_id` (required): Application ID
 
 **Response (200):**
+
 ```json
 {
   "message": "Application deleted successfully"
@@ -257,6 +281,7 @@ Delete an application.
 ## Error Responses
 
 ### 400 Bad Request
+
 ```json
 {
   "error": "Missing required field: user_id"
@@ -264,6 +289,7 @@ Delete an application.
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "error": "Job not found"
@@ -271,6 +297,7 @@ Delete an application.
 ```
 
 ### 400 Duplicate Application
+
 ```json
 {
   "error": "Already applied to this job"
@@ -278,6 +305,7 @@ Delete an application.
 ```
 
 ### 400 Invalid Status
+
 ```json
 {
   "error": "Invalid status. Must be one of: pending, reviewed, accepted, rejected"

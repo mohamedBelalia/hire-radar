@@ -4,7 +4,7 @@ export function setToken(token: string) {
   Cookies.set("token", token, { expires: 1 });
 }
 
-export function getToken():string | null {
+export function getToken(): string | null {
   return Cookies.get("token") || null;
 }
 
