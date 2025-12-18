@@ -61,14 +61,11 @@ export function LoginForm({
         const errorMsg =
           (err.response.data.error as string) || "Something went wrong";
         setError(errorMsg);
-        toast.error(errorMsg);
       } else if (err && typeof err === "object" && "message" in err) {
         const errorMsg = (err.message as string) || "Something went wrong";
         setError(errorMsg);
-        toast.error(errorMsg);
       } else {
         setError("Something went wrong");
-        toast.error("Something went wrong");
       }
     } finally {
       setLoading(false);
