@@ -1,8 +1,8 @@
-'use client'
-import { useEffect, useState } from 'react'
-import { getUsers } from '@/services/admin'
-import { getToken } from '@/lib'
-import { DataTable } from '@/components/dataTable'
+"use client";
+import { useEffect, useState } from "react";
+import { getUsers } from "@/services/admin";
+import { getToken } from "@/lib";
+import { DataTable } from "@/components/dataTable";
 
 const columns = [
   { accessorKey: "id", header: "ID" },
@@ -11,46 +11,50 @@ const columns = [
   { accessorKey: "role", header: "Role" },
   { accessorKey: "location", header: "location" },
   { accessorKey: "headLine", header: "headLine" },
-]
+];
 
 const Page = () => {
-  const [users,setUsers] = useState<User[]>([])
-  const [loading,setLoading] = useState(true)
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const fetchUsers = async () =>{
-    try{
-      const res = await getUsers(getToken()!)      
-      if(res.status === 200){
-        setUsers(res.data)
+  const fetchUsers = async () => {
+    try {
+      const res = await getUsers(getToken()!);
+      if (res.status === 200) {
+        setUsers(res.data);
       }
-    }catch{
-
-    }finally{
-      setLoading(false)
+    } catch {
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
-  const handleDelete = (userId: number) =>{    
-    setUsers(prev => prev.filter(u => u.id !== userId)) 
-  }
+  const handleDelete = (userId: number) => {
+    setUsers((prev) => prev.filter((u) => u.id !== userId));
+  };
 
-  useEffect(() =>{
-    fetchUsers()
-  },[])
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
-  if(loading) return null
-  return (  
+  if (loading) return null;
+  return (
     <div>
-      <h1 className='text-xl font-semibold'>Users list</h1>
+      <h1 className="text-xl font-semibold">Users list</h1>
       <DataTable
         data={users}
-        content={'user'} 
+        content={"user"}
         columns={columns}
         actions={[
-        { label: "Delete", onClick: (userId: number) => handleDelete(userId), variant: "destructive" },
-      ]} />
+          {
+            label: "Delete",
+            onClick: (userId: number) => handleDelete(userId),
+            variant: "destructive",
+          },
+        ]}
+      />
     </div>
-  )
-}
+  );
+};
 
-export default Page
+export default Page;

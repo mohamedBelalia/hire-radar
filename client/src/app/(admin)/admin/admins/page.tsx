@@ -1,62 +1,65 @@
-'use client'
-import { useEffect, useState } from 'react'
-import { DataTable } from '@/components/dataTable'
-import { AddAdminDialog } from '@/components/add-edit'
-import { getAdmins } from '@/services/admin'
-import { getToken } from '@/lib'
+"use client";
+import { useEffect, useState } from "react";
+import { DataTable } from "@/components/dataTable";
+import { AddAdminDialog } from "@/components/add-edit";
+import { getAdmins } from "@/services/admin";
+import { getToken } from "@/lib";
 
 const columns = [
   { accessorKey: "id", header: "ID" },
   { accessorKey: "full_name", header: "Full name" },
   { accessorKey: "email", header: "Email" },
   { accessorKey: "created_at", header: "Created at" },
-]
+];
 
 const Page = () => {
-  const [admins,setAdmins] = useState<User[]>([])
-  const [loading,setLoading] = useState(true)
+  const [admins, setAdmins] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const fetchAdmins = async () =>{
-    try{
-      const res = await getAdmins(getToken()!)
-      if(res.status === 200){
-        setAdmins(res.data)
+  const fetchAdmins = async () => {
+    try {
+      const res = await getAdmins(getToken()!);
+      if (res.status === 200) {
+        setAdmins(res.data);
       }
-    }catch{
-
-    }finally{
-      setLoading(false)
+    } catch {
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
-  const handleDelete = (adminId: number) =>{    
-    setAdmins(prev => prev.filter(a => a.id !== adminId)) 
-  }
+  const handleDelete = (adminId: number) => {
+    setAdmins((prev) => prev.filter((a) => a.id !== adminId));
+  };
 
   const handleAdd = (newAdmin: User) => {
-    setAdmins(prev => [...prev, newAdmin])
-  }
+    setAdmins((prev) => [...prev, newAdmin]);
+  };
 
+  useEffect(() => {
+    fetchAdmins();
+  }, []);
 
-  useEffect(() =>{
-    fetchAdmins()
-  },[])
-
-  if(loading) return null
-  return (  
+  if (loading) return null;
+  return (
     <div>
-      <h1 className='text-xl font-semibold'>Admins list</h1>
+      <h1 className="text-xl font-semibold">Admins list</h1>
       <DataTable
         data={admins}
-        content={'admin'} 
-        columns={columns} 
+        content={"admin"}
+        columns={columns}
         showMenu={false}
         addComponent={<AddAdminDialog onAdded={handleAdd} />}
         actions={[
-        { label: "Delete", onClick: (userId: number) => handleDelete(userId), variant: "destructive" },
-      ]} />
+          {
+            label: "Delete",
+            onClick: (userId: number) => handleDelete(userId),
+            variant: "destructive",
+          },
+        ]}
+      />
     </div>
-  )
-}
+  );
+};
 
-export default Page
+export default Page;
