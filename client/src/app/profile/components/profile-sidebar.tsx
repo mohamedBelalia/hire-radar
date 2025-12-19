@@ -1,7 +1,7 @@
 "use client";
 
+import { useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   UserIcon,
   Lock,
@@ -12,10 +12,8 @@ import {
   Briefcase,
   Mail,
   Calendar,
-  MapPin,
   Camera,
 } from "lucide-react";
-import { useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -40,7 +38,6 @@ export default function ProfileSidebar() {
   const uploadEmployerImage = useUploadEmployerImage(
     currentUser?.id?.toString() || "",
   );
-  const pathname = usePathname();
 
   const getInitials = (name: string) => {
     return name
@@ -111,7 +108,6 @@ export default function ProfileSidebar() {
                   src={getValidImageUrl(currentUser?.image)}
                   alt={currentUser?.full_name || "Profile"}
                   onError={(e) => {
-                    // Hide image on error, show fallback
                     e.currentTarget.style.display = "none";
                   }}
                 />

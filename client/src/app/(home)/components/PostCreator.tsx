@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Pencil,
   Image as ImageIcon,
   Video,
   Calendar,

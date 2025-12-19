@@ -1,15 +1,8 @@
-"use client"
+"use client";
 
-import {
-  ChevronsUpDown,
-  LogOut,
-} from "lucide-react"
+import { ChevronsUpDown, LogOut } from "lucide-react";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,30 +10,30 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
-import { getToken } from "@/lib"
-import { useCurrentUser } from "@/features/auth/hook"
-import { logout } from "@/features/auth/api"
-import { useRouter } from "next/navigation"
+} from "@/components/ui/sidebar";
+import { getToken } from "@/lib";
+import { useCurrentUser } from "@/features/auth/hook";
+import { logout } from "@/features/auth/api";
+import { useRouter } from "next/navigation";
 
-export function NavUser(){
-  const { isMobile } = useSidebar()
-  const token = getToken()
+export function NavUser() {
+  const { isMobile } = useSidebar();
+  const token = getToken();
   const { data, isLoading, error } = useCurrentUser(token!);
-  const router = useRouter()
+  const router = useRouter();
 
-  if(isLoading) return null
+  if (isLoading) return null;
 
-  const signOutFromApp = async () =>{
-    logout()
-    router.push(`/login`)
-  }
+  const signOutFromApp = async () => {
+    logout();
+    router.push(`/login`);
+  };
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -52,7 +45,10 @@ export function NavUser(){
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={data?.image} alt={data?.full_name} />
-                <AvatarFallback className="rounded-lg">{data?.full_name.charAt(0).toLocaleUpperCase()}{data?.full_name.split(' ')[1].charAt(0).toLocaleUpperCase()}</AvatarFallback>
+                <AvatarFallback className="rounded-lg">
+                  {data?.full_name.charAt(0).toLocaleUpperCase()}
+                  {data?.full_name.split(" ")[1].charAt(0).toLocaleUpperCase()}
+                </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{data?.full_name}</span>
@@ -71,10 +67,18 @@ export function NavUser(){
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={data?.image} alt={data?.full_name} />
-                  <AvatarFallback className="rounded-lg">{data?.full_name.charAt(0).toLocaleUpperCase()}{data?.full_name.split(' ')[1].charAt(0).toLocaleUpperCase()}</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">
+                    {data?.full_name.charAt(0).toLocaleUpperCase()}
+                    {data?.full_name
+                      .split(" ")[1]
+                      .charAt(0)
+                      .toLocaleUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{data?.full_name}</span>
+                  <span className="truncate font-medium">
+                    {data?.full_name}
+                  </span>
                   <span className="truncate text-xs">{data?.email}</span>
                 </div>
               </div>
@@ -88,5 +92,5 @@ export function NavUser(){
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }

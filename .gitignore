@@ -8,3 +8,7 @@
 .env.production.local
 frontend
 uploads
+
+# Python
+__pycache__/
+*.pyc

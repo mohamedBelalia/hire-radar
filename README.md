@@ -165,10 +165,7 @@ More details are available in the `/docs` folder.
 cd frontend
 npm install
 npm run dev
-
 ```
-
-=======
 
 # HireRadar – AI-Powered Recruitment Platform
 
@@ -338,5 +335,4 @@ cd frontend
 npm install
 npm run dev
 
->>>>>>> f0f63c50 (update: README.md)
 ```

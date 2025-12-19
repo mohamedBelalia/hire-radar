@@ -33,7 +33,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import Link from "next/link";
 
 export default function JobDetailsPage() {
   const params = useParams();
@@ -58,7 +57,7 @@ export default function JobDetailsPage() {
       });
       setIsApplyModalOpen(false);
       setCoverLetter("");
-    } catch (error) {
+    } catch {
       // Error handled by mutation
     }
   };

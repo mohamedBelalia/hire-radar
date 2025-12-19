@@ -2,7 +2,7 @@
 
 import { Search, Bell, User, LogOut, Bookmark } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/features/auth/hook";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getValidImageUrl } from "@/lib/image-utils";
@@ -21,7 +21,6 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { getToken } from "@/lib";
 
 export default function TopNavbar() {
-  const pathname = usePathname();
   const router = useRouter();
   const { data: currentUser } = useCurrentUser(getToken()!);
   
