@@ -5,6 +5,8 @@ import {
   uploadCandidateCV,
   getEmployerProfile,
   updateEmployerProfile,
+  uploadCandidateImage,
+  uploadEmployerImage,
 } from "./api";
 import {
   UpdateCandidateProfileRequest,
@@ -43,6 +45,19 @@ export function useUploadCandidateCV(id: string) {
   });
 }
 
+export function useUploadCandidateImage(id: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (file: File) => uploadCandidateImage(id, file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["candidate-profile", id] });
+      // Refetch currentUser immediately to get updated image
+      queryClient.refetchQueries({ queryKey: ["currentUser"] });
+    },
+  });
+}
+
 // Employer hooks
 export function useEmployerProfile(id: string) {
   return useQuery({
@@ -60,6 +75,19 @@ export function useUpdateEmployerProfile(id: string) {
       updateEmployerProfile(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employer-profile", id] });
+    },
+  });
+}
+
+export function useUploadEmployerImage(id: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (file: File) => uploadEmployerImage(id, file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["employer-profile", id] });
+      // Refetch currentUser immediately to get updated image
+      queryClient.refetchQueries({ queryKey: ["currentUser"] });
     },
   });
 }

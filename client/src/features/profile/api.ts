@@ -11,7 +11,9 @@ import {
 export async function getCandidateProfile(
   id: string,
 ): Promise<CandidateProfile> {
-  const { data } = await apiClient.get<CandidateProfile>(`/candidates/${id}`);
+  const { data } = await apiClient.get<CandidateProfile>(
+    `/api/candidates/${id}`,
+  );
   return data;
 }
 
@@ -20,7 +22,7 @@ export async function updateCandidateProfile(
   profileData: UpdateCandidateProfileRequest,
 ): Promise<CandidateProfile> {
   const { data } = await apiClient.put<CandidateProfile>(
-    `/candidates/${id}`,
+    `/api/candidates/${id}`,
     profileData,
   );
   return data;
@@ -34,7 +36,7 @@ export async function uploadCandidateCV(
   formData.append("cv", file);
 
   const { data } = await apiClient.post<UploadCVResponse>(
-    `/candidates/${id}/upload-cv`,
+    `/api/candidates/${id}/upload-cv`,
     formData,
     {
       headers: {
@@ -45,9 +47,26 @@ export async function uploadCandidateCV(
   return data;
 }
 
+export async function uploadCandidateImage(
+  id: string,
+  file: File,
+): Promise<{ image: string }> {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const { data } = await apiClient.post<{ image: string }>(
+    `/api/candidates/${id}/upload-image`,
+    formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+    },
+  );
+  return data;
+}
+
 // Employer API functions
 export async function getEmployerProfile(id: string): Promise<EmployerProfile> {
-  const { data } = await apiClient.get<EmployerProfile>(`/employers/${id}`);
+  const { data } = await apiClient.get<EmployerProfile>(`/api/employers/${id}`);
   return data;
 }
 
@@ -56,8 +75,25 @@ export async function updateEmployerProfile(
   profileData: UpdateEmployerProfileRequest,
 ): Promise<EmployerProfile> {
   const { data } = await apiClient.put<EmployerProfile>(
-    `/employers/${id}`,
+    `/api/employers/${id}`,
     profileData,
+  );
+  return data;
+}
+
+export async function uploadEmployerImage(
+  id: string,
+  file: File,
+): Promise<{ image: string }> {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const { data } = await apiClient.post<{ image: string }>(
+    `/api/employers/${id}/upload-image`,
+    formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+    },
   );
   return data;
 }

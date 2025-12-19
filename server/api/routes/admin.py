@@ -1,6 +1,6 @@
 from flask import Blueprint
-from middlewares.auth import admin_required
-from controllers.admin import (
+from api.middlewares.auth import admin_required
+from api.controllers.admin import (
     get_platform_stats,
     get_all_users,
     delete_user,
@@ -16,7 +16,7 @@ from controllers.admin import (
     update_category,
     create_admin,
     delete_admin,
-    getAdmins
+    getAdmins,
 )
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")

@@ -1,11 +1,14 @@
-from flask import request, jsonify
+from flask import request, jsonify, send_from_directory
+from werkzeug.utils import secure_filename
 from sqlalchemy import or_, and_
 from sqlalchemy.orm import Session
 from config.db import SessionLocal
-from core.models import Job, User
+from core.models import Job, User, SavedJob, Application
+from controllers.utils import get_user_id_from_token
 from typing import Optional, List
 from decimal import Decimal
 from datetime import datetime
+import os
 
 
 def get_db():
@@ -237,6 +240,176 @@ def delete_job(job_id: int):
         db.commit()
 
         return jsonify({"message": "Job deleted successfully"}), 200
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db.close()
+
+
+def save_job(job_id: int):
+    """Save a job for a user"""
+    db: Session = next(get_db())
+
+    try:
+        # Get user ID from JWT token
+        try:
+            user_id = get_user_id_from_token()
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 401
+
+        # Check if job exists
+        job = db.query(Job).filter(Job.id == job_id).first()
+        if not job:
+            return jsonify({"error": "Job not found"}), 404
+
+        # Check if already saved
+        existing = (
+            db.query(SavedJob)
+            .filter(SavedJob.user_id == user_id, SavedJob.job_id == job_id)
+            .first()
+        )
+
+        if existing:
+            return jsonify({"message": "Job already saved"}), 200
+
+        # Create saved job
+        saved_job = SavedJob(user_id=user_id, job_id=job_id)
+        db.add(saved_job)
+        db.commit()
+
+        return jsonify({"message": "Job saved successfully"}), 201
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db.close()
+
+
+def unsave_job(job_id: int):
+    """Unsave a job for a user"""
+    db: Session = next(get_db())
+
+    try:
+        # Get user ID from JWT token
+        try:
+            user_id = get_user_id_from_token()
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 401
+
+        # Find and delete saved job
+        saved_job = (
+            db.query(SavedJob)
+            .filter(SavedJob.user_id == user_id, SavedJob.job_id == job_id)
+            .first()
+        )
+
+        if not saved_job:
+            return jsonify({"error": "Job not found in saved jobs"}), 404
+
+        db.delete(saved_job)
+        db.commit()
+
+        return jsonify({"message": "Job unsaved successfully"}), 200
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db.close()
+
+
+def apply_to_job(job_id: int):
+    """Apply to a job"""
+    db: Session = next(get_db())
+
+    try:
+        # Get user ID from JWT token
+        try:
+            user_id = get_user_id_from_token()
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 401
+
+        # Get cover letter from form data or JSON
+        cover_letter = None
+        if request.form:
+            cover_letter = request.form.get("cover_letter")
+        elif request.is_json:
+            data = request.get_json()
+            cover_letter = data.get("cover_letter")
+
+        # Check if job exists
+        job = db.query(Job).filter(Job.id == job_id).first()
+        if not job:
+            return jsonify({"error": "Job not found"}), 404
+
+        # Check if user already applied
+        existing = (
+            db.query(Application)
+            .filter(Application.user_id == user_id, Application.job_id == job_id)
+            .first()
+        )
+
+        if existing:
+            return jsonify({"error": "You have already applied to this job"}), 400
+
+        # Handle CV file upload if provided
+        cv_file_path = None
+        if "cv_file" in request.files or "cv" in request.files:
+            file = request.files.get("cv_file") or request.files.get("cv")
+
+            if file and file.filename:
+                allowed_extensions = {"pdf", "doc", "docx"}
+                file_ext = (
+                    file.filename.rsplit(".", 1)[1].lower()
+                    if "." in file.filename
+                    else ""
+                )
+
+                if file_ext not in allowed_extensions:
+                    return (
+                        jsonify(
+                            {"error": "Invalid file type. Only PDF, DOC, DOCX allowed."}
+                        ),
+                        400,
+                    )
+
+                # Create uploads directory
+                upload_dir = "uploads/applications"
+                os.makedirs(upload_dir, exist_ok=True)
+
+                # Generate filename
+                filename = f"cv_{user_id}_job_{job_id}.{file_ext}"
+                filepath = os.path.join(upload_dir, filename)
+
+                # Save file
+                file.save(filepath)
+                cv_file_path = f"/uploads/applications/{filename}"
+
+        # Create application
+        application = Application(
+            job_id=job_id,
+            user_id=user_id,
+            cover_letter=cover_letter,
+            cv_file_path=cv_file_path,
+            status="pending",
+        )
+
+        db.add(application)
+        db.commit()
+        db.refresh(application)
+
+        return (
+            jsonify(
+                {
+                    "message": "Application submitted successfully",
+                    "application_id": application.id,
+                }
+            ),
+            201,
+        )
 
     except Exception as e:
         db.rollback()

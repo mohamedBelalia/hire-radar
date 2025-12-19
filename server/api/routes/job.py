@@ -5,6 +5,9 @@ from controllers.job import (
     create_job,
     update_job,
     delete_job,
+    save_job,
+    unsave_job,
+    apply_to_job,
 )
 
 job = Blueprint("job", __name__)
@@ -34,3 +37,18 @@ def update_job_route(job_id: int):
 @job.route("/<int:job_id>", methods=["DELETE"])
 def delete_job_route(job_id: int):
     return delete_job(job_id)
+
+
+@job.route("/<int:job_id>/save", methods=["POST"])
+def save_job_route(job_id: int):
+    return save_job(job_id)
+
+
+@job.route("/<int:job_id>/save", methods=["DELETE"])
+def unsave_job_route(job_id: int):
+    return unsave_job(job_id)
+
+
+@job.route("/<int:job_id>/apply", methods=["POST"])
+def apply_to_job_route(job_id: int):
+    return apply_to_job(job_id)

@@ -94,7 +94,7 @@ def update_candidate_info(candidate_id: int, update_data: dict):
             "location",
             "bio",
             "headLine",
-            "resume_url", 
+            "resume_url",
         ]
         for field in allowed_fields:
             if field in update_data:

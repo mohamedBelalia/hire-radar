@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCurrentUser } from "@/features/auth/hook";
+import { getValidImageUrl } from "@/lib/image-utils";
 
 export default function PostCreator() {
   const { data: currentUser } = useCurrentUser();
@@ -32,12 +33,11 @@ export default function PostCreator() {
         <div className="flex items-start gap-3">
           <Avatar className="h-10 w-10">
             <AvatarImage
-              src={
-                currentUser?.image && currentUser.image.trim() !== ""
-                  ? currentUser.image
-                  : undefined
-              }
+              src={getValidImageUrl(currentUser?.image)}
               alt={currentUser?.full_name || "User"}
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+              }}
             />
             <AvatarFallback className="bg-foreground text-background font-semibold">
               {currentUser ? getInitials(currentUser.full_name) : "ME"}

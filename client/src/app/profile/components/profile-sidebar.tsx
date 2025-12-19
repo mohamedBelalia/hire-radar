@@ -13,16 +13,33 @@ import {
   Mail,
   Calendar,
   MapPin,
+  Camera,
 } from "lucide-react";
+import { useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/features/auth/hook";
+import { getValidImageUrl } from "@/lib/image-utils";
+import {
+  useUploadCandidateImage,
+  useUploadEmployerImage,
+} from "@/features/profile/hooks";
+import { toast } from "sonner";
 import type { User } from "@/types";
 
 export default function ProfileSidebar() {
   const { data } = useCurrentUser();
   const currentUser = data as User | undefined;
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const uploadCandidateImage = useUploadCandidateImage(
+    currentUser?.id?.toString() || "",
+  );
+  const uploadEmployerImage = useUploadEmployerImage(
+    currentUser?.id?.toString() || "",
+  );
   const pathname = usePathname();
 
   const getInitials = (name: string) => {
@@ -91,17 +108,55 @@ export default function ProfileSidebar() {
             <div className="relative">
               <Avatar className="h-20 w-20">
                 <AvatarImage
-                  src={
-                    currentUser?.image && currentUser.image.trim() !== ""
-                      ? currentUser.image
-                      : undefined
-                  }
+                  src={getValidImageUrl(currentUser?.image)}
                   alt={currentUser?.full_name || "Profile"}
+                  onError={(e) => {
+                    // Hide image on error, show fallback
+                    e.currentTarget.style.display = "none";
+                  }}
                 />
                 <AvatarFallback className="text-2xl bg-foreground text-background">
                   {currentUser ? getInitials(currentUser.full_name) : "JD"}
                 </AvatarFallback>
               </Avatar>
+              <Button
+                size="icon"
+                variant="outline"
+                className="absolute -right-2 -bottom-2 h-7 w-7 rounded-full"
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={
+                  uploadCandidateImage.isPending ||
+                  uploadEmployerImage.isPending
+                }
+                aria-label="Change profile picture"
+              >
+                <Camera className="h-3.5 w-3.5" />
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/jpg,image/webp"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  try {
+                    if (currentUser?.role === "candidate") {
+                      await uploadCandidateImage.mutateAsync(file);
+                    } else if (currentUser?.role === "employer") {
+                      await uploadEmployerImage.mutateAsync(file);
+                    } else {
+                      throw new Error("Unknown role");
+                    }
+                    toast.success("Profile photo updated");
+                  } catch {
+                    toast.error("Failed to update photo");
+                  } finally {
+                    e.target.value = "";
+                  }
+                }}
+              />
             </div>
             <div className="space-y-1">
               <h3 className="font-semibold text-lg">

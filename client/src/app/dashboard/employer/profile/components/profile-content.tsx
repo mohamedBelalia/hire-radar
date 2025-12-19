@@ -21,6 +21,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -35,8 +36,10 @@ import {
   useEmployerProfile,
   useUpdateEmployerProfile,
 } from "@/features/profile/hooks";
+import { githubConnect, getConnectedAccounts } from "@/features/auth/api";
 import type { User } from "@/types";
 import { useCurrentUserId } from "@/hooks/useCurrentUserId";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface ProfileContentProps {
   defaultTab?: string;
@@ -87,16 +90,54 @@ export default function ProfileContent({
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
+    companyName: "",
     email: "",
     role: "",
+    phone: "",
+    location: "",
+    bio: "",
+    website: "",
   });
 
-  // Connected accounts state
-  const [connectedAccounts, setConnectedAccounts] = useState({
-    github: false,
-    google: false,
-    twitter: false,
+  const queryClient = useQueryClient();
+
+  // Fetch connected accounts from backend
+  const { data: connectedAccountsData } = useQuery({
+    queryKey: ["connected-accounts"],
+    queryFn: getConnectedAccounts,
+    retry: false,
   });
+
+  // Map connected accounts to state
+  const connectedAccounts = {
+    github:
+      connectedAccountsData?.connected_accounts?.some(
+        (acc) => acc.provider === "github" && acc.connected,
+      ) || false,
+    google:
+      connectedAccountsData?.connected_accounts?.some(
+        (acc) => acc.provider === "google" && acc.connected,
+      ) || false,
+    twitter: false, // Not implemented yet
+  };
+
+  // Check URL params for OAuth callback results
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("github_linked") === "success") {
+        toast.success("GitHub account connected successfully!");
+        queryClient.invalidateQueries({ queryKey: ["connected-accounts"] });
+        // Clean URL
+        window.history.replaceState({}, "", window.location.pathname);
+      } else if (params.get("error")) {
+        const error = params.get("error");
+        toast.error(`Failed to connect GitHub: ${error}`);
+        // Clean URL
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    }
+  }, [queryClient]);
 
   // Update form data when profile loads
   // Note: This syncs form state with async profile data - necessary use case
@@ -110,15 +151,26 @@ export default function ProfileContent({
             candidateProfile.full_name?.split(" ").slice(1).join(" ") || "",
           email: candidateProfile.email || currentUser.email || "",
           role: "Product Designer",
+          companyName: "",
+          phone: candidateProfile.phone || "",
+          location: candidateProfile.location || "",
+          bio: candidateProfile.bio || "",
+          website: "",
         });
       } else if (currentUser.role === "employer" && employerProfile) {
         // For employers, show company name as first name
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setFormData({
-          firstName: employerProfile.company_name || "",
-          lastName: "",
+          firstName: employerProfile.full_name?.split(" ")[0] || "",
+          lastName:
+            employerProfile.full_name?.split(" ").slice(1).join(" ") || "",
+          companyName: employerProfile.company_name || "",
           email: employerProfile.email || currentUser.email || "",
           role: "Employer",
+          phone: employerProfile.phone || "",
+          location: employerProfile.location || "",
+          bio: employerProfile.bio || "",
+          website: employerProfile.website || "",
         });
       } else {
         // Fallback to currentUser data if profile not loaded yet
@@ -129,6 +181,11 @@ export default function ProfileContent({
           email: currentUser.email || "",
           role:
             currentUser.role === "candidate" ? "Product Designer" : "Employer",
+          companyName: "",
+          phone: currentUser.phone || "",
+          location: currentUser.location || "",
+          bio: currentUser.bio || "",
+          website: "",
         });
       }
     }
@@ -146,6 +203,9 @@ export default function ProfileContent({
         await updateCandidate.mutateAsync({
           full_name: `${formData.firstName} ${formData.lastName}`.trim(),
           email: formData.email,
+          phone: formData.phone || undefined,
+          location: formData.location || undefined,
+          bio: formData.bio || undefined,
         });
         toast.success("Profile updated successfully!");
       } catch {
@@ -155,6 +215,12 @@ export default function ProfileContent({
       try {
         await updateEmployer.mutateAsync({
           email: formData.email,
+          full_name: `${formData.firstName} ${formData.lastName}`.trim(),
+          company_name: formData.companyName || undefined,
+          phone: formData.phone || undefined,
+          location: formData.location || undefined,
+          bio: formData.bio || undefined,
+          website: formData.website || undefined,
         });
         toast.success("Profile updated successfully!");
       } catch {
@@ -163,16 +229,23 @@ export default function ProfileContent({
     }
   };
 
-  const handleConnectAccount = (account: "github" | "google" | "twitter") => {
-    setConnectedAccounts((prev) => ({
-      ...prev,
-      [account]: !prev[account],
-    }));
-    toast.success(
-      connectedAccounts[account]
-        ? `${account.charAt(0).toUpperCase() + account.slice(1)} disconnected`
-        : `${account.charAt(0).toUpperCase() + account.slice(1)} connected`,
-    );
+  const handleConnectAccount = async (
+    account: "github" | "google" | "twitter",
+  ) => {
+    if (account === "github") {
+      try {
+        const { auth_url } = await githubConnect();
+        // Redirect to GitHub OAuth
+        window.location.href = auth_url;
+      } catch (error) {
+        toast.error("Failed to initiate GitHub connection");
+      }
+    } else if (account === "google") {
+      // Google OAuth is handled separately for login, not account linking
+      toast.info("Google account is linked via login");
+    } else {
+      toast.info("Twitter connection not yet implemented");
+    }
   };
 
   if (isLoading) {
@@ -208,50 +281,143 @@ export default function ProfileContent({
               <CardTitle>Profile Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First name</Label>
-                  <Input
-                    id="firstName"
-                    value={formData.firstName}
-                    onChange={(e) =>
-                      handleInputChange("firstName", e.target.value)
-                    }
-                    required
-                  />
+              {currentUser?.role === "employer" ? (
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First name</Label>
+                    <Input
+                      id="firstName"
+                      value={formData.firstName}
+                      onChange={(e) =>
+                        handleInputChange("firstName", e.target.value)
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last name</Label>
+                    <Input
+                      id="lastName"
+                      value={formData.lastName}
+                      onChange={(e) =>
+                        handleInputChange("lastName", e.target.value)
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="companyName">Company name</Label>
+                    <Input
+                      id="companyName"
+                      value={formData.companyName}
+                      onChange={(e) =>
+                        handleInputChange("companyName", e.target.value)
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) =>
+                        handleInputChange("email", e.target.value)
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input
+                      id="phone"
+                      value={formData.phone}
+                      onChange={(e) =>
+                        handleInputChange("phone", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Location</Label>
+                    <Input
+                      id="location"
+                      value={formData.location}
+                      onChange={(e) =>
+                        handleInputChange("location", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="website">Website</Label>
+                    <Input
+                      id="website"
+                      value={formData.website}
+                      onChange={(e) =>
+                        handleInputChange("website", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="bio">Bio</Label>
+                    <Textarea
+                      id="bio"
+                      value={formData.bio}
+                      onChange={(e) => handleInputChange("bio", e.target.value)}
+                      rows={4}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last name</Label>
-                  <Input
-                    id="lastName"
-                    value={formData.lastName}
-                    onChange={(e) =>
-                      handleInputChange("lastName", e.target.value)
-                    }
-                    required
-                  />
+              ) : (
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First name</Label>
+                    <Input
+                      id="firstName"
+                      value={formData.firstName}
+                      onChange={(e) =>
+                        handleInputChange("firstName", e.target.value)
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last name</Label>
+                    <Input
+                      id="lastName"
+                      value={formData.lastName}
+                      onChange={(e) =>
+                        handleInputChange("lastName", e.target.value)
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) =>
+                        handleInputChange("email", e.target.value)
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="role">Role</Label>
+                    <Input
+                      id="role"
+                      value={formData.role}
+                      onChange={(e) =>
+                        handleInputChange("role", e.target.value)
+                      }
+                      disabled
+                      className="bg-muted"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="role">Role</Label>
-                  <Input
-                    id="role"
-                    value={formData.role}
-                    onChange={(e) => handleInputChange("role", e.target.value)}
-                    disabled
-                    className="bg-muted"
-                  />
-                </div>
-              </div>
+              )}
               <div className="flex justify-end">
                 <Button
                   type="submit"

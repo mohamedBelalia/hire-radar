@@ -9,6 +9,7 @@ interface ProfileHeaderProps {
   role: "candidate" | "employer";
   onEditClick: () => void;
   onImageClick?: () => void;
+  userImage?: string | null; // Google OAuth image from auth
 }
 
 export default function ProfileHeader({
@@ -16,10 +17,16 @@ export default function ProfileHeader({
   role,
   onEditClick,
   onImageClick,
+  userImage,
 }: ProfileHeaderProps) {
   const isCandidate = role === "candidate";
   const candidateProfile = isCandidate ? (profile as CandidateProfile) : null;
   const employerProfile = !isCandidate ? (profile as EmployerProfile) : null;
+
+  // Use profile_picture first, then userImage (Google OAuth), then fallback to initials
+  const imageUrl =
+    profile.profile_picture ||
+    (userImage && userImage.trim() !== "" ? userImage : null);
 
   return (
     <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl p-8 shadow-lg">
@@ -27,9 +34,9 @@ export default function ProfileHeader({
         {/* Profile Picture */}
         <div className="relative group">
           <div className="relative w-32 h-32 rounded-full overflow-hidden ring-4 ring-purple-200/50 dark:ring-purple-800/50 shadow-lg">
-            {profile.profile_picture ? (
+            {imageUrl ? (
               <img
-                src={profile.profile_picture}
+                src={imageUrl}
                 alt={
                   isCandidate
                     ? candidateProfile?.full_name || "Candidate"

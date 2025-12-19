@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCurrentUser } from "@/features/auth/hook";
+import { getValidImageUrl } from "@/lib/image-utils";
 
 interface FeedPostProps {
   author: {
@@ -103,12 +104,11 @@ export default function FeedPost({
         <div className="flex items-center gap-2">
           <Avatar className="h-8 w-8">
             <AvatarImage
-              src={
-                currentUser?.image && currentUser.image.trim() !== ""
-                  ? currentUser.image
-                  : undefined
-              }
+              src={getValidImageUrl(currentUser?.image)}
               alt={currentUser?.full_name || "User"}
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+              }}
             />
             <AvatarFallback className="bg-foreground text-background font-semibold text-xs">
               {currentUser ? getInitials(currentUser.full_name) : "ME"}

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCurrentUser } from "@/features/auth/hook";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getValidImageUrl } from "@/lib/image-utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -139,12 +140,11 @@ export default function TopNavbar() {
                 >
                   <Avatar className="h-8 w-8">
                     <AvatarImage
-                      src={
-                        currentUser.image && currentUser.image.trim() !== ""
-                          ? currentUser.image
-                          : undefined
-                      }
+                      src={getValidImageUrl(currentUser.image)}
                       alt={currentUser.full_name}
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
                     />
                     <AvatarFallback className="bg-foreground text-background text-xs font-semibold">
                       {getInitials(currentUser.full_name)}
