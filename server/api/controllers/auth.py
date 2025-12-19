@@ -5,6 +5,7 @@ import jwt
 from dotenv import load_dotenv
 from config.db import SessionLocal
 from core.models import User
+from core.models import DeleteRequest
 from google_auth_oauthlib.flow import Flow
 import os
 import requests
@@ -474,6 +475,34 @@ def update_password():
         db.commit()
 
         return jsonify({"message": "Password updated successfully!"}), 200
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({"message": str(e)}), 500
+    finally:
+        db.close()
+
+
+@is_auth
+def delete_account_request():
+    """
+    Receives a delete account request with a reason.
+    """
+    db = SessionLocal()
+    try:
+        data = request.get_json()
+        reason = data.get("reason")
+
+        if not reason or not reason.strip():
+            return jsonify({"message": "Reason is required."}), 400
+
+        user_id = request.user_id
+
+        delete_request = DeleteRequest(user_id=user_id, reason=reason.strip())
+        db.add(delete_request)
+        db.commit()
+
+        return jsonify({"message": "Delete request submitted successfully!"}), 200
 
     except Exception as e:
         db.rollback()

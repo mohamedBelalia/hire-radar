@@ -303,5 +303,17 @@ class ConnectionRequest(Base):
         "User", foreign_keys=[receiver_id], backref="received_requests"
     )
 
+
+class DeleteRequest(Base):
+    __tablename__ = "delete_requests"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    reason = Column(Text, nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+    # Relationship to user
+    user = relationship("User", backref="delete_requests")
+
 Base.metadata.create_all(engine)
 print("Tables created successfully!")

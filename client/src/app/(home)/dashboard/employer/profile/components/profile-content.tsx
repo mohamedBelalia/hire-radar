@@ -20,7 +20,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useCurrentUser } from "@/features/auth/hook";
 import {
@@ -37,6 +36,7 @@ import { useCurrentUserId } from "@/hooks/useCurrentUserId";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/apiClient";
 import { getToken } from "@/lib";
+import { DeleteAccount } from "@/components/delete-account";
 
 interface ProfileContentProps {
   defaultTab?: string;
@@ -98,13 +98,13 @@ export default function ProfileContent({
         }
       });
 
-      if (response.status !== 200) {
-        setError(response.data.message || "Failed to update password.");
-      } else {
+      if (response.status === 200) {
         setSuccess("Password updated successfully!");
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
+      } else {
+        setError(response.data.message || "Failed to update password.");        
       }
     } catch (err:any) {
       if (err.response && err.response.data) {
@@ -591,10 +591,7 @@ export default function ProfileContent({
                   Permanently removing a user account and all its associated data from a platform or service
                 </div>
               </div>
-              <Button variant="outline">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </Button>
+              <DeleteAccount />
             </div>
           </CardContent>
         </Card>
@@ -645,7 +642,7 @@ export default function ProfileContent({
               <Button
                 className="w-full"
                 onClick={handleUpdatePassword}
-                disabled={loading}
+                disabled={loading || newPassword === '' || currentPassword === '' || confirmPassword === ''}
               >
                 {loading ? "Updating..." : "Update Password"}
               </Button>
