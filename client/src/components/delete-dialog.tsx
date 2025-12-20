@@ -18,6 +18,8 @@ import {
 } from "@/services/admin";
 import { getToken } from "@/lib";
 import { toast } from "sonner";
+import apiClient from "@/lib/apiClient";
+import { Trash2 } from "lucide-react";
 
 interface DeleteDialogProps {
   variant:
@@ -90,6 +92,33 @@ const DeleteDialog = ({
             setOpen(false);
           }
           break;
+
+        case "education":
+          const res6 = await apiClient.delete(`/api/candidates/educations/${id}`)
+          if (res6.status === 200) {
+            toast.success("Education deleted successfully");
+            onDelete(id);
+            setOpen(false);
+          }
+          break;
+
+        case "experience":
+          const res7 = await apiClient.delete(`/api/candidates/experiences/${id}`)
+          if (res7.status === 200) {
+            toast.success("Experience deleted successfully");
+            onDelete(id);
+            setOpen(false);
+          }
+          break;
+
+        case "skill_user":
+          const res8 = await apiClient.delete(`/api/candidates/skills/${id}`)
+          if (res8.status === 200) {
+            toast.success("Skill deleted successfully");
+            onDelete(id);
+            setOpen(false);
+          }
+          break;
       }
     } catch (error: unknown) {
       if (error && typeof error === "object" && "response" in error) {
@@ -111,8 +140,14 @@ const DeleteDialog = ({
     <div>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger>
-          <Button variant={variant} onClick={() => setOpen(true)}>
-            Delete
+          <Button variant={variant} size={'sm'} onClick={() => setOpen(true)}>
+            {
+              toDelete === 'education' || toDelete === 'experience' || toDelete === 'skill' ?
+                (
+                  <Trash2  className="w-4 h-4"/>
+                )
+              : "Delete"
+            }
           </Button>
         </DialogTrigger>
         <DialogContent>

@@ -1,22 +1,30 @@
 import { useEffect, useState } from "react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Trash2, CircleSlash, Briefcase, SquareX } from "lucide-react";
+import { CircleSlash, Briefcase, SquareX } from "lucide-react";
 import Image from "next/image";
 import { HandleEducation , HandleExperience, EducationData, ExperienceData } from "./add-update-delete-career";
 import apiClient from "@/lib/apiClient";
 import { getToken } from "@/lib";
+import { SkillCombobox } from "./list-skills";
+import { Icon } from "@iconify/react";
+import { toast } from "sonner";
+import DeleteDialog from "./delete-dialog";
+
+
+interface Skill {
+  id: number
+  name: string
+}
+
 
 const CareerTab = () => {
-  // Dummy data
+
   const [educations, setEducations] = useState<EducationData[]>([]);
   const [experiences, setExperiences] = useState<ExperienceData[]>([]);
   const [skills, setSkills] = useState([]);
 
-  const [newSkill, setNewSkill] = useState("");
-  const [skillLoading,setSkillLoading] = useState(false)
-
+  const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null)
   const [loading, setLoading] = useState(false)
 
   const fetchCareer = async () =>{
@@ -58,15 +66,54 @@ const CareerTab = () => {
     );
   };
 
-  const handleAddSkill = () => {
-    if (newSkill.trim() && !skills.includes(newSkill)) {
-      setSkills([...skills, newSkill]);
-      setNewSkill("");
+   const handleSelect = (skill: Skill) => {
+    setSelectedSkill(skill)
+    onSelect?.(skill)
+  }
+
+  const handleAddSkill = async () => {
+    if (!selectedSkill) return
+
+    try {
+      setLoading(true)
+      const res = await apiClient.post(
+        "/api/candidates/skills",
+        { name: selectedSkill.name },
+        {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+          },
+        }
+      )
+
+      if (res.status === 200) {
+        setSkills((prev) => [...prev, res.data.skill])
+        toast.success("Skill added successfully")
+        setSelectedSkill(null)
+      } else {
+        toast.error("Failed to add skill")
+      }
+    } catch (err: any) {
+        if (err.response && err.response.data) {
+        toast.error(err.response.data.message || "Something went wrong");
+      } else {
+        toast.error(err.message || "Something went wrong");
+      }
+    } finally {
+      setLoading(false)
     }
+  }
+
+  const ondeleteSkill = (id: number) => {
+    setSkills(skills.filter((s) => s.id !== id));
   };
 
-  const handleDeleteSkill = (skill: string) => {
-    setSkills(skills.filter((s) => s !== skill));
+  const ondeleteEducation = (id: number) => {
+    setEducations(educations.filter((edu) => edu.id !== id));
+  };
+
+  const ondeleteExperience = (id: number) => {
+    setExperiences(experiences.filter((exp) => exp.id !== id));
   };
 
   useEffect(() =>{
@@ -107,9 +154,7 @@ const CareerTab = () => {
 
                 <div className="flex gap-2">
                     <HandleEducation education={edu} update={handleUpdateEducation}/>
-                    <Button variant="destructive" size="sm">
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <DeleteDialog id={edu.id!} variant={"destructive"} toDelete="education" onDelete={ondeleteEducation}/>
                 </div>
                 </div>
             ))
@@ -158,9 +203,7 @@ const CareerTab = () => {
 
                 <div className="flex gap-2">
                     <HandleExperience add={handleUpdateExperience} experience={exp}/>
-                    <Button variant="destructive" size="sm">
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <DeleteDialog id={exp.id!} variant={"destructive"} toDelete="experience" onDelete={ondeleteExperience}/>
                 </div>
                 </div>
             ))
@@ -193,10 +236,9 @@ const CareerTab = () => {
                     key={skill.id}
                     className="flex items-center justify-between gap-2 px-4 py-2 border rounded-md bg-background"
                     >
+                    <Icon icon={`devicon:${skill.name.toLowerCase()}`} className="w-4 h-4" />
                     <span className="font-medium">{skill.name}</span>
-                    <Button variant="destructive" size="sm">
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <DeleteDialog id={skill.id!} variant={"destructive"} toDelete="skill" onDelete={ondeleteSkill}/>
                     </div>
                 ))}
                 </div>
@@ -211,12 +253,11 @@ const CareerTab = () => {
             </div>
 
           <div className="flex gap-2 mt-2">
-            <Input
-              placeholder="Add new skill"
-              value={newSkill}
-              onChange={(e) => setNewSkill(e.target.value)}
-            />
-            <Button onClick={handleAddSkill}>Add</Button>
+            <SkillCombobox onSelect={handleSelect} initialValue={selectedSkill} />
+
+            <Button onClick={handleAddSkill} disabled={!selectedSkill || loading}>
+                {loading ? "Adding..." : "Add Skill"}
+            </Button>
           </div>
         </CardContent>
       </Card>
