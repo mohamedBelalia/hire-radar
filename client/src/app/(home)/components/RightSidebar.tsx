@@ -22,15 +22,27 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 
 import { useRandomEmployers } from "@/features/employers/hooks";
+import { useRandomCandidates } from "@/features/candidates/hooks";
 import { useSendConnectionRequest } from "@/features/connections/hooks";
 import { getValidImageUrl } from "@/lib/image-utils";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { AvatarImage } from "@radix-ui/react-avatar";
+import { useCurrentUser } from "@/features/auth/hook";
+import { getToken } from "@/lib";
 
 function RightSidebarContent() {
-    const { data: suggestedPeople, isLoading } = useRandomEmployers();
+    const token = getToken();
+    const { data: user } = useCurrentUser(token || "");
+    const isEmployer = user?.role === "employer";
+
+    const employersQuery = useRandomEmployers();
+    const candidatesQuery = useRandomCandidates();
+
+    const suggestedPeople = isEmployer ? candidatesQuery.data : employersQuery.data;
+    const isLoading = isEmployer ? candidatesQuery.isLoading : employersQuery.isLoading;
+
     const sendRequest = useSendConnectionRequest();
     const [pendingIds, setPendingIds] = useState<number[]>([]);
 
@@ -83,7 +95,7 @@ function RightSidebarContent() {
                                                 {person.full_name}
                                             </h4>
                                             <p className="text-xs text-muted-foreground truncate">
-                                                {person.company_name || person.role || "Employer"}
+                                                {person.company_name || person.headline || person.role || "User"}
                                             </p>
                                         </div>
                                         <Button
@@ -123,7 +135,9 @@ function RightSidebarContent() {
                                 <SidebarMenuButton className="h-auto py-2">
                                     <div className="flex items-center gap-2 w-full">
                                         <div className="w-8 h-8 rounded bg-muted flex-shrink-0" />
-                                        <span className="text-sm font-medium">UX Design</span>
+                                        <div className="flex-1 min-w-0 text-left">
+                                            <span className="text-sm font-medium block truncate">UX Design</span>
+                                        </div>
                                     </div>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
@@ -131,9 +145,9 @@ function RightSidebarContent() {
                                 <SidebarMenuButton className="h-auto py-2">
                                     <div className="flex items-center gap-2 w-full">
                                         <div className="w-8 h-8 rounded bg-muted flex-shrink-0" />
-                                        <div className="flex-1 flex justify-between items-center">
-                                            <span className="text-sm font-medium">UI Design</span>
-                                            <Badge variant="secondary" className="text-xs">+99</Badge>
+                                        <div className="flex-1 flex justify-between items-center min-w-0">
+                                            <span className="text-sm font-medium truncate">UI Design</span>
+                                            <Badge variant="secondary" className="text-xs flex-shrink-0 ml-2">+99</Badge>
                                         </div>
                                     </div>
                                 </SidebarMenuButton>

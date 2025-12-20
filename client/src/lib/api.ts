@@ -159,6 +159,11 @@ export const candidatesApi = {
   removeSkill: async (id: number, skillId: number): Promise<void> => {
     throw new Error("Remove skill endpoint not implemented in backend");
   },
+
+  getRandom: async (): Promise<Candidate[]> => {
+    const { data } = await apiClient.get<Candidate[]>("/api/candidates/random");
+    return data;
+  },
 };
 
 // Employers API

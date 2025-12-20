@@ -499,3 +499,63 @@ def remove_skill(candidate_id: int, skill_id: int):
         return jsonify({"error": str(e)}), 500
     finally:
         db.close()
+
+
+def get_random_candidates():
+    """Get 5 random candidates who are not the current user and not already connected"""
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return jsonify({"error": "Missing or invalid Authorization header"}), 401
+
+    import jwt
+    import os
+    from sqlalchemy.sql import func
+    from core.models import ConnectionRequest
+
+    token = auth_header.split(" ")[1]
+    JWT_SECRET = os.getenv("JWT_SECRET", "secret123")
+    
+    db: Session = next(get_db())
+
+    try:
+        decoded = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        current_user_id = decoded["id"]
+
+        # Subquery for existing connections/requests
+        subquery = db.query(ConnectionRequest.receiver_id).filter(
+            ConnectionRequest.sender_id == current_user_id
+        ).union(
+            db.query(ConnectionRequest.sender_id).filter(
+                ConnectionRequest.receiver_id == current_user_id
+            )
+        )
+
+        # Fetch random candidates not in subquery and not self
+        candidates = (
+            db.query(User)
+            .filter(
+                User.role == "candidate",
+                User.id != current_user_id,
+                ~User.id.in_(subquery)
+            )
+            .order_by(func.random())
+            .limit(5)
+            .all()
+        )
+
+        return jsonify([
+            {
+                "id": cand.id,
+                "full_name": cand.full_name,
+                "headline": cand.headLine,
+                "image": cand.image,
+                "role": cand.role
+            } for cand in candidates
+        ]), 200
+
+    except jwt.ExpiredSignatureError:
+        return jsonify({"error": "Token expired"}), 401
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db.close()

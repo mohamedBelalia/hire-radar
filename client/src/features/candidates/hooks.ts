@@ -94,3 +94,12 @@ export function useRemoveSkill() {
     },
   });
 }
+
+// Get random candidates
+export function useRandomCandidates() {
+  return useQuery({
+    queryKey: ["random-candidates"],
+    queryFn: () => candidatesApi.getRandom(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}

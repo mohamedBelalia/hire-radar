@@ -7,6 +7,7 @@ from controllers.candidates import (
     add_skill,
     remove_skill,
     upload_profile_image,
+    get_random_candidates,
 )
 
 candidates = Blueprint("candidates", __name__)
@@ -32,6 +33,12 @@ candidates.add_url_rule(
     "remove_skill",
     remove_skill,
     methods=["DELETE"],
+)
+candidates.add_url_rule(
+    "/random",
+    "get_random_candidates",
+    get_random_candidates,
+    methods=["GET"],
 )
 
 # Profile image upload
