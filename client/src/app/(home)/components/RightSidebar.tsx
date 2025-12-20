@@ -21,12 +21,28 @@ import {
 } from "@/components/ui/sidebar";
 import { Card, CardContent } from "@/components/ui/card";
 
+import { useRandomEmployers } from "@/features/employers/hooks";
+import { useSendConnectionRequest } from "@/features/connections/hooks";
+import { getValidImageUrl } from "@/lib/image-utils";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { useState } from "react";
+import { AvatarImage } from "@radix-ui/react-avatar";
+
 function RightSidebarContent() {
-    const suggestedPeople = [
-        { name: "Steve Jobs", title: "CEO of Apple", avatar: "SJ" },
-        { name: "Ryan Roslansky", title: "CEO of Linkedin", avatar: "RR" },
-        { name: "Dylan Field", title: "CEO of Figma", avatar: "DF" },
-    ];
+    const { data: suggestedPeople, isLoading } = useRandomEmployers();
+    const sendRequest = useSendConnectionRequest();
+    const [pendingIds, setPendingIds] = useState<number[]>([]);
+
+    const handleConnect = async (id: number) => {
+        setPendingIds((prev) => [...prev, id]);
+        try {
+            await sendRequest.mutateAsync(id);
+        } catch (error) {
+            // Error handled in hook (toast)
+            setPendingIds((prev) => prev.filter((pid) => pid !== id));
+        }
+    };
 
     return (
         <Sidebar side="right" className="top-16 h-[calc(100svh-4rem)] border-l">
@@ -47,30 +63,45 @@ function RightSidebarContent() {
                     <SidebarGroupLabel>People you may know</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <div className="space-y-4 pt-2">
-                            {suggestedPeople.map((person, index) => (
-                                <div key={index} className="flex items-center gap-3 px-2">
-                                    <Avatar className="h-10 w-10">
-                                        <AvatarFallback className="bg-foreground text-background font-semibold text-xs">
-                                            {person.avatar}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex-1 min-w-0">
-                                        <h4 className="font-medium text-sm truncate">
-                                            {person.name}
-                                        </h4>
-                                        <p className="text-xs text-muted-foreground truncate">
-                                            {person.title}
-                                        </p>
-                                    </div>
-                                    <Button
-                                        size="icon"
-                                        variant="secondary"
-                                        className="h-8 w-8 rounded-full"
-                                    >
-                                        <Plus className="h-4 w-4" />
-                                    </Button>
+                            {isLoading ? (
+                                <div className="flex justify-center p-4">
+                                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                                 </div>
-                            ))}
+                            ) : suggestedPeople?.length === 0 ? (
+                                <p className="text-sm text-muted-foreground text-center p-4">No suggestions available</p>
+                            ) : (
+                                suggestedPeople?.map((person: any) => (
+                                    <div key={person.id} className="flex items-center gap-3 px-2">
+                                        <Avatar className="h-10 w-10">
+                                            <AvatarImage src={getValidImageUrl(person.image)} />
+                                            <AvatarFallback className="bg-foreground text-background font-semibold text-xs">
+                                                {person.full_name?.[0] || "U"}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="font-medium text-sm truncate">
+                                                {person.full_name}
+                                            </h4>
+                                            <p className="text-xs text-muted-foreground truncate">
+                                                {person.company_name || person.role || "Employer"}
+                                            </p>
+                                        </div>
+                                        <Button
+                                            size="icon"
+                                            variant="secondary"
+                                            className="h-8 w-8 rounded-full"
+                                            onClick={() => handleConnect(person.id)}
+                                            disabled={pendingIds.includes(person.id) || sendRequest.isPending}
+                                        >
+                                            {pendingIds.includes(person.id) ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <Plus className="h-4 w-4" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                ))
+                            )}
                         </div>
                         <a
                             href="#"

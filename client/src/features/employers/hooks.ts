@@ -46,3 +46,13 @@ export function useUpdateEmployer() {
     },
   });
 }
+
+// Get random employers
+export function useRandomEmployers() {
+  return useQuery({
+    queryKey: ["random-employers"],
+    queryFn: () => employersApi.getRandom(),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: false,
+  });
+}

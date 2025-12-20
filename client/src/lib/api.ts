@@ -51,11 +51,9 @@ export const jobsApi = {
     params.append("limit", limit.toString());
 
     const { data } = await apiClient.get<{
-      jobs: Array<{
-        id: string;
-        employer_id: string;
-        [key: string]: unknown;
-      }>;
+      jobs: Array<
+        Omit<Job, "id" | "employer_id"> & { id: string; employer_id: string }
+      >;
       total: number;
       page: number;
       limit: number;
@@ -172,14 +170,33 @@ export const employersApi = {
   },
 
   getById: async (id: number): Promise<Employer> => {
-    throw new Error("Employer endpoint not implemented in backend");
+    const { data } = await apiClient.get<Employer>(`/api/employers/${id}`);
+    return data;
   },
 
   update: async (
     id: number,
     employerData: Partial<Employer>,
   ): Promise<Employer> => {
-    throw new Error("Update employer endpoint not implemented in backend");
+    const { data } = await apiClient.put<Employer>(
+      `/api/employers/${id}`,
+      employerData,
+    );
+    return data;
+  },
+
+  getRandom: async (): Promise<Employer[]> => {
+    const { data } = await apiClient.get<Employer[]>("/api/employers/random");
+    return data;
+  },
+};
+
+// Connections API
+export const connectionsApi = {
+  sendRequest: async (receiverId: number): Promise<void> => {
+    await apiClient.post("/api/connections/request", {
+      receiver_id: receiverId,
+    });
   },
 };
 
