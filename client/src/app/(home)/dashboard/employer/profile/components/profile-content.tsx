@@ -175,7 +175,6 @@ export default function ProfileContent({
           website: "",
         });
       } else if (currentUser.role === "employer" && employerProfile) {
-        // For employers, show company name
         setFormData({
           firstName: currentUser.full_name?.split(" ")[0] || "",
           lastName: currentUser.full_name?.split(" ").slice(1).join(" ") || "",
@@ -188,7 +187,6 @@ export default function ProfileContent({
           website: employerProfile.website || "",
         });
       } else {
-        // Fallback to currentUser data if profile not loaded yet
         setFormData({
           firstName: currentUser.full_name?.split(" ")[0] || "",
           lastName: currentUser.full_name?.split(" ").slice(1).join(" ") || "",
@@ -196,9 +194,9 @@ export default function ProfileContent({
           role:
             currentUser.role === "candidate" ? "Product Designer" : "Employer",
           companyName: "",
-          phone: (currentUser as any).phone || "",
-          location: (currentUser as any).location || "",
-          bio: (currentUser as any).bio || "",
+          phone: currentUser.phone || "",
+          location: currentUser.location || "",
+          bio: currentUser.bio || "",
           website: "",
         });
       }
@@ -248,13 +246,11 @@ export default function ProfileContent({
     if (account === "github") {
       try {
         const { auth_url } = await githubConnect();
-        // Redirect to GitHub OAuth
         window.location.href = auth_url;
       } catch (error) {
         toast.error("Failed to initiate GitHub connection");
       }
     } else if (account === "google") {
-      // Google OAuth is handled separately for login, not account linking
       toast.info("Google account is linked via login");
     } else {
       toast.info("Twitter connection not yet implemented");
@@ -603,10 +599,10 @@ export default function ProfileContent({
                   const relatedReq =
                     notif.type === "connection_request" && senderId
                       ? connectionRequests?.received.find(
-                          (r) =>
-                            Number(r.sender?.id) === Number(senderId) &&
-                            r.status === "pending",
-                        )
+                        (r) =>
+                          Number(r.sender?.id) === Number(senderId) &&
+                          r.status === "pending",
+                      )
                       : null;
 
                   return (

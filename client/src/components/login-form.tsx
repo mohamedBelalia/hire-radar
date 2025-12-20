@@ -50,11 +50,15 @@ export function LoginForm({
         router.push(`/`);
       }
       toast.success("Logged in successfully!");
-    } catch (err: any) {
-      if (err.response && err.response.data) {
-        setError(err.response.data.error || "Something went wrong");
+    } catch (err: unknown) {
+      const error = err as {
+        response?: { data?: { error?: string } };
+        message?: string;
+      };
+      if (error.response?.data?.error) {
+        setError(error.response.data.error);
       } else {
-        setError(err.message || "Something went wrong");
+        setError(error.message || "Something went wrong");
       }
     } finally {
       setLoading(false);
@@ -107,7 +111,7 @@ export function LoginForm({
             className={cn(
               "bg-background",
               error &&
-                "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20 dark:border-destructive",
+              "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20 dark:border-destructive",
             )}
           />
           {error && (

@@ -1,5 +1,6 @@
 import { getToken, removeToken, setToken } from "@/lib";
 import apiClient from "@/lib/apiClient";
+import type { ISignupRequest, ISignupResponse, LoginResponse } from "@/types/authResponseTypes";
 
 export async function login(email: string, password: string) {
   const { data } = await apiClient.post<LoginResponse>("/api/auth/login", {

@@ -7,6 +7,10 @@ export type User = {
   email: string;
   role: "candidate" | "employer" | "admin";
   image?: string | null;
+  phone?: string | null;
+  location?: string | null;
+  bio?: string | null;
+  headLine?: string | null; // Used in some places
   created_at?: string;
   // These are not returned by /auth/me - will need to be fetched separately or derived
   candidate_id?: number;
@@ -150,14 +154,24 @@ export type Notification = {
   sender_id: number;
   receiver_id: number;
   type:
-    | "connection_request"
-    | "connection_accepted"
-    | "job_application"
-    | "application_status"
-    | "job_posted";
+  | "connection_request"
+  | "connection_accepted"
+  | "job_application"
+  | "application_status"
+  | "job_posted";
   title: string;
   message: string;
   is_read: number;
   created_at?: string;
   sender?: User;
+};
+
+// Summary type for sidebar suggestions
+export type SuggestedPerson = {
+  id: number;
+  full_name: string;
+  image?: string | null;
+  headline?: string | null;
+  company_name?: string | null;
+  role?: string | null;
 };

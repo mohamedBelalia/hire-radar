@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { useRouter } from "next/navigation";
+import type { ISignupRequest } from "@/types/authResponseTypes";
 
 export function SignupForm({
   className,
@@ -37,7 +38,7 @@ export function SignupForm({
     confirmPassword: "",
   });
 
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -47,7 +48,7 @@ export function SignupForm({
   }
 
   function validate() {
-    let errs: any = {};
+    const errs: Record<string, string> = {};
 
     if (!form.full_name.trim()) errs.full_name = "Full name is required.";
     if (!form.role) errs.role = "Please select a role.";
@@ -83,9 +84,13 @@ export function SignupForm({
       const res = await signup(form);
       router.push(`/login`);
       toast.success("Account created successfully!");
-    } catch (err: any) {
-      if (err.response && err.response.data) {
-        setErrors({ email: err.response.data.error });
+    } catch (err: unknown) {
+      const error = err as {
+        response?: { data?: { error?: string } };
+        message?: string;
+      };
+      if (error.response?.data?.error) {
+        setErrors({ email: error.response.data.error });
       } else {
         setErrors({ password: "Something went wrong" });
       }

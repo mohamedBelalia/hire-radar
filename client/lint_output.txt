@@ -1,0 +1,115 @@
+
+> frontend@0.1.0 lint
+> eslint
+
+
+/persistent/home/CcZzz000/Progs/projects/hire-radar/client/src/app/(auth)/signup/page.tsx
+  11:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/persistent/home/CcZzz000/Progs/projects/hire-radar/client/src/app/(home)/components/LeftSidebar.tsx
+  12:10  warning  'Badge' is defined but never used  @typescript-eslint/no-unused-vars
+
+/persistent/home/CcZzz000/Progs/projects/hire-radar/client/src/app/(home)/components/RightSidebar.tsx
+  53:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/persistent/home/CcZzz000/Progs/projects/hire-radar/client/src/app/(home)/dashboard/candidate/profile/components/profile-content.tsx
+  239:16  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/persistent/home/CcZzz000/Progs/projects/hire-radar/client/src/app/(home)/dashboard/employer/profile/components/profile-content.tsx
+  197:34  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  198:37  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  199:32  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  250:16  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+/persistent/home/CcZzz000/Progs/projects/hire-radar/client/src/app/(home)/page.tsx
+   4:8  warning  'TopNavbar' is defined but never used                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+  22:9  warning  The 'jobs' logical expression could make the dependencies of useMemo Hook (at line 77) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'jobs' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+/persistent/home/CcZzz000/Progs/projects/hire-radar/client/src/app/(home)/profile/components/profile-header.tsx
+  8:34  warning  'MapPin' is defined but never used  @typescript-eslint/no-unused-vars
+
+/persistent/home/CcZzz000/Progs/projects/hire-radar/client/src/components/TopNavbar.tsx
+  125:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/persistent/home/CcZzz000/Progs/projects/hire-radar/client/src/components/app-sidebar.tsx
+  11:3  warning  'Map' is defined but never used       @typescript-eslint/no-unused-vars
+  12:3  warning  'PieChart' is defined but never used  @typescript-eslint/no-unused-vars
+
+/persistent/home/CcZzz000/Progs/projects/hire-radar/client/src/components/dataTable.tsx
+  66:17  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/persistent/home/CcZzz000/Progs/projects/hire-radar/client/src/components/dataTable.tsx:66:17
+  64 |   const [rowSelection, setRowSelection] = React.useState({});
+  65 |
+> 66 |   const table = useReactTable({
+     |                 ^^^^^^^^^^^^^ TanStack Table's `useReactTable()` API returns functions that cannot be memoized safely
+  67 |     data,
+  68 |     columns,
+  69 |     onSortingChange: setSorting,  react-hooks/incompatible-library
+
+/persistent/home/CcZzz000/Progs/projects/hire-radar/client/src/components/nav-settings.tsx
+   4:3   warning  'Folder' is defined but never used                 @typescript-eslint/no-unused-vars
+   6:3   warning  'Share' is defined but never used                  @typescript-eslint/no-unused-vars
+   7:3   warning  'Trash2' is defined but never used                 @typescript-eslint/no-unused-vars
+  12:3   warning  'DropdownMenu' is defined but never used           @typescript-eslint/no-unused-vars
+  13:3   warning  'DropdownMenuContent' is defined but never used    @typescript-eslint/no-unused-vars
+  14:3   warning  'DropdownMenuItem' is defined but never used       @typescript-eslint/no-unused-vars
+  15:3   warning  'DropdownMenuSeparator' is defined but never used  @typescript-eslint/no-unused-vars
+  16:3   warning  'DropdownMenuTrigger' is defined but never used    @typescript-eslint/no-unused-vars
+  22:3   warning  'SidebarMenuAction' is defined but never used      @typescript-eslint/no-unused-vars
+  37:11  warning  'isMobile' is assigned a value but never used      @typescript-eslint/no-unused-vars
+
+/persistent/home/CcZzz000/Progs/projects/hire-radar/client/src/components/nav-user.tsx
+  28:28  warning  'error' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/persistent/home/CcZzz000/Progs/projects/hire-radar/client/src/components/profile/ProfileHeader.tsx
+  38:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/persistent/home/CcZzz000/Progs/projects/hire-radar/client/src/components/signup-form.tsx
+  84:13  warning  'res' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/persistent/home/CcZzz000/Progs/projects/hire-radar/client/src/features/applications/hooks.ts
+  36:17  warning  '_' is defined but never used          @typescript-eslint/no-unused-vars
+  36:20  warning  'variables' is defined but never used  @typescript-eslint/no-unused-vars
+
+/persistent/home/CcZzz000/Progs/projects/hire-radar/client/src/features/auth/api.ts
+  37:12  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+/persistent/home/CcZzz000/Progs/projects/hire-radar/client/src/features/candidates/hooks.ts
+  23:16  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/persistent/home/CcZzz000/Progs/projects/hire-radar/client/src/features/employers/hooks.ts
+  23:16  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/persistent/home/CcZzz000/Progs/projects/hire-radar/client/src/features/jobs/hooks.ts
+    7:41  warning  'applicationsApi' is defined but never used  @typescript-eslint/no-unused-vars
+    8:15  warning  'Job' is defined but never used              @typescript-eslint/no-unused-vars
+    8:32  warning  'SavedJob' is defined but never used         @typescript-eslint/no-unused-vars
+  157:16  warning  'error' is defined but never used            @typescript-eslint/no-unused-vars
+
+/persistent/home/CcZzz000/Progs/projects/hire-radar/client/src/lib/api.ts
+  111:17  warning  'jobId' is defined but never used            @typescript-eslint/no-unused-vars
+  111:32  warning  'applicationData' is defined but never used  @typescript-eslint/no-unused-vars
+  115:16  warning  'jobId' is defined but never used            @typescript-eslint/no-unused-vars
+  119:18  warning  'jobId' is defined but never used            @typescript-eslint/no-unused-vars
+  132:19  warning  'id' is defined but never used               @typescript-eslint/no-unused-vars
+  137:5   warning  'id' is defined but never used               @typescript-eslint/no-unused-vars
+  138:5   warning  'candidateData' is defined but never used    @typescript-eslint/no-unused-vars
+  144:5   warning  'id' is defined but never used               @typescript-eslint/no-unused-vars
+  145:5   warning  'file' is defined but never used             @typescript-eslint/no-unused-vars
+  150:24  warning  'id' is defined but never used               @typescript-eslint/no-unused-vars
+  154:27  warning  'id' is defined but never used               @typescript-eslint/no-unused-vars
+  158:20  warning  'id' is defined but never used               @typescript-eslint/no-unused-vars
+  158:32  warning  'skillId' is defined but never used          @typescript-eslint/no-unused-vars
+  162:23  warning  'id' is defined but never used               @typescript-eslint/no-unused-vars
+  162:35  warning  'skillId' is defined but never used          @typescript-eslint/no-unused-vars
+  254:22  warning  'jobId' is defined but never used            @typescript-eslint/no-unused-vars
+  259:5   warning  'id' is defined but never used               @typescript-eslint/no-unused-vars
+  260:5   warning  'status' is defined but never used           @typescript-eslint/no-unused-vars
+  270:25  warning  'candidateId' is defined but never used      @typescript-eslint/no-unused-vars
+  276:5   warning  'jobId' is defined but never used            @typescript-eslint/no-unused-vars
+
+✖ 57 problems (3 errors, 54 warnings)
+

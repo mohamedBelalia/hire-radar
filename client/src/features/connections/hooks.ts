@@ -13,9 +13,10 @@ export function useSendConnectionRequest() {
       queryClient.invalidateQueries({ queryKey: ["random-employers"] });
       queryClient.invalidateQueries({ queryKey: ["connection-requests"] });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       // Extract error message from axios error
-      const message = error.response?.data?.error || "Failed to send request";
+      const err = error as { response?: { data?: { error?: string } } };
+      const message = err.response?.data?.error || "Failed to send request";
       toast.error(message);
     },
   });

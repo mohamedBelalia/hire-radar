@@ -1,4 +1,6 @@
-type ISignupRequest = {
+import { User } from "./index";
+
+export type ISignupRequest = {
   full_name: string;
   password: string;
   confirmPassword: string;
@@ -6,12 +8,12 @@ type ISignupRequest = {
   role: string;
 };
 
-type ISignupResponse = {
+export type ISignupResponse = {
   token: string;
   user: User;
 };
 
-type LoginResponse = {
+export type LoginResponse = {
   token: string;
   user: User;
 };

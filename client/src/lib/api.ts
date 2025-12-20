@@ -17,6 +17,7 @@ import type {
   User,
   ConnectionRequest,
   Notification,
+  SuggestedPerson,
 } from "@/types";
 
 // Auth API
@@ -162,8 +163,10 @@ export const candidatesApi = {
     throw new Error("Remove skill endpoint not implemented in backend");
   },
 
-  getRandom: async (): Promise<Candidate[]> => {
-    const { data } = await apiClient.get<Candidate[]>("/api/candidates/random");
+  getRandom: async (): Promise<SuggestedPerson[]> => {
+    const { data } = await apiClient.get<SuggestedPerson[]>(
+      "/api/candidates/random",
+    );
     return data;
   },
 };
@@ -192,8 +195,10 @@ export const employersApi = {
     return data;
   },
 
-  getRandom: async (): Promise<Employer[]> => {
-    const { data } = await apiClient.get<Employer[]>("/api/employers/random");
+  getRandom: async (): Promise<SuggestedPerson[]> => {
+    const { data } = await apiClient.get<SuggestedPerson[]>(
+      "/api/employers/random",
+    );
     return data;
   },
 };

@@ -97,7 +97,7 @@ export default function ProfileContent({
   useEffect(() => {
     if (currentUser) {
       if (currentUser.role === "candidate" && candidateProfile) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
+         
         setFormData({
           firstName: candidateProfile.full_name?.split(" ")[0] || "",
           lastName:
