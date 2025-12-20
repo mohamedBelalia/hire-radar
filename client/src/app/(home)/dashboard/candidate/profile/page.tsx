@@ -1,11 +1,11 @@
 "use client";
 
-import ProfileHeader from "./components/profile-header";
 import ProfileSidebar from "@/app/(home)/profile/components/profile-sidebar";
 import { useCurrentUser } from "@/features/auth/hook";
 import type { User } from "@/types";
 import { useEffect, useState } from "react";
-import ProfileContent from "../../employer/profile/components/profile-content";
+import ProfileContent from "../../components/profile-content";
+import ProfileHeader from "../../components/profile-header";
 
 export default function Page() {
   const { data } = useCurrentUser();

@@ -4,7 +4,6 @@ import { useCurrentUser } from "@/features/auth/hook";
 import { useSavedJobs, useUnsaveJob } from "@/features/jobs/hooks";
 import JobCard from "@/components/jobs/JobCard";
 import JobCardSkeleton from "@/components/jobs/JobCardSkeleton";
-import TopNavbar from "@/components/TopNavbar";
 import SavedJobsSidebar from "./components/saved-jobs-sidebar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,7 +37,6 @@ export default function SavedJobsPage() {
   if (!currentUser || currentUser.role !== "candidate") {
     return (
       <div className="min-h-screen bg-background">
-        <TopNavbar />
         <div className="container mx-auto px-4 md:px-6 py-8 max-w-7xl pt-24">
           <Card className="border-border">
             <CardContent className="p-12 text-center">
@@ -56,9 +54,8 @@ export default function SavedJobsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <TopNavbar />
-      <div className="container mx-auto px-4 md:px-6 py-8 max-w-7xl pt-24">
+    <div className="bg-background">
+      <div className="container mx-auto px-4 md:px-6 max-w-7xl">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2 tracking-tight">Saved Jobs</h1>
           <p className="text-muted-foreground">

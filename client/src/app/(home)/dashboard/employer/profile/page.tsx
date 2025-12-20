@@ -1,7 +1,7 @@
 "use client";
 
-import ProfileHeader from "./components/profile-header";
-import ProfileContent from "./components/profile-content";
+import ProfileHeader from "../../components/profile-header";
+import ProfileContent from "../../components/profile-content";
 import ProfileSidebar from "@/app/(home)/profile/components/profile-sidebar";
 import { useCurrentUser } from "@/features/auth/hook";
 import type { User } from "@/types";

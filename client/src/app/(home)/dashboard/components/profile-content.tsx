@@ -7,7 +7,8 @@ import {
   User as UserIcon,
   Lock,
   Bell,
-  GraduationCap
+  GraduationCap,
+  BriefcaseBusiness
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +21,7 @@ import { toast } from "sonner";
 import { useCurrentUser } from "@/features/auth/hook";
 import {
   useCandidateProfile,
+  useUploadCandidateCV,
 } from "@/features/profile/hooks";
 import {
   useEmployerProfile,
@@ -31,6 +33,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/apiClient";
 import { getToken } from "@/lib";
 import { DeleteAccount } from "@/components/delete-account";
+import CareerTab from "@/components/career-tab";
+import UploadCV from "@/components/profile/UploadCV";
 
 interface ProfileContentProps {
   defaultTab?: string;
@@ -73,6 +77,9 @@ export default function ProfileContent({
   const [success, setSuccess] = useState<string | null>(null);
   const [updateCandidateLoading,setUpdateCandidateLoading] = useState(false)
   const [updateEmployerLoading,setUpdateEmployerLoading] = useState(false)
+  const uploadCV = useUploadCandidateCV(userId);
+
+
   const handleUpdatePassword = async () => {
     setError(null);
     setSuccess(null);
@@ -153,8 +160,6 @@ export default function ProfileContent({
 
   const isLoading =
     currentUser?.role === "candidate" ? isLoadingCandidate : isLoadingEmployer;
-  const profile =
-    currentUser?.role === "candidate" ? candidateProfile : employerProfile;
 
   // Form state
   const [formData, setFormData] = useState<UserProfile>({
@@ -170,26 +175,6 @@ export default function ProfileContent({
     website: "",
   });
 
-  const queryClient = useQueryClient();
-
-
-  // Check URL params for OAuth callback results
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("github_linked") === "success") {
-        toast.success("GitHub account connected successfully!");
-        queryClient.invalidateQueries({ queryKey: ["connected-accounts"] });
-        // Clean URL
-        window.history.replaceState({}, "", window.location.pathname);
-      } else if (params.get("error")) {
-        const error = params.get("error");
-        toast.error(`Failed to connect GitHub: ${error}`);
-        // Clean URL
-        window.history.replaceState({}, "", window.location.pathname);
-      }
-    }
-  }, [queryClient]);
 
   // Update form data when profile loads
   // Note: This syncs form state with async profile data - necessary use case
@@ -209,7 +194,7 @@ export default function ProfileContent({
           bio: currentUser.bio || "",
           website: currentUser.website,
         });
-      } else if (currentUser.role === "employer" && employerProfile) {
+      } else if (currentUser.role === "employer") {
         setFormData({
           firstName: currentUser.full_name?.split(" ")[0] || "",
           lastName:
@@ -220,10 +205,9 @@ export default function ProfileContent({
           phone: currentUser?.phone || "",
           location: currentUser?.location || "",
           bio: currentUser?.bio || "",
-          website: currentUser?.website,
+          website: currentUser?.website || "",
         });
       } else {
-        // Fallback to currentUser data if profile not loaded yet
         setFormData({
           firstName: currentUser.full_name?.split(" ")[0] || "",
           lastName: currentUser.full_name?.split(" ").slice(1).join(" ") || "",
@@ -238,8 +222,8 @@ export default function ProfileContent({
         });
       }
     }
-  }, [profile, candidateProfile, employerProfile, currentUser]);
-
+  }, [currentUser]);
+  
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -274,15 +258,13 @@ export default function ProfileContent({
         if(response.status === 200){
           toast.success("Profile updated successfully!");
         }
-        toast.success("Profile updated successfully!");
       } catch {
         toast.error("Failed to update profile. Please try again.");
       } finally{
         setUpdateEmployerLoading(false)
       }
     }
-  };
-  
+  }  
 
   if (isLoading) {
     return (
@@ -294,7 +276,7 @@ export default function ProfileContent({
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-      <TabsList className={`grid w-full ${currentUser?.role === "candidate" ? 'grid-cols-4': 'grid-cols-3'}`}>
+      <TabsList className={`grid w-full grid-cols-4`}>
         <TabsTrigger value="profile">
           <UserIcon className="mr-2 h-4 w-4" />
           Profile
@@ -313,6 +295,13 @@ export default function ProfileContent({
                 Career
               </TabsTrigger>
           }
+
+          {
+            currentUser?.role === "employer" && <TabsTrigger value="career">
+                <BriefcaseBusiness className="mr-2 h-4 w-4" />
+                Posted jobs
+              </TabsTrigger>
+          }
          
       </TabsList>
 
@@ -323,9 +312,10 @@ export default function ProfileContent({
             <CardHeader>
               <CardTitle>Profile Details</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              {currentUser?.role === "employer" || currentUser?.role === 'candidate' ? (
+
+            <CardContent className="space-y-8">
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  {/* First name */}
                   <div className="space-y-2">
                     <Label htmlFor="firstName">First name</Label>
                     <Input
@@ -338,11 +328,13 @@ export default function ProfileContent({
                       required
                     />
                   </div>
+
+                  {/* Last name */}
                   <div className="space-y-2">
                     <Label htmlFor="lastName">Last name</Label>
                     <Input
                       id="lastName"
-                      placeholder="doe"
+                      placeholder="Doe"
                       value={formData.lastName}
                       onChange={(e) =>
                         handleInputChange("lastName", e.target.value)
@@ -350,6 +342,8 @@ export default function ProfileContent({
                       required
                     />
                   </div>
+
+                  {/* Company */}
                   <div className="space-y-2">
                     <Label htmlFor="companyName">Company name</Label>
                     <Input
@@ -361,12 +355,14 @@ export default function ProfileContent({
                       }
                     />
                   </div>
+
+                  {/* Email */}
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <Input
                       id="email"
-                      placeholder="m@example.com"
                       type="email"
+                      placeholder="m@example.com"
                       value={formData.email}
                       onChange={(e) =>
                         handleInputChange("email", e.target.value)
@@ -374,6 +370,8 @@ export default function ProfileContent({
                       required
                     />
                   </div>
+
+                  {/* Phone */}
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone</Label>
                     <Input
@@ -385,8 +383,10 @@ export default function ProfileContent({
                       }
                     />
                   </div>
+
+                  {/* Headline */}
                   <div className="space-y-2">
-                    <Label htmlFor="phone">HeadLine</Label>
+                    <Label htmlFor="headLine">Headline</Label>
                     <Input
                       id="headLine"
                       placeholder="Full stack engineer"
@@ -396,9 +396,16 @@ export default function ProfileContent({
                       }
                     />
                   </div>
-                  
-                  <div className="flex md:col-span-2 justify-between">
-                    <div className="space-y-2 w-[33%]">
+
+                  {/* Website / Location / Github */}
+                  <div
+                    className={`grid gap-6 md:col-span-2 ${
+                      currentUser?.role === "candidate"
+                        ? "grid-cols-1 md:grid-cols-3"
+                        : "grid-cols-1 md:grid-cols-2"
+                    }`}
+                  >
+                    <div className="space-y-2">
                       <Label htmlFor="website">Website</Label>
                       <Input
                         id="website"
@@ -409,7 +416,8 @@ export default function ProfileContent({
                         }
                       />
                     </div>
-                    <div className="space-y-2 w-[33%]">
+
+                    <div className="space-y-2">
                       <Label htmlFor="location">Location</Label>
                       <Input
                         id="location"
@@ -420,87 +428,43 @@ export default function ProfileContent({
                         }
                       />
                     </div>
-                    <div className="space-y-2 w-[33%]">
-                      <Label htmlFor="github_url">Github url</Label>
-                      <Input
-                        id="github_url"
-                        placeholder="www.github.com/username"
-                        value={formData.github_url}
-                        onChange={(e) =>
-                          handleInputChange("github_url", e.target.value)
-                        }
-                      />
-                    </div>
+
+                    {currentUser?.role === "candidate" && (
+                      <div className="space-y-2">
+                        <Label htmlFor="github_url">Github url</Label>
+                        <Input
+                          id="github_url"
+                          placeholder="www.github.com/username"
+                          value={formData.github_url}
+                          onChange={(e) =>
+                            handleInputChange("github_url", e.target.value)
+                          }
+                        />
+                      </div>
+                    )}
                   </div>
+
+                  {/* Bio */}
                   <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="bio">Bio</Label>
                     <Textarea
-                      placeholder="tell us about you..."
                       id="bio"
-                      value={formData.bio}
-                      onChange={(e) => handleInputChange("bio", e.target.value)}
                       rows={4}
+                      placeholder="Tell us about you..."
+                      value={formData.bio}
+                      onChange={(e) =>
+                        handleInputChange("bio", e.target.value)
+                      }
                     />
                   </div>
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">First name</Label>
-                    <Input
-                      id="firstName"
-                      value={formData.firstName}
-                      onChange={(e) =>
-                        handleInputChange("firstName", e.target.value)
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Last name</Label>
-                    <Input
-                      id="lastName"
-                      value={formData.lastName}
-                      onChange={(e) =>
-                        handleInputChange("lastName", e.target.value)
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) =>
-                        handleInputChange("email", e.target.value)
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="role">Role</Label>
-                    <Input
-                      id="role"
-                      value={formData.role}
-                      onChange={(e) =>
-                        handleInputChange("role", e.target.value)
-                      }
-                      disabled
-                      className="bg-muted"
-                    />
-                  </div>
-                </div>
-              )}
+
               <div className="flex justify-end">
                 <Button
                   type="submit"
-                  disabled={
-                    updateCandidateLoading || updateEmployer.isPending
-                  }
+                  disabled={updateCandidateLoading || updateEmployerLoading}
                 >
-                  {(updateCandidateLoading || updateEmployer.isPending) && (
+                  {(updateCandidateLoading || updateEmployerLoading) && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
                   Save Changes
@@ -509,7 +473,36 @@ export default function ProfileContent({
             </CardContent>
           </Card>
         </form>
+
+
+        {/* CV Upload Section - Only for Candidates */}
+        {currentUser?.role === "candidate" && (
+          <UploadCV
+            profile={
+              candidateProfile || {
+                id: userId || "",
+                full_name: currentUser?.full_name || "",
+                email: currentUser?.email || "",
+                skills: [],
+                cv_url: undefined,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              }
+            }
+            onUpload={async (file) => {
+              try {
+                await uploadCV.mutateAsync(file);
+                toast.success("CV uploaded successfully!");
+              } catch (error) {
+                toast.error("Failed to upload CV. Please try again.");
+                throw error;
+              }
+            }}
+            isUploading={uploadCV.isPending}
+          />
+        )}
       </TabsContent>
+
 
       {/* Security Tab */}
       <TabsContent value="security" className="space-y-6">
@@ -596,105 +589,76 @@ export default function ProfileContent({
             </div>
           </CardContent>
         </Card>
-
       </TabsContent>
+
+      {/* Notifications Tab */}
+      <TabsContent value="career" className="space-y-6">
+        <CareerTab />
+      </TabsContent>
+
 
       {/* Notifications Tab */}
       <TabsContent value="notifications" className="space-y-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Notification Preferences</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Notifications</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Recent activity and system updates
+              </p>
+            </div>
+
+            <Button variant="outline" size="sm">
+              Mark all as read
+            </Button>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <div className="font-semibold">Email notifications</div>
-                <div className="text-sm text-muted-foreground">
-                  Receive notifications about account activity
-                </div>
-              </div>
-              <Button variant="outline">Configure</Button>
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <div className="font-semibold">Push notifications</div>
-                <div className="text-sm text-muted-foreground">
-                  Receive notifications about account activity
-                </div>
-              </div>
-              <Button variant="outline">Configure</Button>
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <div className="font-semibold">Monthly newsletter</div>
-                <div className="text-sm text-muted-foreground">
-                  Receive notifications about account activity
-                </div>
-              </div>
-              <Button variant="outline">Configure</Button>
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <div className="font-semibold">Security alerts</div>
-                <div className="text-sm text-muted-foreground">
-                  Receive notifications about account activity
-                </div>
-              </div>
-              <Button variant="outline">Configure</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </TabsContent>
 
+          <CardContent className="space-y-2">
+            <div className="flex items-start gap-4 rounded-lg border p-4 transition hover:bg-muted/50">
+              <span className="mt-2 h-2 w-2 rounded-full bg-primary" />
 
+              <div className="flex-1 space-y-1">
+                <div className="flex items-center justify-between">
+                  <p className="font-medium">
+                    Connection Request
+                  </p>
+                  <span className="text-xs text-muted-foreground">
+                    2 minutes ago
+                  </span>
+                </div>
 
-      <TabsContent value="notifications" className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Notification Preferences</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <div className="font-semibold">Email notifications</div>
-                <div className="text-sm text-muted-foreground">
-                  Receive notifications about account activity
+                <p className="text-sm text-muted-foreground">
+                  John Doe sent you a connection request.
+                </p>
+
+                <div className="flex gap-2 pt-2">
+                  <Button size="sm">Accept</Button>
+                  <Button size="sm" variant="outline">
+                    Ignore
+                  </Button>
                 </div>
               </div>
-              <Button variant="outline">Configure</Button>
             </div>
+
             <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <div className="font-semibold">Push notifications</div>
-                <div className="text-sm text-muted-foreground">
-                  Receive notifications about account activity
+
+            <div className="flex items-start gap-4 rounded-lg p-4 opacity-70">
+              <span className="mt-2 h-2 w-2 rounded-full bg-transparent" />
+
+              <div className="flex-1 space-y-1">
+                <div className="flex items-center justify-between">
+                  <p className="font-medium">
+                    Application Status Updated
+                  </p>
+                  <span className="text-xs text-muted-foreground">
+                    Yesterday
+                  </span>
                 </div>
+
+                <p className="text-sm text-muted-foreground">
+                  Your application for “Frontend Developer” was accepted.
+                </p>
               </div>
-              <Button variant="outline">Configure</Button>
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <div className="font-semibold">Monthly newsletter</div>
-                <div className="text-sm text-muted-foreground">
-                  Receive notifications about account activity
-                </div>
-              </div>
-              <Button variant="outline">Configure</Button>
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <div className="font-semibold">Security alerts</div>
-                <div className="text-sm text-muted-foreground">
-                  Receive notifications about account activity
-                </div>
-              </div>
-              <Button variant="outline">Configure</Button>
             </div>
           </CardContent>
         </Card>
