@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  Play,
+  Users,
   BarChart3,
   UserPlus,
   Bookmark,
@@ -30,10 +30,18 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useConnectionRequests } from "@/features/connections/hooks";
+import { getToken } from "@/lib";
 
 function LeftSidebarContent() {
-  const { data } = useCurrentUser();
+  const { data } = useCurrentUser(getToken()!);
   const currentUser = data as User | undefined;
+  const { data: connectionData } = useConnectionRequests();
+
+  const connectionsCount = currentUser
+    ? (connectionData?.received?.filter(r => r.status === 'accepted').length || 0) +
+    (connectionData?.sent?.filter(r => r.status === 'accepted').length || 0)
+    : 0;
 
   const hashtags = [
     "work",
@@ -82,10 +90,15 @@ function LeftSidebarContent() {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <a href="#">
-                    <Play />
-                    <span>Learning</span>
+                    <Users />
+                    <span>Connections</span>
                   </a>
                 </SidebarMenuButton>
+                {connectionsCount > 0 && (
+                  <SidebarMenuBadge className="bg-secondary text-secondary-foreground text-xs rounded-full px-1.5 py-0.5">
+                    {connectionsCount}
+                  </SidebarMenuBadge>
+                )}
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>

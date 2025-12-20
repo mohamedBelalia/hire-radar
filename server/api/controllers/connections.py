@@ -93,8 +93,7 @@ def get_requests():
         
         # Get received requests
         received = db.query(ConnectionRequest).filter(
-            ConnectionRequest.receiver_id == current_user_id,
-            ConnectionRequest.status == "pending"
+            ConnectionRequest.receiver_id == current_user_id
         ).all()
         
         # Get sent requests
