@@ -42,7 +42,7 @@ export default function MyJobsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [page, sortBy, order, toast]);
+  }, [page, sortBy, order]);
 
   useEffect(() => {
     fetchJobs();

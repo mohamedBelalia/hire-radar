@@ -140,8 +140,8 @@ export function JobCard({ job, onEdit, onDelete, isDeleting }: JobCardProps) {
           <DialogHeader>
             <DialogTitle>Delete Job Posting</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{job.title}"? This action cannot
-              be undone.
+              Are you sure you want to delete &quot;{job.title}&quot;? This
+              action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

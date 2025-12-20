@@ -158,7 +158,7 @@ export function SkillSelector({
                   className="w-full px-3 py-2 text-left text-sm hover:bg-green-50 focus:bg-green-50 disabled:opacity-50 border-t border-gray-200 bg-green-50 flex items-center gap-2 font-medium text-green-700"
                 >
                   <Plus className="h-4 w-4" />
-                  Create new skill: "{searchTerm.trim()}"
+                  Create new skill: &quot;{searchTerm.trim()}&quot;
                 </button>
               )}
             </div>

@@ -13,7 +13,7 @@ export default function EmployerLayout({
 }) {
   const { data } = useCurrentUser();
   const currentUser = data as User | undefined;
-  const [activeTab, setActiveTab] = useState("profile");
+  const [, setActiveTab] = useState("profile");
 
   useEffect(() => {
     const handleHashChange = () => {
