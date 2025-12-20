@@ -1,5 +1,5 @@
 from flask import Blueprint
-from controllers.job import (
+from api.controllers.job import (
     search_jobs,
     get_job_by_id,
     create_job,
@@ -8,6 +8,9 @@ from controllers.job import (
     save_job,
     unsave_job,
     apply_to_job,
+    get_employer_jobs,
+    get_skills,
+    create_or_get_skill,
 )
 
 job = Blueprint("job", __name__)
@@ -47,6 +50,21 @@ def save_job_route(job_id: int):
 @job.route("/<int:job_id>/save", methods=["DELETE"])
 def unsave_job_route(job_id: int):
     return unsave_job(job_id)
+
+
+@job.route("/my-jobs", methods=["GET"])
+def get_employer_jobs_route():
+    return get_employer_jobs()
+
+
+@job.route("/skills", methods=["GET"])
+def get_skills_route():
+    return get_skills()
+
+
+@job.route("/skills", methods=["POST"])
+def create_or_get_skill_route():
+    return create_or_get_skill()
 
 
 @job.route("/<int:job_id>/apply", methods=["POST"])

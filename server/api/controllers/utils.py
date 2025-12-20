@@ -2,8 +2,8 @@
 
 from flask import request
 import jwt
-from config.db import SessionLocal
-from core.models import User
+from api.config.db import SessionLocal
+from api.core.models import User
 import os
 from dotenv import load_dotenv
 

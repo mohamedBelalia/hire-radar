@@ -3,8 +3,8 @@ from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
 from sqlalchemy.orm import Session
-from config.db import SessionLocal
-from core.models import User
+from api.config.db import SessionLocal
+from api.core.models import User
 
 
 def get_db():

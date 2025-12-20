@@ -58,7 +58,7 @@ export default function ProfileSidebar() {
     {
       icon: UserIcon,
       label: "Profile",
-      href: "#profile",
+      href: "/dashboard/employer/profile",
       tab: "profile",
     },
     {
@@ -79,19 +79,19 @@ export default function ProfileSidebar() {
     {
       icon: Bookmark,
       label: "Saved Jobs",
-      href: "/dashboard/candidate/saved-jobs",
+      href: "/dashboard/employer/saved-jobs",
       visible: currentUser?.role === "candidate",
     },
     {
       icon: Briefcase,
       label: "My Applications",
-      href: "#",
+      href: "/dashboard/employer/my-applications",
       visible: currentUser?.role === "candidate",
     },
     {
       icon: FileText,
       label: "My Jobs",
-      href: "#",
+      href: "/dashboard/employer/my-jobs",
       visible: currentUser?.role === "employer",
     },
   ];

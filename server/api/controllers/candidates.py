@@ -1,8 +1,8 @@
 from flask import request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
 from sqlalchemy.orm import Session
-from config.db import SessionLocal
-from core.models import User, SavedJob, Job, Skill, Education, Experience, user_skills
+from api.config.db import SessionLocal
+from api.core.models import User, SavedJob, Job, Skill, Education, Experience, user_skills
 from typing import Optional
 import os
 from datetime import datetime

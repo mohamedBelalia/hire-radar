@@ -2,17 +2,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, redirect, request
 from flask_cors import CORS
-from config.db import Base, engine
-from routes.auth import auth
-from routes.job import job
-from routes.candidates import candidates
-from routes.employers import employers
-from routes.applications import applications
-from controllers.auth import github_connect, github_callback
+from api.config.db import Base, engine
+from api.routes.auth import auth
+from api.routes.job import job  # Fixed this line
+from api.routes.candidates import candidates
+from api.routes.employers import employers
+from api.routes.applications import applications
+from api.controllers.auth import github_connect, github_callback
 import os
 from pathlib import Path
+
 
 # Get the project root directory (where uploads folder is located)
 # This file is in server/api/, so we go up 2 levels to get to project root
@@ -77,8 +78,6 @@ def serve_upload(filename):
 # This redirects to the Next.js frontend route handler
 @app.route("/auth/google/callback")
 def handle_incorrect_oauth_callback():
-    from flask import redirect, request
-
     # Redirect to Next.js frontend route handler with all query params
     frontend_url = f"http://localhost:3000/api/auth/google/callback?{request.query_string.decode()}"
     return redirect(frontend_url, code=302)
