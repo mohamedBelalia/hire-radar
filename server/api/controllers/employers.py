@@ -7,6 +7,7 @@ from config.db import SessionLocal
 from core.models import User
 from middlewares.auth import is_auth
 
+
 def get_db():
     db = SessionLocal()
     try:
@@ -58,6 +59,7 @@ def get_employer(employer_id: int):
         return jsonify({"error": str(e)}), 500
     finally:
         db.close()
+
 
 @is_auth
 def update_employer():

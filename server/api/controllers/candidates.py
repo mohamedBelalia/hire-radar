@@ -5,8 +5,9 @@ from config.db import SessionLocal
 from core.models import User, SavedJob, Education, Experience, Skill, user_skills
 import os
 from datetime import datetime
-from middlewares.auth import is_auth 
+from middlewares.auth import is_auth
 from sqlalchemy import select
+
 
 def get_db():
     db = SessionLocal()
@@ -113,10 +114,10 @@ def update_candidate():
         if "github_url" in data:
             user.github_url = data.get("github_url")
         if "website" in data:
-            user.webSite = data.get("website") 
+            user.webSite = data.get("website")
         if "companyName" in data:
-            user.companyName = data.get("companyName")        
-        
+            user.companyName = data.get("companyName")
+
         print(data.get("github_url"))
 
         if "skills" in data:
@@ -403,8 +404,6 @@ def get_saved_jobs(candidate_id: int):
         db.close()
 
 
-
-
 # career tab
 @is_auth
 def add_education():
@@ -429,27 +428,30 @@ def add_education():
         db.refresh(education)
 
         # Return the newly added education
-        return jsonify({
-            "message": "Education added successfully",
-            "education": {
-                "id": education.id,
-                "user_id": education.user_id,
-                "school_name": education.school_name,
-                "degree": education.degree,
-                "field_of_study": education.field_of_study,
-                "start_date": education.start_date,
-                "end_date": education.end_date,
-                "description": education.description,
-            }
-        }), 200
+        return (
+            jsonify(
+                {
+                    "message": "Education added successfully",
+                    "education": {
+                        "id": education.id,
+                        "user_id": education.user_id,
+                        "school_name": education.school_name,
+                        "degree": education.degree,
+                        "field_of_study": education.field_of_study,
+                        "start_date": education.start_date,
+                        "end_date": education.end_date,
+                        "description": education.description,
+                    },
+                }
+            ),
+            200,
+        )
 
     except Exception as e:
         db.rollback()
         return jsonify({"error": str(e)}), 500
     finally:
         db.close()
-
-
 
 
 @is_auth
@@ -494,7 +496,6 @@ def update_education(education_id):
         db.close()
 
 
-
 @is_auth
 def delete_education(education_id):
     db: Session = next(get_db())
@@ -523,9 +524,6 @@ def delete_education(education_id):
         db.close()
 
 
-
-
-
 @is_auth
 def add_experience():
     db: Session = next(get_db())
@@ -547,26 +545,29 @@ def add_experience():
         db.commit()
         db.refresh(experience)
 
-        return jsonify({
-            "message": "Experience added successfully",
-            "experience": {
-                "id": experience.id,
-                "user_id": experience.user_id,
-                "job_title": experience.job_title,
-                "company": experience.company,
-                "start_date": str(experience.start_date),
-                "end_date": str(experience.end_date),
-                "description": experience.description
-            }
-        }), 200
+        return (
+            jsonify(
+                {
+                    "message": "Experience added successfully",
+                    "experience": {
+                        "id": experience.id,
+                        "user_id": experience.user_id,
+                        "job_title": experience.job_title,
+                        "company": experience.company,
+                        "start_date": str(experience.start_date),
+                        "end_date": str(experience.end_date),
+                        "description": experience.description,
+                    },
+                }
+            ),
+            200,
+        )
 
     except Exception as e:
         db.rollback()
         return jsonify({"error": str(e)}), 500
     finally:
         db.close()
-
-
 
 
 @is_auth
@@ -609,8 +610,6 @@ def update_experience(experience_id):
         db.close()
 
 
-
-
 @is_auth
 def delete_experience(experience_id):
     db: Session = next(get_db())
@@ -637,7 +636,6 @@ def delete_experience(experience_id):
         return jsonify({"error": str(e)}), 500
     finally:
         db.close()
-
 
 
 @is_auth
@@ -677,11 +675,7 @@ def add_skill():
         if not skill_name:
             return jsonify({"message": "Skill name is required"}), 400
 
-        skill = (
-            db.query(Skill)
-            .filter(Skill.name.ilike(skill_name))
-            .first()
-        )
+        skill = db.query(Skill).filter(Skill.name.ilike(skill_name)).first()
 
         if not skill:
             skill = Skill(name=skill_name)
@@ -692,27 +686,26 @@ def add_skill():
         user = db.query(User).filter(User.id == user_id).first()
 
         if skill in user.skills:
-            return jsonify({
-                "message": "Skill already added to user"
-            }), 400
+            return jsonify({"message": "Skill already added to user"}), 400
 
         user.skills.append(skill)
         db.commit()
 
-        return jsonify({
-            "message": "Skill added successfully",
-            "skill": {
-                "id": skill.id,
-                "name": skill.name
-            }
-        }), 200
+        return (
+            jsonify(
+                {
+                    "message": "Skill added successfully",
+                    "skill": {"id": skill.id, "name": skill.name},
+                }
+            ),
+            200,
+        )
 
     except Exception as e:
         db.rollback()
         return jsonify({"error": str(e)}), 500
     finally:
         db.close()
-
 
 
 @is_auth

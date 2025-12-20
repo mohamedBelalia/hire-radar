@@ -180,7 +180,7 @@ def get_current_user():
                 "phone": user.phone,
                 "resume_url": user.resume_url,
                 "location": user.location,
-                "companyName": user.companyName
+                "companyName": user.companyName,
             }
         )
 

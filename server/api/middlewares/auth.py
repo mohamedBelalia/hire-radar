@@ -36,7 +36,6 @@ def admin_required(f):
     return decorated
 
 
-
 def is_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):

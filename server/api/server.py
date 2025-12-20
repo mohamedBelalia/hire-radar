@@ -31,6 +31,7 @@ def init_db():
         print(f"Warning: Could not create database tables: {e}")
         print("Make sure PostgreSQL is running and the database is accessible.")
 
+
 print(UPLOADS_DIR)
 
 print(UPLOADS_DIR)

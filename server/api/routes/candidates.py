@@ -47,16 +47,19 @@ candidates.add_url_rule(
 )
 
 
-
 # EDUCATION ROUTES
+candidates.add_url_rule("/educations", "add_education", add_education, methods=["POST"])
 candidates.add_url_rule(
-    "/educations", "add_education", add_education, methods=["POST"]
+    "/educations/<int:education_id>",
+    "update_education",
+    update_education,
+    methods=["PUT"],
 )
 candidates.add_url_rule(
-    "/educations/<int:education_id>", "update_education", update_education, methods=["PUT"]
-)
-candidates.add_url_rule(
-    "/educations/<int:education_id>", "delete_education", delete_education, methods=["DELETE"]
+    "/educations/<int:education_id>",
+    "delete_education",
+    delete_education,
+    methods=["DELETE"],
 )
 
 # EXPERIENCE ROUTES
@@ -64,21 +67,23 @@ candidates.add_url_rule(
     "/experiences", "add_experience", add_experience, methods=["POST"]
 )
 candidates.add_url_rule(
-    "/experiences/<int:experience_id>", "update_experience", update_experience, methods=["PUT"]
+    "/experiences/<int:experience_id>",
+    "update_experience",
+    update_experience,
+    methods=["PUT"],
 )
 candidates.add_url_rule(
-    "/experiences/<int:experience_id>", "delete_experience", delete_experience, methods=["DELETE"]
+    "/experiences/<int:experience_id>",
+    "delete_experience",
+    delete_experience,
+    methods=["DELETE"],
 )
 
 # SKILL ROUTES
 
-candidates.add_url_rule(
-    "/skills", "get_skills", get_skills, methods=["GET"]
-)
+candidates.add_url_rule("/skills", "get_skills", get_skills, methods=["GET"])
 
-candidates.add_url_rule(
-    "/skills", "add_skill", add_skill, methods=["POST"]
-)
+candidates.add_url_rule("/skills", "add_skill", add_skill, methods=["POST"])
 candidates.add_url_rule(
     "/skills/<int:skill_id>", "delete_skill", delete_skill, methods=["DELETE"]
 )
