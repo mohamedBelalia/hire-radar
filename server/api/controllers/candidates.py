@@ -2,10 +2,11 @@ from flask import request, jsonify
 from werkzeug.utils import secure_filename
 from sqlalchemy.orm import Session
 from config.db import SessionLocal
-from core.models import User, SavedJob, Education, Experience, Skill
+from core.models import User, SavedJob, Education, Experience, Skill, user_skills
 import os
 from datetime import datetime
 from middlewares.auth import is_auth 
+from sqlalchemy import select
 
 def get_db():
     db = SessionLocal()
@@ -423,7 +424,7 @@ def update_education(education_id):
 
 
 
-# @education_bp.route("/educations/<int:education_id>", methods=["DELETE"])
+@is_auth
 def delete_education(education_id):
     db: Session = next(get_db())
 
@@ -497,7 +498,7 @@ def add_experience():
 
 
 
-# @experience_bp.route("/experiences/<int:experience_id>", methods=["PUT"])
+@is_auth
 def update_experience(experience_id):
     db: Session = next(get_db())
 
@@ -539,7 +540,7 @@ def update_experience(experience_id):
 
 
 
-# @experience_bp.route("/experiences/<int:experience_id>", methods=["DELETE"])
+@is_auth
 def delete_experience(experience_id):
     db: Session = next(get_db())
 
@@ -568,20 +569,72 @@ def delete_experience(experience_id):
 
 
 
-# @skill_bp.route("/skills", methods=["POST"])
+@is_auth
+def get_skills():
+    db: Session = next(get_db())
+
+    try:
+        # Get query param, e.g., /api/skills?query=python
+        query = request.args.get("query", "").strip()
+
+        skills_query = db.query(Skill)
+
+        if query:
+            skills_query = skills_query.filter(Skill.name.ilike(f"%{query}%"))
+
+        skills = skills_query.order_by(Skill.name.asc()).all()
+
+        skills_list = [{"id": skill.id, "name": skill.name} for skill in skills]
+
+        return jsonify({"skills": skills_list}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db.close()
+
+
+@is_auth
 def add_skill():
     db: Session = next(get_db())
 
     try:
+        user_id = request.user_id
         data = request.get_json()
+        skill_name = data.get("name", "").strip()
 
-        skill = Skill(name=data["name"])
+        if not skill_name:
+            return jsonify({"message": "Skill name is required"}), 400
 
-        db.add(skill)
+        skill = (
+            db.query(Skill)
+            .filter(Skill.name.ilike(skill_name))
+            .first()
+        )
+
+        if not skill:
+            skill = Skill(name=skill_name)
+            db.add(skill)
+            db.commit()
+            db.refresh(skill)
+
+        user = db.query(User).filter(User.id == user_id).first()
+
+        if skill in user.skills:
+            return jsonify({
+                "message": "Skill already added to user"
+            }), 400
+
+        user.skills.append(skill)
         db.commit()
-        db.refresh(skill)
 
-        return jsonify({"message": "Skill added successfully"}), 201
+        return jsonify({
+            "message": "Skill added successfully",
+            "skill": {
+                "id": skill.id,
+                "name": skill.name
+            }
+        }), 200
 
     except Exception as e:
         db.rollback()
@@ -591,20 +644,31 @@ def add_skill():
 
 
 
-# @skill_bp.route("/skills/<int:skill_id>", methods=["DELETE"])
+@is_auth
 def delete_skill(skill_id):
     db: Session = next(get_db())
 
     try:
-        skill = db.query(Skill).filter(Skill.id == skill_id).first()
+        user_id = request.user_id
+        user = db.query(User).filter(User.id == user_id).first()
 
+        skill = db.query(Skill).filter(Skill.id == skill_id).first()
         if not skill:
             return jsonify({"error": "Skill not found"}), 404
 
-        db.delete(skill)
-        db.commit()
+        # Remove skill from user's skills if exists
+        if skill in user.skills:
+            user.skills.remove(skill)
+            db.commit()
 
-        return jsonify({"message": "Skill deleted successfully"}), 200
+        # Check if any other users have this skill
+        stmt = select(user_skills).where(user_skills.c.skill_id == skill.id)
+        result = db.execute(stmt).all()
+        if len(result) == 0:
+            db.delete(skill)
+            db.commit()
+
+        return jsonify({"message": "Skill removed successfully"}), 200
 
     except Exception as e:
         db.rollback()

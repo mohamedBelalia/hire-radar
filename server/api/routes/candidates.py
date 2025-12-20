@@ -12,7 +12,8 @@ from controllers.candidates import (
     add_experience,
     update_experience,
     delete_experience,
-    delete_skill
+    delete_skill,
+    get_skills
 )
 
 
@@ -65,6 +66,11 @@ candidates.add_url_rule(
 )
 
 # SKILL ROUTES
+
+candidates.add_url_rule(
+    "/skills", "get_skills", get_skills, methods=["GET"]
+)
+
 candidates.add_url_rule(
     "/skills", "add_skill", add_skill, methods=["POST"]
 )
