@@ -61,7 +61,6 @@ export default function ProfileContent({
   const userId = useCurrentUserId();
   const [activeTab, setActiveTab] = useState(defaultTab);
 
-  // Listen for tab changes from sidebar
   useEffect(() => {
     const handleTabChange = (e: CustomEvent) => {
       setActiveTab(e.detail);
@@ -76,12 +75,10 @@ export default function ProfileContent({
     };
   }, []);
 
-  // Update active tab when defaultTab prop changes
   useEffect(() => {
     setActiveTab(defaultTab);
   }, [defaultTab]);
 
-  // Fetch profile data based on role
   const { data: candidateProfile, isLoading: isLoadingCandidate } =
     useCandidateProfile(userId);
   const { data: employerProfile, isLoading: isLoadingEmployer } =
@@ -94,7 +91,6 @@ export default function ProfileContent({
   const profile =
     currentUser?.role === "candidate" ? candidateProfile : employerProfile;
 
-  // Form state
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -127,14 +123,12 @@ export default function ProfileContent({
 
   const queryClient = useQueryClient();
 
-  // Fetch connected accounts from backend
   const { data: connectedAccountsData } = useQuery({
     queryKey: ["connected-accounts"],
     queryFn: getConnectedAccounts,
     retry: false,
   });
 
-  // Map connected accounts to state
   const connectedAccounts = {
     github:
       connectedAccountsData?.connected_accounts?.some(
@@ -144,22 +138,20 @@ export default function ProfileContent({
       connectedAccountsData?.connected_accounts?.some(
         (acc) => acc.provider === "google" && acc.connected,
       ) || false,
-    twitter: false, // Not implemented yet
+    twitter: false,
   };
 
-  // Check URL params for OAuth callback results
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       if (params.get("github_linked") === "success") {
         toast.success("GitHub account connected successfully!");
         queryClient.invalidateQueries({ queryKey: ["connected-accounts"] });
-        // Clean URL
         window.history.replaceState({}, "", window.location.pathname);
       } else if (params.get("error")) {
         const error = params.get("error");
         toast.error(`Failed to connect GitHub: ${error}`);
-        // Clean URL
+        window.history.replaceState({}, "", window.location.pathname);
         window.history.replaceState({}, "", window.location.pathname);
       }
     }
