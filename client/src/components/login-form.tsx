@@ -111,7 +111,7 @@ export function LoginForm({
             className={cn(
               "bg-background",
               error &&
-              "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20 dark:border-destructive",
+                "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20 dark:border-destructive",
             )}
           />
           {error && (

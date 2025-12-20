@@ -97,7 +97,6 @@ export default function ProfileContent({
   useEffect(() => {
     if (currentUser) {
       if (currentUser.role === "candidate" && candidateProfile) {
-         
         setFormData({
           firstName: candidateProfile.full_name?.split(" ")[0] || "",
           lastName:
