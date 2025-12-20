@@ -227,6 +227,81 @@ class SavedJob(Base):
     job_id = Column(Integer, ForeignKey("jobs.id", ondelete="CASCADE"))
     saved_at = Column(DateTime, server_default=func.now())
 
+# ============================================================
+# NOTIFICATION MODEL
+# ============================================================
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id = Column(Integer, primary_key=True)
+
+    sender_id = Column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    receiver_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+
+    type = Column(
+        Enum(
+            "connection_request",
+            "connection_accepted",
+            "job_application",
+            "application_status",
+            "job_posted",
+            name="notification_type",
+        ),
+        nullable=False,
+    )
+
+    title = Column(String(255), nullable=False)
+    message = Column(Text, nullable=False)
+
+    is_read = Column(Integer, server_default="0")  # 0 = unread, 1 = read
+    created_at = Column(DateTime, server_default=func.now())
+
+    # Relationships
+    sender = relationship(
+        "User",
+        foreign_keys=[sender_id],
+        backref="sent_notifications",
+    )
+    receiver = relationship(
+        "User",
+        foreign_keys=[receiver_id],
+        backref="received_notifications",
+    )
+
+
+# ============================================================
+# CONNECTION REQUEST MODEL
+# ============================================================
+class ConnectionRequest(Base):
+    __tablename__ = "connection_requests"
+
+    id = Column(Integer, primary_key=True)
+
+    sender_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    receiver_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+
+    status = Column(
+        Enum("pending", "accepted", "rejected", name="connection_status"),
+        server_default="pending",
+    )
+
+    created_at = Column(DateTime, server_default=func.now())
+
+    # Relationships
+    sender = relationship(
+        "User", foreign_keys=[sender_id], backref="sent_requests"
+    )
+    receiver = relationship(
+        "User", foreign_keys=[receiver_id], backref="received_requests"
+    )
 
 Base.metadata.create_all(engine)
 print("Tables created successfully!")

@@ -16,7 +16,7 @@ from pathlib import Path
 
 # Get the project root directory (where uploads folder is located)
 # This file is in server/api/, so we go up 2 levels to get to project root
-PROJECT_ROOT = Path(__file__).parent.parent.parent
+PROJECT_ROOT = Path(__file__).parent.parent
 UPLOADS_DIR = PROJECT_ROOT / "uploads"
 
 app = Flask(__name__)
@@ -32,6 +32,7 @@ def init_db():
         print(f"Warning: Could not create database tables: {e}")
         print("Make sure PostgreSQL is running and the database is accessible.")
 
+print(UPLOADS_DIR)
 
 CORS(
     app,

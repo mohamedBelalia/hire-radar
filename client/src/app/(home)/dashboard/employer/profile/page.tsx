@@ -2,7 +2,7 @@
 
 import ProfileHeader from "./components/profile-header";
 import ProfileContent from "./components/profile-content";
-import ProfileSidebar from "@/app/profile/components/profile-sidebar";
+import ProfileSidebar from "@/app/(home)/profile/components/profile-sidebar";
 import { useCurrentUser } from "@/features/auth/hook";
 import type { User } from "@/types";
 import { useEffect, useState } from "react";
@@ -38,11 +38,11 @@ export default function Page() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10">
+    <div className="mx-auto max-w-7xl px-4">
       <div className="mb-8">
         <ProfileHeader user={currentUser} />
       </div>
-      <div className="flex gap-8">
+      <div className="md:flex gap-8">
         <ProfileSidebar />
         <div className="flex-1 min-w-0">
           <ProfileContent defaultTab={activeTab} />

@@ -25,47 +25,36 @@ export function LoginForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const router = useRouter();
+  const router = useRouter()
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
-    if (error) setError(""); // Clear error when user types
+    if (error) setError(""); 
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
-    if (error) setError(""); // Clear error when user types
+    if (error) setError(""); 
   };
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    setError("");
 
     try {
-      await login(email, password);
+        console.log("Form submitted");
+      const res = await login(email, password);
+      if(res?.user.role === 'admin'){
+        router.push(`/admin/users`)
+      }else{
+        router.push(`/`)
+      }
       toast.success("Logged in successfully!");
-      router.push("/");
-    } catch (err: unknown) {
-      if (
-        err &&
-        typeof err === "object" &&
-        "response" in err &&
-        err.response &&
-        typeof err.response === "object" &&
-        "data" in err.response &&
-        err.response.data &&
-        typeof err.response.data === "object" &&
-        "error" in err.response.data
-      ) {
-        const errorMsg =
-          (err.response.data.error as string) || "Something went wrong";
-        setError(errorMsg);
-      } else if (err && typeof err === "object" && "message" in err) {
-        const errorMsg = (err.message as string) || "Something went wrong";
-        setError(errorMsg);
+    } catch (err: any) {
+      if (err.response && err.response.data) {
+        setError(err.response.data.error || "Something went wrong");
       } else {
-        setError("Something went wrong");
+        setError(err.message || "Something went wrong");
       }
     } finally {
       setLoading(false);
@@ -95,13 +84,6 @@ export function LoginForm({
             required
             value={email}
             onChange={handleEmailChange}
-            disabled={loading}
-            aria-invalid={error ? "true" : "false"}
-            className={cn(
-              "bg-background",
-              error &&
-                "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20 dark:border-destructive",
-            )}
           />
         </Field>
 
@@ -110,19 +92,18 @@ export function LoginForm({
             <FieldLabel htmlFor="password">Password</FieldLabel>
             <a
               href="#"
-              className="ml-auto text-sm underline-offset-4 hover:underline text-muted-foreground"
+              className="ml-auto text-sm underline-offset-4 hover:underline"
             >
               Forgot your password?
             </a>
           </div>
           <Input
-            id="password"
+            disabled={loading}
             type="password"
+            aria-invalid={error ? "true" : "false"}
             required
             value={password}
             onChange={handlePasswordChange}
-            disabled={loading}
-            aria-invalid={error ? "true" : "false"}
             className={cn(
               "bg-background",
               error &&
@@ -137,11 +118,7 @@ export function LoginForm({
         </Field>
 
         <Field>
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-foreground text-background hover:bg-foreground/90"
-          >
+          <Button type="submit" disabled={loading} className="cursor-pointer">
             {loading ? "Logging in..." : "Login"}
           </Button>
         </Field>
@@ -152,10 +129,7 @@ export function LoginForm({
           <OAuth />
           <FieldDescription className="text-center">
             Don&apos;t have an account?{" "}
-            <a
-              href="/signup"
-              className="underline underline-offset-4 text-foreground hover:text-foreground/80"
-            >
+            <a href="/signup" className="underline underline-offset-4">
               Sign up
             </a>
           </FieldDescription>

@@ -1,28 +1,12 @@
 import { getToken, removeToken, setToken } from "@/lib";
 import apiClient from "@/lib/apiClient";
-import { authApi } from "@/lib/api";
-import type { User } from "@/types";
-
-type ISignupRequest = {
-  full_name: string;
-  password: string;
-  confirmPassword: string;
-  email: string;
-  role: string;
-};
-
-type ISignupResponse = {
-  token: string;
-  user: User;
-};
-
-type LoginResponse = {
-  token: string;
-  user: User;
-};
 
 export async function login(email: string, password: string) {
-  const data = await authApi.login(email, password);
+  const { data } = await apiClient.post<LoginResponse>("/api/auth/login", {
+    email,
+    password,
+  });
+
   setToken(data.token);
   return data;
 }
@@ -41,19 +25,14 @@ export const oAuth = async () => {
   return response;
 };
 
-export const me = async (token?: string): Promise<User | null> => {
+export const me = async (token?: string) => {
   try {
-    if (token) {
-      // If token is provided (e.g., from middleware), use it directly
-      const { data } = await apiClient.get<User>("/api/auth/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return data;
-    }
-    // Otherwise use the centralized API
-    return await authApi.me();
+    const response = await apiClient.get("/api/auth/me", {
+      headers: {
+        Authorization: `Bearer ${token || getToken()}`,
+      },
+    });
+    return response.data;
   } catch (err) {
     return null;
   }

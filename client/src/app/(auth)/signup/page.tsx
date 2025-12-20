@@ -1,24 +1,8 @@
 "use client";
 
 import { SignupForm } from "@/components/signup-form";
-import { useSearchParams } from "next/navigation";
-import { useEffect } from "react";
-import { toast } from "sonner";
 
 export default function SignupPage() {
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    const error = searchParams.get("error");
-    if (error) {
-      const errorMessages: Record<string, string> = {
-        missing_code: "Google OAuth authorization code is missing",
-        auth_failed: "Google authentication failed. Please try again.",
-        oauth_error: "An error occurred during Google OAuth. Please try again.",
-      };
-      toast.error(errorMessages[error] || "Authentication failed");
-    }
-  }, [searchParams]);
 
   return (
     <div className="grid min-h-svh lg:grid-cols-1">

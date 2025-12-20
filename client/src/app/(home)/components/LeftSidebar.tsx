@@ -12,7 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useCurrentUser } from "@/features/auth/hook";
 import type { User } from "@/types";
-import ProfileHeader from "@/app/profile/components/profile-header";
+import ProfileHeader from "@/app/(home)/profile/components/profile-header";
 
 export default function LeftSidebar() {
   const { data } = useCurrentUser();

@@ -5,7 +5,7 @@ export type User = {
   id: number;
   full_name: string;
   email: string;
-  role: "candidate" | "employer";
+  role: "candidate" | "employer" | "admin";
   image?: string | null;
   created_at?: string;
   // These are not returned by /auth/me - will need to be fetched separately or derived
