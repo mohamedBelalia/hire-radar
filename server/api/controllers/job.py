@@ -24,7 +24,6 @@ def search_jobs():
     db: Session = next(get_db())
 
     try:
-        # Get query parameters
         search = request.args.get("search", "").strip()
         location = request.args.get("location", "").strip()
         salary_min = request.args.get("salary_min")
@@ -32,10 +31,8 @@ def search_jobs():
         page = int(request.args.get("page", 1))
         limit = int(request.args.get("limit", 10))
 
-        # Start with base query
         query = db.query(Job)
 
-        # Apply search filter
         if search:
             search_filter = or_(
                 Job.title.ilike(f"%{search}%"),
@@ -44,11 +41,9 @@ def search_jobs():
             )
             query = query.filter(search_filter)
 
-        # Apply location filter
         if location:
             query = query.filter(Job.location.ilike(f"%{location}%"))
 
-        # Apply salary filter
         if salary_min:
             try:
                 min_salary = Decimal(salary_min)
@@ -56,21 +51,16 @@ def search_jobs():
             except (ValueError, TypeError):
                 pass
 
-        # Apply skill filter
         if skill:
             query = query.filter(Job.skills.contains([skill]))
 
-        # Get total count before pagination
         total = query.count()
 
-        # Apply pagination
         offset = (page - 1) * limit
         jobs = query.order_by(Job.posted_at.desc()).offset(offset).limit(limit).all()
 
-        # Calculate total pages
         total_pages = (total + limit - 1) // limit
 
-        # Convert to JSON format
         jobs_data = [job_to_dict(job) for job in jobs]
 
         return (
@@ -117,13 +107,11 @@ def create_job():
     try:
         data = request.get_json()
 
-        # Validate required fields
         required_fields = ["title", "description", "company_name", "employer_id"]
         for field in required_fields:
             if field not in data:
                 return jsonify({"error": f"Missing required field: {field}"}), 400
 
-        # Create new job
         job = Job(
             title=data["title"],
             description=data["description"],
@@ -176,7 +164,6 @@ def update_job(job_id: int):
 
         data = request.get_json()
 
-        # Update fields
         if "title" in data:
             job.title = data["title"]
         if "description" in data:
@@ -253,18 +240,14 @@ def save_job(job_id: int):
     db: Session = next(get_db())
 
     try:
-        # Get user ID from JWT token
         try:
             user_id = get_user_id_from_token()
         except ValueError as e:
             return jsonify({"error": str(e)}), 401
 
-        # Check if job exists
         job = db.query(Job).filter(Job.id == job_id).first()
         if not job:
             return jsonify({"error": "Job not found"}), 404
-
-        # Check if already saved
         existing = (
             db.query(SavedJob)
             .filter(SavedJob.user_id == user_id, SavedJob.job_id == job_id)
@@ -274,7 +257,6 @@ def save_job(job_id: int):
         if existing:
             return jsonify({"message": "Job already saved"}), 200
 
-        # Create saved job
         saved_job = SavedJob(user_id=user_id, job_id=job_id)
         db.add(saved_job)
         db.commit()
@@ -293,13 +275,11 @@ def unsave_job(job_id: int):
     db: Session = next(get_db())
 
     try:
-        # Get user ID from JWT token
         try:
             user_id = get_user_id_from_token()
         except ValueError as e:
             return jsonify({"error": str(e)}), 401
 
-        # Find and delete saved job
         saved_job = (
             db.query(SavedJob)
             .filter(SavedJob.user_id == user_id, SavedJob.job_id == job_id)
@@ -326,13 +306,11 @@ def apply_to_job(job_id: int):
     db: Session = next(get_db())
 
     try:
-        # Get user ID from JWT token
         try:
             user_id = get_user_id_from_token()
         except ValueError as e:
             return jsonify({"error": str(e)}), 401
 
-        # Get cover letter from form data or JSON
         cover_letter = None
         if request.form:
             cover_letter = request.form.get("cover_letter")
@@ -340,12 +318,9 @@ def apply_to_job(job_id: int):
             data = request.get_json()
             cover_letter = data.get("cover_letter")
 
-        # Check if job exists
         job = db.query(Job).filter(Job.id == job_id).first()
         if not job:
             return jsonify({"error": "Job not found"}), 404
-
-        # Check if user already applied
         existing = (
             db.query(Application)
             .filter(Application.user_id == user_id, Application.job_id == job_id)
@@ -355,7 +330,6 @@ def apply_to_job(job_id: int):
         if existing:
             return jsonify({"error": "You have already applied to this job"}), 400
 
-        # Handle CV file upload if provided
         cv_file_path = None
         if "cv_file" in request.files or "cv" in request.files:
             file = request.files.get("cv_file") or request.files.get("cv")
@@ -376,19 +350,15 @@ def apply_to_job(job_id: int):
                         400,
                     )
 
-                # Create uploads directory
                 upload_dir = "uploads/applications"
                 os.makedirs(upload_dir, exist_ok=True)
 
-                # Generate filename
                 filename = f"cv_{user_id}_job_{job_id}.{file_ext}"
                 filepath = os.path.join(upload_dir, filename)
 
-                # Save file
                 file.save(filepath)
                 cv_file_path = f"/uploads/applications/{filename}"
 
-        # Create application
         application = Application(
             job_id=job_id,
             user_id=user_id,

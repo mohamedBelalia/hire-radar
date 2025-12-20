@@ -30,10 +30,8 @@ def get_candidate(candidate_id: int):
         if not user:
             return jsonify({"error": "Candidate not found"}), 404
 
-        # Get skills
         skills = [{"id": skill.id, "name": skill.name} for skill in user.skills]
 
-        # Get education
         educations = [
             {
                 "id": edu.id,
@@ -47,7 +45,6 @@ def get_candidate(candidate_id: int):
             for edu in user.educations
         ]
 
-        # Get experience
         experiences = [
             {
                 "id": exp.id,
@@ -110,11 +107,9 @@ def update_candidate(candidate_id: int):
 
         data = request.get_json()
 
-        # Update basic fields
         if "full_name" in data:
             user.full_name = data["full_name"]
         if "email" in data:
-            # Check if email is already taken by another user
             existing_user = (
                 db.query(User)
                 .filter(User.email == data["email"], User.id != candidate_id)
@@ -132,7 +127,6 @@ def update_candidate(candidate_id: int):
         if "headLine" in data or "headline" in data:
             user.headLine = data.get("headLine") or data.get("headline")
 
-        # Update skills if provided
         if "skills" in data:
             skill_ids = [
                 s.get("id") if isinstance(s, dict) else s for s in data["skills"]
@@ -140,11 +134,8 @@ def update_candidate(candidate_id: int):
             skills = db.query(Skill).filter(Skill.id.in_(skill_ids)).all()
             user.skills = skills
 
-        # Update education if provided
         if "educations" in data:
-            # Delete existing educations
             db.query(Education).filter(Education.user_id == candidate_id).delete()
-            # Add new educations
             for edu_data in data["educations"]:
                 education = Education(
                     user_id=candidate_id,
@@ -169,11 +160,8 @@ def update_candidate(candidate_id: int):
                 )
                 db.add(education)
 
-        # Update experience if provided
         if "experiences" in data:
-            # Delete existing experiences
             db.query(Experience).filter(Experience.user_id == candidate_id).delete()
-            # Add new experiences
             for exp_data in data["experiences"]:
                 experience = Experience(
                     user_id=candidate_id,
@@ -200,7 +188,6 @@ def update_candidate(candidate_id: int):
         db.commit()
         db.refresh(user)
 
-        # Return updated profile
         skills = [{"id": skill.id, "name": skill.name} for skill in user.skills]
         educations = [
             {
@@ -276,7 +263,6 @@ def upload_cv(candidate_id: int):
         if file.filename == "":
             return jsonify({"error": "No file selected"}), 400
 
-        # Check file extension
         allowed_extensions = {"pdf", "doc", "docx"}
         file_ext = (
             file.filename.rsplit(".", 1)[1].lower() if "." in file.filename else ""
@@ -288,18 +274,13 @@ def upload_cv(candidate_id: int):
                 400,
             )
 
-        # Create uploads directory if it doesn't exist
         upload_dir = "uploads/cvs"
         os.makedirs(upload_dir, exist_ok=True)
-
-        # Generate filename
         filename = f"cv_{candidate_id}.{file_ext}"
         filepath = os.path.join(upload_dir, filename)
 
-        # Save file
         file.save(filepath)
 
-        # Update user's resume_url
         resume_url = f"/uploads/cvs/{filename}"
         user.resume_url = resume_url
         db.commit()
@@ -521,7 +502,6 @@ def get_random_candidates():
         decoded = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
         current_user_id = decoded["id"]
 
-        # Subquery for existing connections/requests
         subquery = (
             db.query(ConnectionRequest.receiver_id)
             .filter(ConnectionRequest.sender_id == current_user_id)
@@ -532,7 +512,6 @@ def get_random_candidates():
             )
         )
 
-        # Fetch random candidates not in subquery and not self
         candidates = (
             db.query(User)
             .filter(

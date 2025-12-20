@@ -51,7 +51,6 @@ function RightSidebarContent() {
     try {
       await sendRequest.mutateAsync(id);
     } catch {
-      // Error handled in hook (toast)
       setPendingIds((prev) => prev.filter((pid) => pid !== id));
     }
   };

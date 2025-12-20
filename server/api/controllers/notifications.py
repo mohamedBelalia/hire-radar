@@ -29,7 +29,6 @@ def get_notifications():
         decoded = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
         current_user_id = decoded["id"]
 
-        # Get notifications (last 20)
         notifications = (
             db.query(Notification)
             .filter(Notification.receiver_id == current_user_id)

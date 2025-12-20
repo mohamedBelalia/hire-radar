@@ -7,7 +7,6 @@ from controllers.applications import (
 
 applications = Blueprint("applications", __name__)
 
-# Application routes
 applications.add_url_rule(
     "", "get_all_applications", get_all_applications, methods=["GET"]
 )

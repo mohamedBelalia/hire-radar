@@ -12,7 +12,6 @@ from controllers.candidates import (
 
 candidates = Blueprint("candidates", __name__)
 
-# Candidate routes
 candidates.add_url_rule(
     "/<int:candidate_id>", "get_candidate", get_candidate, methods=["GET"]
 )
@@ -40,8 +39,6 @@ candidates.add_url_rule(
     get_random_candidates,
     methods=["GET"],
 )
-
-# Profile image upload
 candidates.add_url_rule(
     "/<int:candidate_id>/upload-image",
     "upload_profile_image",

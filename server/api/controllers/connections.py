@@ -37,7 +37,6 @@ def send_request():
         if sender_id == receiver_id:
             return jsonify({"error": "Cannot connect with yourself"}), 400
 
-        # Check if request already exists
         existing_request = (
             db.query(ConnectionRequest)
             .filter(
@@ -56,13 +55,11 @@ def send_request():
         if existing_request:
             return jsonify({"error": "Connection request already exists"}), 400
 
-        # Create connection request
         new_request = ConnectionRequest(
             sender_id=sender_id, receiver_id=receiver_id, status="pending"
         )
         db.add(new_request)
 
-        # Create notification
         sender = db.query(User).get(sender_id)
         notification = Notification(
             sender_id=sender_id,
@@ -102,14 +99,12 @@ def get_requests():
         decoded = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
         current_user_id = decoded["id"]
 
-        # Get received requests
         received = (
             db.query(ConnectionRequest)
             .filter(ConnectionRequest.receiver_id == current_user_id)
             .all()
         )
 
-        # Get sent requests
         sent = (
             db.query(ConnectionRequest)
             .filter(ConnectionRequest.sender_id == current_user_id)
@@ -194,7 +189,6 @@ def accept_request(request_id: int):
 
         req.status = "accepted"
 
-        # Create notification for sender
         receiver = db.query(User).get(current_user_id)
         notification = Notification(
             sender_id=current_user_id,

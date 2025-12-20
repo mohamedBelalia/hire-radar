@@ -39,7 +39,6 @@ def get_employer(employer_id: int):
                     "phone": user.phone,
                     "location": user.location,
                     "bio": user.bio,
-                    # Expose as snake_case to match frontend types, but store using DB field names
                     "company_name": user.companyName,
                     "website": user.webSite,
                     "image": user.image,
@@ -75,14 +74,11 @@ def update_employer(employer_id: int):
         if not user:
             return jsonify({"error": "Employer not found"}), 404
 
-        # Gracefully handle missing or empty JSON body
         data = request.get_json(silent=True) or {}
 
-        # Update fields
         if "full_name" in data:
             user.full_name = data["full_name"]
         if "email" in data:
-            # Check if email is already taken by another user
             existing_user = (
                 db.query(User)
                 .filter(User.email == data["email"], User.id != employer_id)
@@ -198,7 +194,6 @@ def get_random_employers():
         decoded = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
         current_user_id = decoded["id"]
 
-        # Subquery for existing connections/requests
         subquery = (
             db.query(ConnectionRequest.receiver_id)
             .filter(ConnectionRequest.sender_id == current_user_id)
@@ -209,7 +204,6 @@ def get_random_employers():
             )
         )
 
-        # Fetch random employers not in subquery and not self
         employers = (
             db.query(User)
             .filter(
