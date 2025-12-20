@@ -27,8 +27,8 @@ export default function Home() {
         currentUser?.role === "employer" && currentUser?.id === job.employer_id;
       const avatarUrl =
         isCurrentUserJob &&
-          currentUser?.image &&
-          currentUser.image.trim() !== ""
+        currentUser?.image &&
+        currentUser.image.trim() !== ""
           ? currentUser.image
           : undefined;
 

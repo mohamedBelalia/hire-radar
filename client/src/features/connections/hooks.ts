@@ -65,7 +65,8 @@ export function useConnections() {
 export function useRemoveConnection() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (connectionId: number) => connectionsApi.removeConnection(connectionId),
+    mutationFn: (connectionId: number) =>
+      connectionsApi.removeConnection(connectionId),
     onSuccess: () => {
       toast.success("Connection removed");
       queryClient.invalidateQueries({ queryKey: ["connections"] });

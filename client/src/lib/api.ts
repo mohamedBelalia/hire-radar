@@ -109,7 +109,10 @@ export const jobsApi = {
 
   // Note: These endpoints don't exist in the backend yet
   // Stubbing them out for now - they will return errors
-  apply: async (_jobId: number, _applicationData?: { cover_letter?: string }) => {
+  apply: async (
+    _jobId: number,
+    _applicationData?: { cover_letter?: string },
+  ) => {
     throw new Error("Job application endpoint not implemented in backend");
   },
 

@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  MoreHorizontal,
-  type LucideIcon,
-} from "lucide-react";
-
+import { MoreHorizontal, type LucideIcon } from "lucide-react";
 
 import {
   SidebarGroup,
@@ -23,8 +19,6 @@ export function NavSettings({
     icon: LucideIcon;
   }[];
 }) {
-
-
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Settings</SidebarGroupLabel>

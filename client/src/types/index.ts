@@ -160,11 +160,11 @@ export type Notification = {
   sender_id: number;
   receiver_id: number;
   type:
-  | "connection_request"
-  | "connection_accepted"
-  | "job_application"
-  | "application_status"
-  | "job_posted";
+    | "connection_request"
+    | "connection_accepted"
+    | "job_application"
+    | "application_status"
+    | "job_posted";
   title: string;
   message: string;
   is_read: number;

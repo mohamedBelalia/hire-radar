@@ -523,10 +523,10 @@ export default function ProfileContent({
                   const relatedReq =
                     notif.type === "connection_request" && senderId
                       ? connectionRequests?.received.find(
-                        (r) =>
-                          Number(r.sender?.id) === Number(senderId) &&
-                          r.status === "pending",
-                      )
+                          (r) =>
+                            Number(r.sender?.id) === Number(senderId) &&
+                            r.status === "pending",
+                        )
                       : null;
 
                   return (

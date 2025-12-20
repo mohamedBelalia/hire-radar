@@ -39,8 +39,8 @@ function LeftSidebarContent() {
 
   const connectionsCount = currentUser
     ? (connectionData?.received?.filter((r) => r.status === "accepted")
-      .length || 0) +
-    (connectionData?.sent?.filter((r) => r.status === "accepted").length || 0)
+        .length || 0) +
+      (connectionData?.sent?.filter((r) => r.status === "accepted").length || 0)
     : 0;
 
   const hashtags = [

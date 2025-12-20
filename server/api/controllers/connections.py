@@ -284,7 +284,9 @@ def get_connections():
 
         connection_list = []
         for conn in connections:
-            other_user = conn.receiver if conn.sender_id == current_user_id else conn.sender
+            other_user = (
+                conn.receiver if conn.sender_id == current_user_id else conn.sender
+            )
             if not other_user:
                 continue
 
@@ -295,11 +297,14 @@ def get_connections():
                         "id": other_user.id,
                         "full_name": other_user.full_name,
                         "image": other_user.image,
-                        "headline": getattr(other_user, "headLine", None) or getattr(other_user, "role", "Professional"),
+                        "headline": getattr(other_user, "headLine", None)
+                        or getattr(other_user, "role", "Professional"),
                         "role": other_user.role,
                         "bio": other_user.bio,
                     },
-                    "created_at": conn.created_at.isoformat() if conn.created_at else None,
+                    "created_at": (
+                        conn.created_at.isoformat() if conn.created_at else None
+                    ),
                 }
             )
 
