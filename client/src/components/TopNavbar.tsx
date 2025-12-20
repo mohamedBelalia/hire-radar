@@ -74,6 +74,21 @@ export default function TopNavbar() {
     return date.toLocaleDateString();
   };
 
+  const displayNotifications = notifications?.filter(notif => {
+    // Keep all unread notifications
+    if (notif.is_read === 0) return true;
+
+    // For read notifications, only keep pending connection requests
+    if (notif.type === "connection_request") {
+      const senderId = notif.sender_id || notif.sender?.id;
+      return connectionRequests?.received.some(r =>
+        Number(r.sender?.id) === Number(senderId) && r.status === "pending"
+      );
+    }
+
+    return false;
+  }) || [];
+
   const profileUrl =
     currentUser?.role === "candidate"
       ? "/dashboard/candidate/profile"
@@ -164,8 +179,8 @@ export default function TopNavbar() {
                 )}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {notifications && notifications.length > 0 ? (
-                notifications.slice(0, 10).map((notif) => {
+              {displayNotifications.length > 0 ? (
+                displayNotifications.slice(0, 10).map((notif) => {
                   // Find related request if it's a connection request
                   const senderId = notif.sender_id || notif.sender?.id;
                   const relatedReq = notif.type === "connection_request" && senderId
