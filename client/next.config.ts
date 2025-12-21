@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    domains: ['img.freepik.com'], // add any other external domains you use here
+  },
 };
 
 export default nextConfig;

@@ -3,13 +3,16 @@ from werkzeug.utils import secure_filename
 from sqlalchemy import or_, and_
 from sqlalchemy.orm import Session
 from config.db import SessionLocal
-from core.models import Job, User, SavedJob, Application, Skill
+from core.models import Job, User, SavedJob, Application, Skill, job_skills
 from controllers.utils import get_user_id_from_token
 from typing import Optional, List
 from decimal import Decimal
 from datetime import datetime
 import os
-
+from middlewares.auth import is_auth
+from sqlalchemy.orm import Session
+from sqlalchemy import desc
+import random
 
 def get_db():
     db = SessionLocal()
@@ -17,6 +20,109 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+
+
+@is_auth
+def get_jobs_for_user():
+    db: Session = next(get_db())
+
+    try:
+        user_id = request.user_id
+        page = int(request.args.get("page", 1))
+        page_size = 10
+
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        user_skill_ids = [skill.id for skill in user.skills]
+        user_location = user.location
+
+        if user_skill_ids:
+            jobs_query = (
+                db.query(Job)
+                .join(job_skills, Job.id == job_skills.c.job_id)
+                .filter(job_skills.c.skill_id.in_(user_skill_ids))
+                .filter(Job.location.ilike(f"%{user_location}%"))  # location match
+                .distinct()
+                .order_by(desc(Job.created_at))
+            )
+        else:
+            jobs_query = db.query(Job)
+            if user_location:
+                jobs_query = jobs_query.filter(Job.location.ilike(f"%{user_location}%"))
+            total_jobs_count = jobs_query.count()
+            if total_jobs_count > 0:
+                # Randomize job selection
+                random_offset = random.randint(0, max(total_jobs_count - page_size, 0))
+                jobs = jobs_query.offset(random_offset).limit(page_size).all()
+                total_pages = (total_jobs_count + page_size - 1) // page_size
+
+                results = []
+                for job in jobs:
+                    results.append(
+                        {
+                            "id": job.id,
+                            "title": job.title,
+                            "company": job.company,
+                            "location": job.location,
+                            "salary_range": job.salary_range,
+                            "emp_type": job.emp_type,
+                            "description": job.description,
+                            "responsibilities": job.responsibilities,
+                            "skills": [skill.name for skill in job.skills],
+                            "created_at": job.created_at.isoformat(),
+                        }
+                    )
+
+                return jsonify(
+                    {
+                        "jobs": results,
+                        "total": total_jobs_count,
+                        "total_pages": total_pages,
+                        "page": page,
+                    }
+                )
+            else:
+                return jsonify({"jobs": [], "total": 0, "total_pages": 0, "page": page})
+
+        total_jobs = jobs_query.count()
+        total_pages = (total_jobs + page_size - 1) // page_size
+        jobs = jobs_query.offset((page - 1) * page_size).limit(page_size).all()
+
+        results = []
+        for job in jobs:
+            results.append(
+                {
+                    "id": job.id,
+                    "title": job.title,
+                    "company": job.company,
+                    "location": job.location,
+                    "salary_range": job.salary_range,
+                    "emp_type": job.emp_type,
+                    "description": job.description,
+                    "responsibilities": job.responsibilities,
+                    "skills": [skill.name for skill in job.skills],
+                    "created_at": job.created_at.isoformat(),
+                }
+            )
+
+        return jsonify(
+            {
+                "jobs": results,
+                "total": total_jobs,
+                "total_pages": total_pages,
+                "page": page,
+            }
+        )
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db.close()
+
 
 
 def search_jobs():
