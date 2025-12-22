@@ -45,7 +45,7 @@ export function LoginForm({
       console.log("Form submitted");
       const res = await login(email, password);
       if (res?.user.role === "admin") {
-        router.push(`/admin/users`);
+        router.push(`/admin/dashboard`);
       } else {
         router.push(`/`);
       }

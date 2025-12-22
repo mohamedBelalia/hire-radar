@@ -144,3 +144,30 @@ export const getDeletionRequests = async (token: string | null) => {
   });
   return response;
 };
+
+export const getReportedJobs = async (token: string | null) => {
+  const response = await apiClient.get(`/api/admin/reported-jobs`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response;
+};
+
+export const getDashboardStats = async (token: string | null) => {
+  const response = await apiClient.get(`/api/admin/dashboard`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response;
+};
+
+export const getUserRoles = async (token: string | null) => {
+  const response = await apiClient.get(`/api/admin/user-roles`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response;
+};

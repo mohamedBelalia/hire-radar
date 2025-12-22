@@ -333,7 +333,7 @@ class ReportedJob(Base):
         Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
     job_id = Column(
-        Integer, ForeignKey("job.id", ondelete="CASCADE"), nullable=False
+        Integer, ForeignKey("jobs.id", ondelete="CASCADE"), nullable=False
     )
     
     reason = Column(Text, nullable=False)

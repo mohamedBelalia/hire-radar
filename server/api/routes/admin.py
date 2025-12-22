@@ -17,7 +17,10 @@ from controllers.admin import (
     create_admin,
     delete_admin,
     getAdmins,
-    get_all_delete_requests
+    get_all_delete_requests,
+    get_reported_jobs,
+    get_dashboard_data,
+    user_roles_chart
 )
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -43,5 +46,9 @@ admin_bp.get("/admins")(admin_required(getAdmins))
 admin_bp.post("/add-admin")(admin_required(create_admin))
 admin_bp.delete("/<int:admin_id>")(admin_required(delete_admin))
 
-
 admin_bp.get("/deletion-requests")(admin_required(get_all_delete_requests))
+
+admin_bp.get("/reported-jobs")(admin_required(get_reported_jobs))
+
+admin_bp.get("/dashboard")(admin_required(get_dashboard_data))
+admin_bp.get("/user-roles")(admin_required(user_roles_chart))

@@ -6,6 +6,7 @@ import {
   BriefcaseBusiness,
   ChartBar,
   Contact,
+  Flag,
   HelpCircle,
   LayoutDashboard,
   UserMinus,
@@ -36,7 +37,7 @@ const data = {
   navMain: [
     {
       title: "Stats",
-      url: "/admin/stats",
+      url: "/admin/dashboard",
       icon: LayoutDashboard,
       isActive: true,
     },
@@ -65,6 +66,11 @@ const data = {
       url: "/admin/deletion-requests",
       icon: UserMinus,
     },
+    {
+      title: "Reported jobs",
+      url: "/admin/reported-jobs",
+      icon: Flag,
+    }
   ],
   settings: [
     {

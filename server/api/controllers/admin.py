@@ -2,10 +2,12 @@ from flask import Blueprint, jsonify, request
 from sqlalchemy import func, text
 from sqlalchemy.exc import IntegrityError
 from config.db import SessionLocal
-from core.models import User, Job, Application, Skill, Category, ConnectionRequest, DeleteRequest, Education, Notification, Experience
+from core.models import User, Job, Application, ReportedJob, Skill, Category, ConnectionRequest, DeleteRequest, Education, Notification, Experience
 from werkzeug.security import generate_password_hash
 import jwt
 import os
+from sqlalchemy.orm import joinedload
+from datetime import datetime, timedelta
 
 SECRET_KEY = os.getenv("JWT_SECRET")
 
@@ -66,7 +68,6 @@ def get_all_users():
 # ============================================================
 # 3. DELETE /admin/users/<id> → Remove user
 # ============================================================
-from sqlalchemy import text
 
 def delete_user(user_id):
     db = SessionLocal()
@@ -103,6 +104,9 @@ def delete_user(user_id):
         # Delete requests
         db.query(DeleteRequest).filter(DeleteRequest.user_id == user_id).delete()
 
+        # Reported jobs
+        db.query(ReportedJob).filter(ReportedJob.user_id == user_id).delete()
+
         # M2M cleanup
         db.execute(
             text("DELETE FROM user_skills WHERE user_id = :uid"),
@@ -133,7 +137,6 @@ def delete_user(user_id):
 
 
 
-
 def delete_job_internal(job_id, db):
     job = db.query(Job).filter(Job.id == job_id).first()
     if not job:
@@ -158,9 +161,11 @@ def delete_job_internal(job_id, db):
         {"jid": job_id},
     )
 
+    reported_jobs = db.query(ReportedJob).filter(ReportedJob.job_id == job_id).all()
+    for rj in reported_jobs:
+        db.delete(rj)
+
     db.delete(job)
-
-
 
 
 # ============================================================
@@ -587,5 +592,116 @@ def get_all_delete_requests():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+    finally:
+        db.close()
+
+
+
+# ============================================================
+# 18. GET /admin/reported-jobs → Get all reported jobs
+# ============================================================
+def get_reported_jobs():
+    db = SessionLocal()
+    try:
+        reported_jobs = db.query(ReportedJob).options(
+            joinedload(ReportedJob.user),
+            joinedload(ReportedJob.job)
+        ).all()
+
+        data = [
+            {
+                "id": rj.id,
+                "reason": rj.reason,
+                "created_at": rj.created_at.isoformat() if rj.created_at else None,
+                "user": {
+                    "id": rj.user.id,
+                    "full_name": getattr(rj.user, "full_name", None),
+                    "email": getattr(rj.user, "email", None),
+                } if rj.user else None,
+                "job": {
+                    "id": rj.job.id,
+                    "title": getattr(rj.job, "title", None),
+                    "company": getattr(rj.job, "company", None),
+                } if rj.job else None,
+            }
+            for rj in reported_jobs
+        ]
+
+        return jsonify(data), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        db.close()
+
+
+
+# ============================================================
+# 18. GET /admin/stats → Get dashboard stats
+# ============================================================
+def get_dashboard_data(days: int = 90):
+    db = SessionLocal()
+    try:
+        today = datetime.today()
+        start_date = today - timedelta(days=days)
+
+        chart_data = []
+
+        for i in range(days + 1):
+            day = start_date + timedelta(days=i)
+            day_start = datetime(day.year, day.month, day.day)
+            day_end = day_start + timedelta(days=1)
+
+            users_count = db.query(User).filter(
+                User.created_at >= day_start,
+                User.created_at < day_end
+            ).count()
+
+            jobs_count = db.query(Job).filter(
+                Job.created_at >= day_start,
+                Job.created_at < day_end
+            ).count()
+
+            applicants_count = db.query(Application).filter(
+                Application.applied_at >= day_start,
+                Application.applied_at < day_end
+            ).count()
+
+            chart_data.append({
+                "date": day_start.isoformat(),
+                "users": users_count,
+                "jobs": jobs_count,
+                "applicants": applicants_count
+            })
+
+        return jsonify(chart_data), 200
+    finally:
+        db.close()
+
+
+# ============================================================
+# 18. GET /admin/user-roles → Get pie chart user-roles
+# ============================================================
+def user_roles_chart():
+    db = SessionLocal()
+    try:
+        results = db.query(User.role, func.count(User.id)).group_by(User.role).all()
+
+        chart_data = []
+        color_map = {
+            "admin": "var(--color-admin)",
+            "employer": "var(--color-employer)",
+            "candidate": "var(--color-candidate)",
+        }
+
+        for role, count in results:
+            chart_data.append({
+                "browser": role,  # reuse "browser" key for pie chart nameKey
+                "visitors": count,
+                "fill": color_map.get(role, "var(--color-other)")
+            })
+
+        return jsonify(chart_data)
     finally:
         db.close()
