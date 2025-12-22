@@ -33,6 +33,7 @@ import {
 import DeleteDialog from "./delete-dialog";
 import { EditSkillCategory } from "./add-edit";
 import type { ColumnDef } from "@tanstack/react-table";
+import Image from "next/image";
 
 interface DataTableProps<TData> {
   data: TData[];
@@ -171,10 +172,25 @@ export function DataTable<TData extends { id: number; name?: string }>({
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} className="text-center">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
+                      {cell.column.id === "image" ? (
+                        typeof cell.getValue() === "string" && cell.getValue() ? (
+                          <Image
+                            src={cell.getValue() as string}
+                            alt={cell.column.full_name[0]}
+                            width={30}
+                            height={30}
+                            className="h-10 w-10 rounded-lg object-cover mx-auto"
+                          />
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )
+                      ) : (
+                        flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )
                       )}
+
                     </TableCell>
                   ))}
 

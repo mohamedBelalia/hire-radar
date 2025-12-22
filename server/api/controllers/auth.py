@@ -271,7 +271,7 @@ def login():
             return jsonify({"error": "Invalid email or password"}), 400
 
         token = jwt.encode(
-            {"id": user.id, "exp": datetime.utcnow() + timedelta(hours=24)},
+            {"id": user.id,"role": user.role, "exp": datetime.utcnow() + timedelta(hours=24)},
             JWT_SECRET,
             algorithm="HS256",
         )

@@ -1,8 +1,8 @@
 from flask import Blueprint, jsonify, request
-from sqlalchemy import func
+from sqlalchemy import func, text
 from sqlalchemy.exc import IntegrityError
 from config.db import SessionLocal
-from core.models import User, Job, Application, Skill, Category
+from core.models import User, Job, Application, Skill, Category, ConnectionRequest, Education, Notification, Experience
 from werkzeug.security import generate_password_hash
 import jwt
 import os
@@ -43,7 +43,7 @@ def get_all_users():
     db = SessionLocal()
 
     users = db.query(User).filter(User.role != "admin").all()
-
+    print(users)
     data = [
         {
             "id": u.id,
@@ -70,16 +70,93 @@ def delete_user(user_id):
     db = SessionLocal()
 
     user = db.query(User).filter(User.id == user_id).first()
-
     if not user:
         db.close()
         return jsonify({"error": "User not found"}), 404
 
-    db.delete(user)
-    db.commit()
-    db.close()
+    try:
+        # Applications
+        db.query(Application).filter(Application.user_id == user_id).delete()
 
-    return jsonify({"message": f"User {user_id} deleted successfully"}), 200
+        # Saved jobs
+        db.execute(
+            text("DELETE FROM saved_jobs WHERE user_id = :uid"),
+            {"uid": user_id},
+        )
+
+        # Education & Experience
+        db.query(Education).filter(Education.user_id == user_id).delete()
+        db.query(Experience).filter(Experience.user_id == user_id).delete()
+
+        # Notifications
+        db.query(Notification).filter(
+            (Notification.sender_id == user_id)
+            | (Notification.receiver_id == user_id)
+        ).delete()
+
+        # Connection requests
+        db.query(ConnectionRequest).filter(
+            (ConnectionRequest.sender_id == user_id)
+            | (ConnectionRequest.receiver_id == user_id)
+        ).delete()
+
+        # M2M cleanup
+        db.execute(
+            text("DELETE FROM user_skills WHERE user_id = :uid"),
+            {"uid": user_id},
+        )
+        db.execute(
+            text("DELETE FROM job_applicants WHERE user_id = :uid"),
+            {"uid": user_id},
+        )
+
+        # Jobs posted by user
+        jobs = db.query(Job).filter(Job.employer_id == user_id).all()
+        for job in jobs:
+            delete_job_internal(job.id, db)
+
+        # Delete user
+        db.delete(user)
+        db.commit()
+
+        return jsonify({"message": "User deleted successfully"}), 200
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db.close()
+
+
+
+
+def delete_job_internal(job_id, db):
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise Exception("Job not found")
+
+    # Applications
+    db.query(Application).filter(Application.job_id == job_id).delete()
+
+    # Saved jobs
+    db.execute(
+        text("DELETE FROM saved_jobs WHERE job_id = :jid"),
+        {"jid": job_id},
+    )
+
+    # M2M tables
+    db.execute(
+        text("DELETE FROM job_skills WHERE job_id = :jid"),
+        {"jid": job_id},
+    )
+    db.execute(
+        text("DELETE FROM job_applicants WHERE job_id = :jid"),
+        {"jid": job_id},
+    )
+
+    db.delete(job)
+
+
 
 
 # ============================================================
@@ -113,18 +190,17 @@ def get_all_jobs():
 # ============================================================
 def delete_job(job_id):
     db = SessionLocal()
-
-    job = db.query(Job).filter(Job.id == job_id).first()
-
-    if not job:
+    try:
+        delete_job_internal(job_id, db)
+        db.commit()
+        return jsonify({"message": f"Job {job_id} deleted successfully"}), 200
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
         db.close()
-        return jsonify({"error": "Job not found"}), 404
 
-    db.delete(job)
-    db.commit()
-    db.close()
 
-    return jsonify({"message": f"Job {job_id} deleted successfully"}), 200
 
 
 # ============================================================
@@ -175,18 +251,31 @@ def add_skill():
 # ============================================================
 def delete_skill(skill_id):
     db = SessionLocal()
+    try:
+        db.execute(
+            text("DELETE FROM user_skills WHERE skill_id = :sid"),
+            {"sid": skill_id},
+        )
+        db.execute(
+            text("DELETE FROM job_skills WHERE skill_id = :sid"),
+            {"sid": skill_id},
+        )
 
-    skill = db.query(Skill).filter(Skill.id == skill_id).first()
+        skill = db.query(Skill).filter(Skill.id == skill_id).first()
+        if not skill:
+            return jsonify({"error": "Skill not found"}), 404
 
-    if not skill:
+        db.delete(skill)
+        db.commit()
+
+        return jsonify({"message": "Skill deleted successfully"}), 200
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
         db.close()
-        return jsonify({"error": "Skill not found"}), 404
 
-    db.delete(skill)
-    db.commit()
-    db.close()
-
-    return jsonify({"message": f"Skill {skill_id} deleted successfully"}), 200
 
 
 # ============================================================
@@ -266,16 +355,23 @@ def delete_category(category_id):
     db = SessionLocal()
 
     category = db.query(Category).filter(Category.id == category_id).first()
-
     if not category:
         db.close()
         return jsonify({"error": "Category not found"}), 404
+
+    jobs_count = db.query(Job).filter(Job.category_id == category_id).count()
+    if jobs_count > 0:
+        db.close()
+        return jsonify({
+            "error": "Category has jobs assigned. Remove or reassign them first."
+        }), 400
 
     db.delete(category)
     db.commit()
     db.close()
 
-    return jsonify({"message": f"Category {category_id} deleted successfully"}), 200
+    return jsonify({"message": "Category deleted successfully"}), 200
+
 
 
 # ============================================================
@@ -405,15 +501,52 @@ def delete_admin(admin_id, current_user=None):
 
     db = SessionLocal()
     try:
-        admin = db.query(User).filter(User.id == admin_id, User.role == "admin").first()
+        admin = (
+            db.query(User)
+            .filter(User.id == admin_id, User.role == "admin")
+            .first()
+        )
 
         if not admin:
             return jsonify({"error": "Admin not found"}), 404
 
+        db.execute(
+            text("""
+                DELETE FROM connection_requests
+                WHERE sender_id = :uid OR receiver_id = :uid
+            """),
+            {"uid": admin_id},
+        )
+
+        db.execute(
+            text("""
+                DELETE FROM notifications
+                WHERE sender_id = :uid OR receiver_id = :uid
+            """),
+            {"uid": admin_id},
+        )
+
+        db.execute(
+            text("DELETE FROM user_skills WHERE user_id = :uid"),
+            {"uid": admin_id},
+        )
+
+        db.execute(
+            text("DELETE FROM saved_jobs WHERE user_id = :uid"),
+            {"uid": admin_id},
+        )
+
+        db.execute(
+            text("DELETE FROM delete_requests WHERE user_id = :uid"),
+            {"uid": admin_id},
+        )
+
         db.delete(admin)
         db.commit()
 
-        return jsonify({"message": f"Admin {admin_id} deleted successfully"}), 200
+        return jsonify(
+            {"message": f"Admin {admin_id} deleted successfully"}
+        ), 200
 
     except Exception as e:
         db.rollback()

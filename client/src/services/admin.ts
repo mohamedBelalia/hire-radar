@@ -1,7 +1,7 @@
 import apiClient from "@/lib/apiClient";
 
 export const getUsers = async (token: string | null) => {
-  const response = await apiClient.get(`/admin/users`, {
+  const response = await apiClient.get(`/api/admin/users`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -10,7 +10,7 @@ export const getUsers = async (token: string | null) => {
 };
 
 export const getJobs = async (token: string | null) => {
-  const response = await apiClient.get(`/admin/jobs`, {
+  const response = await apiClient.get(`/api/admin/jobs`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -19,7 +19,7 @@ export const getJobs = async (token: string | null) => {
 };
 
 export const deleteJob = async (token: string, id: number) => {
-  const response = await apiClient.delete(`/admin/jobs/${id}`, {
+  const response = await apiClient.delete(`/api/admin/jobs/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -28,7 +28,7 @@ export const deleteJob = async (token: string, id: number) => {
 };
 
 export const deleteUser = async (token: string | null, id: number | string) => {
-  const response = await apiClient.delete(`/admin/users/${id}`, {
+  const response = await apiClient.delete(`/api/admin/users/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -38,7 +38,7 @@ export const deleteUser = async (token: string | null, id: number | string) => {
 
 export const addSkill = async (token: string | null, name: string) => {
   const response = await apiClient.post(
-    `/admin/skills`,
+    `/api/admin/skills`,
     { name },
     {
       headers: {
@@ -51,7 +51,7 @@ export const addSkill = async (token: string | null, name: string) => {
 
 export const addCategory = async (token: string | null, name: string) => {
   const response = await apiClient.post(
-    `/admin/categories`,
+    `/api/admin/categories`,
     { name },
     {
       headers: {
@@ -64,7 +64,7 @@ export const addCategory = async (token: string | null, name: string) => {
 
 export const editSkill = async (token: string, id: number, name: string) => {
   const response = await apiClient.put(
-    `/admin/skills/${id}`,
+    `/api/admin/skills/${id}`,
     { name },
     {
       headers: {
@@ -77,7 +77,7 @@ export const editSkill = async (token: string, id: number, name: string) => {
 
 export const editCategory = async (token: string, id: number, name: string) => {
   const response = await apiClient.put(
-    `/admin/categories/${id}`,
+    `/api/admin/categories/${id}`,
     { name },
     {
       headers: {
@@ -89,7 +89,7 @@ export const editCategory = async (token: string, id: number, name: string) => {
 };
 
 export const deleteSkill = async (token: string, id: number) => {
-  const response = await apiClient.delete(`/admin/skills/${id}`, {
+  const response = await apiClient.delete(`/api/admin/skills/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -98,7 +98,7 @@ export const deleteSkill = async (token: string, id: number) => {
 };
 
 export const deleteCategory = async (token: string, id: number) => {
-  const response = await apiClient.delete(`/admin/categories/${id}`, {
+  const response = await apiClient.delete(`/api/admin/categories/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -107,7 +107,7 @@ export const deleteCategory = async (token: string, id: number) => {
 };
 
 export const getAdmins = async (token: string) => {
-  const response = await apiClient.get(`/admin/admins`, {
+  const response = await apiClient.get(`/api/admin/admins`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -119,7 +119,7 @@ export const addAdmin = (
   token: string,
   data: { full_name: string; email: string; password: string },
 ) => {
-  const response = apiClient.post("/admin/add-admin", data, {
+  const response = apiClient.post("/api/admin/add-admin", data, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -128,7 +128,7 @@ export const addAdmin = (
 };
 
 export const deleteAdmin = async (token: string, id: number) => {
-  const response = await apiClient.delete(`/admin/${id}`, {
+  const response = await apiClient.delete(`/api/admin/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
