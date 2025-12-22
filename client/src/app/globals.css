@@ -6,6 +6,11 @@
   --radius: 0.75rem;
   /* Light mode: Pure white background, black text */
   --background: oklch(1 0 0); /* Pure white */
+
+  --color-admin: #f43f5e;      /* red-ish */
+  --color-employer: #3b82f6;   /* blue */
+  --color-candidate: #10b981;  /* green */
+  --color-other: #f59e0b;  
   --foreground: oklch(0 0 0); /* Pure black */
   --card: oklch(1 0 0); /* Pure white */
   --card-foreground: oklch(0 0 0); /* Pure black */

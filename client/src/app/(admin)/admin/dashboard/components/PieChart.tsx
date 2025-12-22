@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { TrendingUp } from "lucide-react"
-import { Pie, PieChart, Cell } from "recharts"
+import { BarChart, Bar, CartesianGrid, XAxis, Cell } from "recharts"
 
 import {
   Card,
@@ -21,7 +21,6 @@ import {
 import { getUserRoles } from "@/services/admin"
 import { getToken } from "@/lib"
 
-// Role-based colors
 const roleColors: Record<string, string> = {
   admin: "var(--color-admin)",
   employer: "var(--color-employer)",
@@ -29,27 +28,36 @@ const roleColors: Record<string, string> = {
   other: "var(--color-other)",
 }
 
-// Chart config for labels
 export const chartConfig: ChartConfig = {
-  visitors: { label: "Users" },
+  users: { label: "Users", color: "var(--chart-1)" },
   admin: { label: "Admin", color: roleColors.admin },
   employer: { label: "Employer", color: roleColors.employer },
   candidate: { label: "Candidate", color: roleColors.candidate },
   other: { label: "Other", color: roleColors.other },
 }
 
-export function ChartPieRoles() {
+export function BarChartUserRoles() {
   const [data, setData] = useState<
-    { browser: string; visitors: number }[]
+    { role: string; users: number; fill: string }[]
   >([])
 
   useEffect(() => {
     async function fetchData() {
       try {
         const res = await getUserRoles(getToken())
-        setData(res.data)
+        
+        const formattedData = res.data.map((item: { browser: string; visitors: number }) => {
+          const roleKey = item.browser.toLowerCase()
+          return {
+            role: item.browser,
+            users: item.visitors,
+            fill: roleColors[roleKey] || roleColors.other,
+          }
+        })
+
+        setData(formattedData)
       } catch (error) {
-        console.error("Error fetching chart data:", error)
+        console.error("Error fetching user roles:", error)
       }
     }
 
@@ -57,24 +65,35 @@ export function ChartPieRoles() {
   }, [])
 
   return (
-    <Card className="flex flex-col">
-      <CardHeader className="items-center pb-0">
+    <Card>
+      <CardHeader>
         <CardTitle>User Roles Distribution</CardTitle>
         <CardDescription>Admins, Employers, and Candidates</CardDescription>
       </CardHeader>
-      <CardContent className="flex-1 pb-0">
-        <ChartContainer
-          config={chartConfig}
-          className="[&_.recharts-pie-label-text]:fill-foreground mx-auto aspect-square max-h-[250px] pb-0"
-        >
-          <PieChart>
-            <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-            <Pie data={data} dataKey="visitors" label nameKey="browser" />
-          </PieChart>
+      <CardContent>
+        <ChartContainer config={chartConfig}>
+          <BarChart data={data} margin={{ left: 12, right: 12 }}>
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="role"
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent hideLabel />}
+            />
+            <Bar dataKey="users" fill="var(--color-users)">
+              {data.map((entry) => (
+                <Cell key={entry.role} fill={entry.fill} />
+              ))}
+            </Bar>
+          </BarChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col gap-2 text-sm">
-        <div className="flex items-center gap-2 leading-none font-medium">
+      <CardFooter className="flex-col items-start gap-2 text-sm">
+        <div className="flex gap-2 leading-none font-medium">
           User roles overview <TrendingUp className="h-4 w-4" />
         </div>
         <div className="text-muted-foreground leading-none">

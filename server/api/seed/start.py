@@ -297,6 +297,33 @@ session.add_all(reported_jobs_list)
 session.commit()
 print(f"✓ Seeded {len(reported_jobs_list)} reported jobs")
 
+
+# ================== SEED JOB APPLICANTS (M2M) ==================
+print("Seeding job applicants (many-to-many)...")
+applications_list = []
+
+for _ in range(min(100, len(candidates) * 5)):
+    job = random.choice(jobs_list)
+    candidate = random.choice(candidates)
+    combo = (job.id, candidate.id)
+    if combo not in [(app.job_id, app.user_id) for app in applications_list]:
+        app = Application(
+            job_id=job.id,
+            user_id=candidate.id,
+            resume_url=faker.url(),
+            cover_letter=faker.text(max_nb_chars=300),
+            status=random.choice(["pending", "reviewed", "accepted", "rejected"]),
+            applied_at=faker.date_time_between(start_date='-3M', end_date='now')
+        )
+        applications_list.append(app)
+session.add_all(applications_list)
+session.commit()
+
+
+print(f"✓ Seeded {len(applications_list)} job applicants")
+
+
+
 print("\n" + "="*50)
 print("✓ SEEDING COMPLETED SUCCESSFULLY!")
 print("="*50)

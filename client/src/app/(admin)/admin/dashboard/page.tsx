@@ -27,7 +27,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ChartPieRoles } from "./components/PieChart"
+import { BarChartUserRoles } from "./components/PieChart"
+import { DeleteRequestsLineChart } from "./components/DeleteRequestsChart"
+import { ChartBarJobsPerCategory } from "./components/HorChart"
+import { ChartPieApplicationStatus } from "./components/AppStatus"
 
 interface DashboardChartData {
   date: string
@@ -148,8 +151,22 @@ export default function DashboardChart() {
       </Card>
 
 
-      <div>
-        <ChartPieRoles />        
+      <div className="mt-5 grid md:grid-cols-2 gap-2">
+        <BarChartUserRoles />
+
+        <div>
+          <DeleteRequestsLineChart />
+        </div>     
+      </div>
+
+      <div className="mt-5 flex justify-between gap-2">
+        <div className="w-[50%]">
+          <ChartPieApplicationStatus />
+        </div>
+
+        <div className="w-[70%]">
+          <ChartBarJobsPerCategory />
+        </div>     
       </div>
     </div>
   )

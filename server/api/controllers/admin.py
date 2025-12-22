@@ -681,7 +681,7 @@ def get_dashboard_data(days: int = 90):
 
 
 # ============================================================
-# 18. GET /admin/user-roles → Get pie chart user-roles
+# 19. GET /admin/user-roles → Get pie chart user-roles
 # ============================================================
 def user_roles_chart():
     db = SessionLocal()
@@ -703,5 +703,115 @@ def user_roles_chart():
             })
 
         return jsonify(chart_data)
+    finally:
+        db.close()
+
+
+# ============================================================
+# 20. GET /admin/delete-requests-chart → Get pie chart user-roles
+# ============================================================
+def delete_requests_chart():
+    db = SessionLocal()
+    try:
+        today = datetime.today()
+        # Start date: 6 months ago
+        start_date = today - timedelta(days=180)
+
+        # Group by month
+        results = db.query(
+            func.date_trunc('month', DeleteRequest.created_at).label('month'),
+            func.count(DeleteRequest.id)
+        ).filter(
+            DeleteRequest.created_at >= start_date
+        ).group_by('month').order_by('month').all()
+
+        # Format data for chart
+        chart_data = []
+        for month, count in results:
+            chart_data.append({
+                "month": month.strftime("%Y-%m"),
+                "requests": count,
+                "fill": "var(--color-delete)"
+            })
+
+        return jsonify(chart_data), 200
+    finally:
+        db.close()
+
+
+# ============================================================
+# 21. GET /admin/jobs-per-category → Get pie chart jobs per category
+# ============================================================
+def jobs_per_category_chart():
+    db = SessionLocal()
+    try:
+        results = (
+            db.query(Category.name, func.count(Job.id))
+            .join(Job, Job.category_id == Category.id)
+            .group_by(Category.id)
+            .order_by(func.count(Job.id).desc())
+            .limit(8)
+            .all()
+        )
+
+        # Format data for chart
+        chart_data = []
+        colors = [
+            "var(--chart-1)",
+            "var(--chart-2)",
+            "var(--chart-3)",
+            "var(--chart-4)",
+            "var(--chart-5)",
+            "var(--chart-6)",
+            "var(--chart-7)",
+            "var(--chart-8)",
+        ]
+
+        for index, (name, count) in enumerate(results):
+            chart_data.append({
+                "category": name,
+                "jobs": count,
+                "fill": colors[index % len(colors)]
+            })
+
+        return jsonify(chart_data), 200
+    finally:
+        db.close()
+
+
+
+# ============================================================
+# 22. GET /admin/app-status-chart → Get applications status chart
+# ============================================================
+def application_status_chart():
+    db = SessionLocal()
+    try:
+        # Group applications by status
+        results = (
+            db.query(Application.status, func.count(Application.id))
+            .group_by(Application.status)
+            .all()
+        )
+
+        # Map colors for each status
+        status_colors = {
+            "pending": "var(--chart-1)",
+            "reviewed": "var(--chart-2)",
+            "accepted": "var(--chart-3)",
+            "rejected": "var(--chart-4)",
+            "other": "var(--chart-5)"
+        }
+
+        # Format data for pie chart
+        chart_data = [
+            {
+                "status": status,
+                "count": count,
+                "fill": status_colors.get(status, status_colors["other"])
+            }
+            for status, count in results
+        ]
+
+        return jsonify(chart_data), 200
     finally:
         db.close()
