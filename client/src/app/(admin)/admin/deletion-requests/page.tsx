@@ -6,7 +6,7 @@ import { DataTable } from "@/components/dataTable";
 import { User } from "@/types";
 
 interface DeleteRequestWithUser {
-  id: number; // request id
+  id: number;
   reason: string;
   created_at: string;
   user: User;

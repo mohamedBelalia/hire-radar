@@ -21,7 +21,8 @@ from core.models import (
     DeleteRequest,
     job_skills,
     user_skills,
-    job_applicants
+    job_applicants,
+    ReportedJob
 )
 from werkzeug.security import generate_password_hash
 from dotenv import load_dotenv
@@ -331,6 +332,32 @@ for _ in range(20):  # Reduced to 20 as not all users would request deletion
 session.add_all(delete_requests_list)
 session.commit()
 print(f"✓ Seeded {len(delete_requests_list)} delete requests")
+
+
+
+# ================== SEED REPORTED JOBS ==================
+print("Seeding reported jobs...")
+reported_jobs_list = []
+users_reported_jobs = set()
+
+for _ in range(20): 
+    user = random.choice(users_list)
+    job = random.choice(jobs_list) 
+
+    if (user.id, job.id) not in users_reported_jobs:
+        users_reported_jobs.add((user.id, job.id))
+        rj = ReportedJob(
+            user_id=user.id,
+            job_id=job.id,
+            reason=faker.text(max_nb_chars=200),
+            created_at=faker.date_time_this_year()
+        )
+        reported_jobs_list.append(rj)
+
+session.add_all(reported_jobs_list)
+session.commit()
+print(f"✓ Seeded {len(reported_jobs_list)} reported jobs")
+
 
 print("\n" + "="*50)
 print("✓ SEEDING COMPLETED SUCCESSFULLY!")

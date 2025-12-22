@@ -66,6 +66,8 @@ def get_all_users():
 # ============================================================
 # 3. DELETE /admin/users/<id> → Remove user
 # ============================================================
+from sqlalchemy import text
+
 def delete_user(user_id):
     db = SessionLocal()
 
@@ -90,15 +92,16 @@ def delete_user(user_id):
 
         # Notifications
         db.query(Notification).filter(
-            (Notification.sender_id == user_id)
-            | (Notification.receiver_id == user_id)
+            (Notification.sender_id == user_id) | (Notification.receiver_id == user_id)
         ).delete()
 
         # Connection requests
         db.query(ConnectionRequest).filter(
-            (ConnectionRequest.sender_id == user_id)
-            | (ConnectionRequest.receiver_id == user_id)
+            (ConnectionRequest.sender_id == user_id) | (ConnectionRequest.receiver_id == user_id)
         ).delete()
+
+        # Delete requests
+        db.query(DeleteRequest).filter(DeleteRequest.user_id == user_id).delete()
 
         # M2M cleanup
         db.execute(
@@ -126,6 +129,7 @@ def delete_user(user_id):
         return jsonify({"error": str(e)}), 500
     finally:
         db.close()
+
 
 
 

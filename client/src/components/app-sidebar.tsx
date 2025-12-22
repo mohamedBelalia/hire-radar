@@ -8,6 +8,7 @@ import {
   Contact,
   HelpCircle,
   LayoutDashboard,
+  UserMinus,
   Users,
   UserStar,
 } from "lucide-react";
@@ -59,6 +60,11 @@ const data = {
       url: "/admin/categories",
       icon: ChartBar,
     },
+    {
+      title: "Deletion requests",
+      url: "/admin/deletion-requests",
+      icon: UserMinus,
+    },
   ],
   settings: [
     {
@@ -87,7 +93,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <a href="#">
-                <div className="bg-white text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                <div className="bg-dark text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <Image
                     width={25}
                     height={25}
