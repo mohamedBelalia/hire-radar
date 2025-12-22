@@ -320,5 +320,29 @@ class DeleteRequest(Base):
     user = relationship("User", backref="delete_requests")
 
 
+
+# ============================================================
+# ReportedJob MODEL
+# ============================================================
+class ReportedJob(Base):
+    __tablename__ = "reported_jobs"
+
+    id = Column(Integer, primary_key=True)
+
+    user_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    job_id = Column(
+        Integer, ForeignKey("jobs.id", ondelete="CASCADE"), nullable=False
+    )
+    
+    reason = Column(Text, nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+    # Relationship to user
+    user = relationship("User", backref="reported_jobs")
+    job = relationship("Job", backref="reported_jobs")
+
+
 Base.metadata.create_all(engine)
 print("Tables created successfully!")

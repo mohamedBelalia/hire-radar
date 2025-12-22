@@ -7,6 +7,7 @@ from flask_cors import CORS
 from config.db import Base, engine
 from routes.auth import auth
 from routes.job import job  # Fixed this line
+from routes.admin import admin_bp  # Fixed this line
 from routes.candidates import candidates
 from routes.employers import employers
 from routes.applications import applications
@@ -46,6 +47,7 @@ CORS(
 
 app.register_blueprint(auth, url_prefix="/api/auth")
 app.register_blueprint(job, url_prefix="/api/jobs")
+app.register_blueprint(admin_bp, url_prefix="/api/admin")
 app.register_blueprint(candidates, url_prefix="/api/candidates")
 app.register_blueprint(employers, url_prefix="/api/employers")
 app.register_blueprint(applications, url_prefix="/api/applications")

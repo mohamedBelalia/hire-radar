@@ -6,8 +6,10 @@ import {
   BriefcaseBusiness,
   ChartBar,
   Contact,
+  Flag,
   HelpCircle,
   LayoutDashboard,
+  UserMinus,
   Users,
   UserStar,
 } from "lucide-react";
@@ -35,7 +37,7 @@ const data = {
   navMain: [
     {
       title: "Stats",
-      url: "/admin/stats",
+      url: "/admin/dashboard",
       icon: LayoutDashboard,
       isActive: true,
     },
@@ -59,6 +61,16 @@ const data = {
       url: "/admin/categories",
       icon: ChartBar,
     },
+    {
+      title: "Deletion requests",
+      url: "/admin/deletion-requests",
+      icon: UserMinus,
+    },
+    {
+      title: "Reported jobs",
+      url: "/admin/reported-jobs",
+      icon: Flag,
+    }
   ],
   settings: [
     {
@@ -87,7 +99,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <a href="#">
-                <div className="bg-white text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                <div className="bg-dark text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <Image
                     width={25}
                     height={25}

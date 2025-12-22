@@ -3,9 +3,11 @@ import { useEffect, useState } from "react";
 import { getUsers } from "@/services/admin";
 import { getToken } from "@/lib";
 import { DataTable } from "@/components/dataTable";
+import { User } from "@/types";
 
 const columns = [
   { accessorKey: "id", header: "ID" },
+  { accessorKey: "image", header: "image" },
   { accessorKey: "full_name", header: "Full Name" },
   { accessorKey: "email", header: "Email" },
   { accessorKey: "role", header: "Role" },

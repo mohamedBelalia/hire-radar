@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { DataTable } from "@/components/dataTable";
 import { getSkills } from "@/services/shared";
 import { AddSkillCategory } from "@/components/add-edit";
+import { Skill } from "@/types";
 
 const columns = [
   { accessorKey: "id", header: "ID" },
@@ -16,6 +17,8 @@ const Page = () => {
   const fetchSkills = async () => {
     try {
       const res = await getSkills();
+      console.log(res);
+      
       if (res.status === 200) {
         setSkills(res.data);
       }
