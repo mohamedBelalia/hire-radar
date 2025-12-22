@@ -16,6 +16,66 @@ def get_db():
         db.close()
 
 
+
+# Unified public user endpoint (read‑only, no auth)
+def get_public_user(user_id: int):
+    """Return public profile for any user (candidate or employer)."""
+    db = next(get_db())
+    try:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        # Base fields common to all users
+        response = {
+            "id": user.id,
+            "full_name": user.full_name,
+            "email": user.email,
+            "role": user.role,
+            "image": user.image,
+            "location": user.location,
+            "bio": user.bio,
+            "headline": user.headLine,
+            "website": user.webSite,
+            "github_url": user.github_url,
+            "resume_url": user.resume_url,
+            "created_at": user.created_at.isoformat() if getattr(user, "created_at", None) else None,
+        }
+        # Candidate‑specific data
+        if user.role == "candidate":
+            response["skills"] = [{"id": s.id, "name": s.name} for s in user.skills]
+            response["educations"] = [
+                {
+                    "id": e.id,
+                    "school_name": e.school_name,
+                    "degree": e.degree,
+                    "field_of_study": e.field_of_study,
+                    "start_date": e.start_date.isoformat() if e.start_date else None,
+                    "end_date": e.end_date.isoformat() if e.end_date else None,
+                    "description": e.description,
+                }
+                for e in user.educations
+            ]
+            response["experiences"] = [
+                {
+                    "id": ex.id,
+                    "job_title": ex.job_title,
+                    "company": ex.company,
+                    "start_date": ex.start_date.isoformat() if ex.start_date else None,
+                    "end_date": ex.end_date.isoformat() if ex.end_date else None,
+                    "description": ex.description,
+                }
+                for ex in user.experiences
+            ]
+        # Employer‑specific data
+        elif user.role == "employer":
+            response["companyName"] = getattr(user, "companyName", None)
+        return jsonify(response), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db.close()
+
+
 @is_auth
 def get_candidate_career():
     db = next(get_db())

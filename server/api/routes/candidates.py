@@ -13,11 +13,17 @@ from controllers.candidates import (
     update_experience,
     delete_experience,
     delete_skill,
-    get_skills
+    get_skills,
+    get_public_user
 )
 
 
 candidates = Blueprint("candidates", __name__)
+
+# Public candidate profile
+candidates.add_url_rule(
+    "/<int:user_id>", "get_public_user", get_public_user, methods=["GET"]
+)
 
 # Candidate routes
 candidates.add_url_rule(

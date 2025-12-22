@@ -31,14 +31,18 @@ export default function Home() {
       });
 
       console.log(res);
-      
+
 
       const newJobs: Job[] = res.data.jobs || [];
 
       // Check if there are more jobs
       if (newJobs.length < 10) setHasMore(false);
 
-      setJobs((prev) => [...prev, ...newJobs]);
+      setJobs((prev) => {
+        const existingIds = new Set(prev.map((j) => j.id));
+        const filteredNew = newJobs.filter((j) => !existingIds.has(j.id));
+        return [...prev, ...filteredNew];
+      });
 
       // Separate posted jobs by current user
       const userPosted = newJobs.filter((job) => job.employer_id === res.data.currentUserId);
@@ -83,10 +87,10 @@ export default function Home() {
                 <JobCard
                   key={job.id}
                   jobData={job}
-                  onOpenDelete={() => {}}
-                  onOpenUpdate={() => {}}
-                  onApply={() => {}}
-                  onReport={() => {}}
+                  onOpenDelete={() => { }}
+                  onOpenUpdate={() => { }}
+                  onApply={() => { }}
+                  onReport={() => { }}
                 />
               ))}
             </div>

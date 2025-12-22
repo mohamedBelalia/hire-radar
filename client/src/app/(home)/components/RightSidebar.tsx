@@ -4,6 +4,7 @@ import { MessageCircle, ChevronUp, Plus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Link from "next/link";
 import {
   Sidebar,
   SidebarContent,
@@ -84,23 +85,25 @@ function RightSidebarContent() {
               ) : (
                 suggestedPeople?.map((person: SuggestedPerson) => (
                   <div key={person.id} className="flex items-center gap-3 px-2">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={getValidImageUrl(person.image)} />
-                      <AvatarFallback className="bg-foreground text-background font-semibold text-xs">
-                        {person.full_name?.[0] || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-sm truncate">
-                        {person.full_name}
-                      </h4>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {person.company_name ||
-                          person.headline ||
-                          person.role ||
-                          "User"}
-                      </p>
-                    </div>
+                    <Link href={`/user/${person.id}`} className="group/person flex items-center gap-3 flex-1 min-w-0">
+                      <Avatar className="h-10 w-10 shrink-0 transition-transform group-hover/person:scale-105">
+                        <AvatarImage src={getValidImageUrl(person.image)} />
+                        <AvatarFallback className="bg-foreground text-background font-semibold text-xs">
+                          {person.full_name?.[0] || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm truncate group-hover/person:text-primary transition-colors">
+                          {person.full_name}
+                        </h4>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {person.company_name ||
+                            person.headline ||
+                            person.role ||
+                            "User"}
+                        </p>
+                      </div>
+                    </Link>
                     <Button
                       size="icon"
                       variant="secondary"

@@ -6,6 +6,7 @@ import {
   updateEmployerProfile,
   uploadCandidateImage,
   uploadEmployerImage,
+  getPublicProfile,
 } from "./api";
 import { UpdateEmployerProfileRequest } from "@/types/profile";
 
@@ -73,5 +74,12 @@ export function useUploadEmployerImage(id: string) {
       // Refetch currentUser immediately to get updated image
       queryClient.refetchQueries({ queryKey: ["currentUser"] });
     },
+  });
+}
+export function usePublicProfile(id: string) {
+  return useQuery({
+    queryKey: ["public-profile", id],
+    queryFn: () => getPublicProfile(id),
+    enabled: !!id,
   });
 }
