@@ -135,3 +135,12 @@ export const deleteAdmin = async (token: string, id: number) => {
   });
   return response;
 };
+
+export const getDeletionRequests = async (token: string | null) => {
+  const response = await apiClient.get(`/api/admin/deletion-requests`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response;
+};

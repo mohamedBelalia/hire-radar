@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request
 from sqlalchemy import func, text
 from sqlalchemy.exc import IntegrityError
 from config.db import SessionLocal
-from core.models import User, Job, Application, Skill, Category, ConnectionRequest, Education, Notification, Experience
+from core.models import User, Job, Application, Skill, Category, ConnectionRequest, DeleteRequest, Education, Notification, Experience
 from werkzeug.security import generate_password_hash
 import jwt
 import os
@@ -550,6 +550,37 @@ def delete_admin(admin_id, current_user=None):
 
     except Exception as e:
         db.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        db.close()
+
+
+# ============================================================
+# 17. GET /admin/deletion-requests → Get all deletion requests
+# ============================================================
+def get_all_delete_requests():
+    db = SessionLocal()
+    try:
+        requests = db.query(DeleteRequest).all()
+
+        data = []
+        for dr in requests:
+            data.append({
+                "id": dr.id,
+                "reason": dr.reason,
+                "created_at": dr.created_at.isoformat() if dr.created_at else None,
+                "user": {
+                    "id": dr.user.id,
+                    "full_name": dr.user.full_name,
+                    "email": dr.user.email,
+                    "role": dr.user.role
+                } if dr.user else None
+            })
+
+        return jsonify(data), 200
+
+    except Exception as e:
         return jsonify({"error": str(e)}), 500
 
     finally:

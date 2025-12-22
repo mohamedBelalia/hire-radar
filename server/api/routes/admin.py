@@ -17,6 +17,7 @@ from controllers.admin import (
     create_admin,
     delete_admin,
     getAdmins,
+    get_all_delete_requests
 )
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -41,3 +42,6 @@ admin_bp.put("/categories/<int:category_id>")(admin_required(update_category))
 admin_bp.get("/admins")(admin_required(getAdmins))
 admin_bp.post("/add-admin")(admin_required(create_admin))
 admin_bp.delete("/<int:admin_id>")(admin_required(delete_admin))
+
+
+admin_bp.get("/deletion-requests")(admin_required(get_all_delete_requests))

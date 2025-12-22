@@ -176,10 +176,10 @@ export function DataTable<TData extends { id: number; name?: string }>({
                         typeof cell.getValue() === "string" && cell.getValue() ? (
                           <Image
                             src={cell.getValue() as string}
-                            alt={cell.column.full_name[0]}
+                            alt={row.original.full_name[0].toUpperCase() || row.original.name || "Image"}
                             width={30}
                             height={30}
-                            className="h-10 w-10 rounded-lg object-cover mx-auto"
+                            className="h-10 w-10 rounded-lg object-cover mx-auto text-white bg-black flex items-center justify-center font-bold dark:text-black dark:bg-white text-lg"
                           />
                         ) : (
                           <span className="text-muted-foreground">—</span>
@@ -190,7 +190,6 @@ export function DataTable<TData extends { id: number; name?: string }>({
                           cell.getContext(),
                         )
                       )}
-
                     </TableCell>
                   ))}
 
