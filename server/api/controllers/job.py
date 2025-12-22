@@ -3,18 +3,96 @@ from werkzeug.utils import secure_filename
 from sqlalchemy import or_, and_
 from sqlalchemy.orm import Session
 from config.db import SessionLocal
-from core.models import Job, User, SavedJob, Application, Skill
+from core.models import Job, User, SavedJob, Application, Skill, job_skills
 from controllers.utils import get_user_id_from_token
 from typing import Optional, List
 from decimal import Decimal
 from datetime import datetime
 import os
-
+from middlewares.auth import is_auth
+from sqlalchemy.orm import Session
+from sqlalchemy import desc
 
 def get_db():
     db = SessionLocal()
     try:
         yield db
+    finally:
+        db.close()
+
+
+
+
+@is_auth
+def get_jobs_for_user():
+    db: Session = next(get_db())
+
+    try:
+        user_id = request.user_id
+        page = int(request.args.get("page", 1))
+        page_size = 10
+
+        # Fetch user
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        user_skill_ids = [skill.id for skill in user.skills]
+
+        
+        print(user_skill_ids)
+        user_location = user.location or ""
+
+        jobs_query = db.query(Job)
+
+        # if user_location:
+        #     jobs_query = jobs_query.filter(Job.location.ilike(f"%{user_location}%"))
+
+        if user_skill_ids:
+            jobs_query = jobs_query.join(Job.skills).filter(Job.skills.any(Skill.id.in_(user_skill_ids)))
+
+        
+
+        jobs_query = jobs_query.order_by(desc(Job.created_at))
+
+        total_jobs = jobs_query.count()
+        total_pages = (total_jobs + page_size - 1) // page_size
+        
+        jobs = jobs_query.offset((page - 1) * page_size).limit(page_size).all()
+
+        results = []
+        for job in jobs:
+            results.append({
+                "id": job.id,
+                "title": job.title,
+                "company": job.company,
+                "category": job.category.name,
+                "location": job.location,
+                "salary_range": job.salary_range,
+                "emp_type": job.emp_type,
+                "description": job.description,
+                "responsibilities": job.responsibilities or [],
+                "skills": [skill.name for skill in job.skills],
+                "created_at": job.created_at.isoformat() if job.created_at else None,
+                "employer": {
+                    "id": job.employer.id,
+                    "full_name": job.employer.full_name,
+                    "image": job.employer.image,
+                    "headline": getattr(job.employer, "headLine", ""),
+                },
+                "applicants": len(job.applicants),
+            })
+
+        
+        return jsonify({
+            "jobs": results,
+            "total": total_jobs,
+            "total_pages": total_pages,
+            "page": page
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
     finally:
         db.close()
 

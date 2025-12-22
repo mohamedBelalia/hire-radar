@@ -11,10 +11,13 @@ from controllers.job import (
     get_employer_jobs,
     get_skills,
     create_or_get_skill,
+    get_jobs_for_user
 )
 
 job = Blueprint("job", __name__)
 
+
+job.add_url_rule("/suggested", "get_jobs_for_user", get_jobs_for_user, methods=["GET"])
 
 @job.route("", methods=["GET"])
 def search_jobs_route():

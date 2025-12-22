@@ -1,138 +1,101 @@
-"use client";
+'use client'
 
-import { useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import LeftSidebar from "@/app/(home)/components/LeftSidebar";
 import RightSidebar from "@/app/(home)/components/RightSidebar";
 import PostCreator from "@/app/(home)/components/PostCreator";
-import FeedPost from "@/app/(home)/components/FeedPost";
-import { useRecentJobs } from "@/features/jobs/hooks";
-import { useCurrentUser } from "@/features/auth/hook";
-import JobCardSkeleton from "@/components/jobs/JobCardSkeleton";
-import { Card, CardContent } from "@/components/ui/card";
+import { JobCard } from "./components/job-card";
+import apiClient from "@/lib/apiClient"; // Axios instance
+import { Job } from "@/interfaces";
+import { getToken } from "@/lib";
 
 export default function Home() {
-  const { data: currentUser } = useCurrentUser();
-  const {
-    data: jobsData,
-    isLoading: isLoadingJobs,
-    isError: isJobsError,
-  } = useRecentJobs(10);
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [postedJobs, setPostedJobs] = useState<Job[]>([]);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
-  // Format job as feed post
-  const jobFeedPosts = useMemo(() => {
-    const jobs = jobsData?.jobs || [];
-    return jobs.map((job) => {
-      // If current user is the employer who posted this job, use their image
-      const isCurrentUserJob =
-        currentUser?.role === "employer" && currentUser?.id === job.employer_id;
-      const avatarUrl =
-        isCurrentUserJob &&
-        currentUser?.image &&
-        currentUser.image.trim() !== ""
-          ? currentUser.image
-          : undefined;
+  // Replace this with your auth token
+  const token = getToken()
 
-      return {
-        id: job.id,
-        author: {
-          name: job.company_name || job.company || "Company",
-          title: job.employment_type
-            ? `${job.employment_type.replace("-", " ")} • ${job.location || "Remote"}`
-            : job.location || "Remote",
-          avatar: (job.company_name || job.company || "C")
-            .split(" ")
-            .map((n: string) => n[0])
-            .join("")
-            .toUpperCase()
-            .slice(0, 2),
-          avatarUrl: avatarUrl || undefined,
+  const fetchJobs = useCallback(async (pageNum: number) => {
+    if (!token) return;
+
+    setLoading(true);
+    try {
+      const res = await apiClient.get(`/api/jobs/suggested?page=${pageNum}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        title: job.title,
-        content: (
-          <div className="my-6">
-            <p className="text-muted-foreground mb-4 line-clamp-3">
-              {job.description}
-            </p>
-            {job.skills && job.skills.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {job.skills.slice(0, 6).map((skill, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 bg-muted text-muted-foreground rounded-lg text-xs font-semibold"
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        ),
-        likes: 0,
-        comments: 0,
-        job: job,
-      };
-    });
-  }, [jobsData, currentUser]);
+      });
+
+      console.log(res);
+      
+
+      const newJobs: Job[] = res.data.jobs || [];
+
+      // Check if there are more jobs
+      if (newJobs.length < 10) setHasMore(false);
+
+      setJobs((prev) => [...prev, ...newJobs]);
+
+      // Separate posted jobs by current user
+      const userPosted = newJobs.filter((job) => job.employer_id === res.data.currentUserId);
+      setPostedJobs((prev) => [...prev, ...userPosted]);
+
+    } catch (err) {
+      console.error("Failed to fetch jobs", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchJobs(page);
+  }, [fetchJobs, page]);
+
+  // Infinite scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!hasMore || loading) return;
+      const scrollBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 500;
+      if (scrollBottom) setPage((prev) => prev + 1);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [hasMore, loading]);
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
-      <div className="flex relative pt-16">
-        {/* Left Sidebar */}
+      <div className="flex relative">
         <LeftSidebar />
 
-        {/* Main Content Area */}
-        <main className="flex-1 min-w-0 px-8 py-8">
-          <div className="space-y-6 max-w-4xl">
+        <main className="flex-1 min-w-0 px-8 py-4">
+          <div className="space-y-6 max-w-5xl">
             <PostCreator />
-
-            {/* Loading State */}
-            {isLoadingJobs && (
-              <div className="space-y-6">
-                {[1, 2, 3].map((i) => (
-                  <JobCardSkeleton key={i} />
-                ))}
-              </div>
-            )}
-
-            {/* Error State */}
-            {isJobsError && (
-              <Card className="border-border">
-                <CardContent className="p-6">
-                  <p className="text-destructive">
-                    Failed to load jobs. Please try again.
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Feed Posts - Jobs */}
-            {!isLoadingJobs &&
-              !isJobsError &&
-              jobFeedPosts.map((post) => (
-                <FeedPost
-                  key={post.id}
-                  author={post.author}
-                  title={post.title}
-                  content={post.content}
-                  likes={post.likes}
-                  comments={post.comments}
+            {/* Suggested Jobs */}
+            <div className="flex flex-col gap-4">
+              <h2 className="text-lg font-bold mb-3">Suggested Jobs</h2>
+              {jobs.map((job) => (
+                <JobCard
+                  key={job.id}
+                  jobData={job}
+                  onOpenDelete={() => {}}
+                  onOpenUpdate={() => {}}
+                  onApply={() => {}}
+                  onReport={() => {}}
                 />
               ))}
+            </div>
 
-            {/* Empty State */}
-            {!isLoadingJobs && !isJobsError && jobFeedPosts.length === 0 && (
-              <Card className="border-border">
-                <CardContent className="p-12 text-center">
-                  <p className="text-muted-foreground text-lg">
-                    No jobs available at the moment. Check back later!
-                  </p>
-                </CardContent>
-              </Card>
-            )}
+            {loading && <p className="text-center text-muted-foreground">Loading more jobs...</p>}
+            {!hasMore && <p className="text-center text-muted-foreground">No more jobs.</p>}
           </div>
         </main>
 
-        {/* Right Sidebar */}
         <RightSidebar />
       </div>
     </div>
