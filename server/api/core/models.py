@@ -404,6 +404,8 @@ class Conversation(Base):
 
     creator = relationship("User", foreign_keys=[created_by])
 
+
+
 # ============================================================
 # Message MODEL
 # ============================================================
@@ -426,7 +428,7 @@ class Message(Base):
 
     content = Column(Text, nullable=False)
 
-    is_read = Column(Integer, server_default="0")  # 0 = unread, 1 = read
+    is_read = Column(Integer, server_default="0")
     read_at = Column(DateTime)
 
     created_at = Column(DateTime, server_default=func.now())
@@ -436,6 +438,7 @@ class Message(Base):
         foreign_keys=[sender_id],
         backref="sent_messages",
     )
+
 
 Base.metadata.create_all(engine)
 print("Tables created successfully!")
