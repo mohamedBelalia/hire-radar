@@ -112,8 +112,6 @@ export function useUnsaveJob() {
   });
 }
 
-// Apply to job mutation
-// Note: Endpoint doesn't exist in backend - will show error toast
 export function useApplyJob() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -124,16 +122,8 @@ export function useApplyJob() {
       jobId: number;
       coverLetter?: string;
     }) => {
-      try {
-        return await jobsApi.apply(jobId, { cover_letter: coverLetter });
-      } catch (error: unknown) {
-        const message =
-          error && typeof error === "object" && "message" in error
-            ? (error.message as string)
-            : "Application feature not available yet";
-        toast.error(message);
-        throw error;
-      }
+      const res = await jobsApi.apply(jobId, { cover_letter: coverLetter });
+      return res;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
@@ -142,6 +132,21 @@ export function useApplyJob() {
     },
     onError: () => {
       // Error already shown in mutationFn
+    },
+  });
+}
+
+// Report job mutation
+export function useReportJob() {
+  return useMutation({
+    mutationFn: async ({ jobId, reason }: { jobId: number; reason: string }) => {
+      return jobsApi.report(jobId, reason);
+    },
+    onSuccess: () => {
+      toast.success("Report submitted. Thank you for the feedback.");
+    },
+    onError: () => {
+      toast.error("Failed to submit report");
     },
   });
 }

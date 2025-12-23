@@ -1,28 +1,52 @@
-'use client'
+"use client"
 
-import { Job } from '@/interfaces'
-import React from 'react'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Ellipsis, Pencil, Trash2, Users, FileText, MapPin, Building, Clock, DollarSign, Briefcase, Calendar, CheckCircle, Award, Layers, Target, UserCheck, ExternalLink } from 'lucide-react'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { statusIndicator } from '@/constants/status-indicator'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader } from '@/components/ui/card'
-import Image from 'next/image'
-import { Icon } from '@iconify/react'
+import { Job } from "@/types"
+import React from "react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Ellipsis,
+  Pencil,
+  Trash2,
+  Users,
+  FileText,
+  MapPin,
+  Clock,
+  DollarSign,
+  Briefcase,
+  Calendar,
+  UserCheck,
+  ExternalLink,
+} from "lucide-react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { statusIndicator } from "@/constants/status-indicator"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
+import Image from "next/image"
+import { Icon } from "@iconify/react"
 
 interface JobCardProps {
     jobData: Job
-    onOpenDelete: (val: { open: boolean, jobId: string }) => void
+    onOpenDelete: (val: { open: boolean, jobId: number }) => void
     onOpenUpdate: (val: { open: boolean, jobData: Job }) => void
-    onApply: (jobId: number) => void
-    onReport: (jobId: number) => void
+    onApply: (jobId: number) => Promise<void>
+    onReport: (jobId: number) => Promise<void>
+    onViewDetails?: (jobId: number) => void
 }
 
-export const JobCard = ({ jobData, onOpenDelete, onOpenUpdate, onApply, onReport }: JobCardProps) => {
-    const { emp_type, skills, createdAt, employer, responsibilities } = jobData
+export const JobCard = ({ jobData, onOpenDelete, onOpenUpdate, onApply, onReport, onViewDetails }: JobCardProps) => {
+    const { emp_type, skills, employer, responsibilities } = jobData
+    const createdAt = (jobData as { created_at?: string }).created_at || jobData.posted_at || jobData.updated_at || ""
+    const applicantsCount = (jobData as { applicants_count?: number }).applicants_count ?? (jobData as { applicants?: number }).applicants ?? 0
+    const [isApplying, setIsApplying] = React.useState(false)
+    const [isReporting, setIsReporting] = React.useState(false)
+    const [hasApplied, setHasApplied] = React.useState(false)
 
     return (
         <Card className="group relative overflow-hidden hover:shadow-md transition-all duration-300 border-border/50 hover:border-primary/10 bg-card">
@@ -85,15 +109,22 @@ export const JobCard = ({ jobData, onOpenDelete, onOpenUpdate, onApply, onReport
                             <DropdownMenuItem className="gap-2 text-green-600" onClick={() => onApply(jobData.id)}>
                                 <UserCheck className="w-4 h-4" /> Apply Now
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="gap-2" onClick={() => {/* View Details */}}>
+                            <DropdownMenuItem className="gap-2" onClick={() => onViewDetails?.(jobData.id)}>
                                 <ExternalLink className="w-4 h-4" /> View Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="gap-2 text-red-500" onClick={() => onReport(jobData.id)}>
+                            <DropdownMenuItem className="gap-2 text-red-500" onClick={async () => {
+                                try {
+                                    setIsReporting(true)
+                                    await onReport(jobData.id)
+                                } finally {
+                                    setIsReporting(false)
+                                }
+                            }}>
                                 <FileText className="w-4 h-4" /> Report
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
-                                className="gap-2 text-red-500 focus:text-red-500" 
-                                onClick={() => onOpenDelete({open:true,jobId: jobData._id!})}
+                            <DropdownMenuItem
+                                className="gap-2 text-red-500 focus:text-red-500"
+                                onClick={() => onOpenDelete({open:true,jobId: jobData.id})}
                             >
                                 <Trash2 className="w-4 h-4" /> Delete Job
                             </DropdownMenuItem>
@@ -205,7 +236,7 @@ export const JobCard = ({ jobData, onOpenDelete, onOpenUpdate, onApply, onReport
                             <Users className="w-5 h-5 text-primary" />
                             <div className="space-y-1">
                                 <p className="text-sm font-semibold">
-                                    {jobData.applicants || 0} {jobData.applicants === 1 ? 'Applicant' : 'Applicants'}
+                                    {applicantsCount} {applicantsCount === 1 ? 'Applicant' : 'Applicants'}
                                 </p>
                                 <p className="text-xs text-muted-foreground">
                                     Apply before {getApplicationDeadline(createdAt)}
@@ -222,22 +253,39 @@ export const JobCard = ({ jobData, onOpenDelete, onOpenUpdate, onApply, onReport
 
                     {/* Action Buttons */}
                     <div className="flex items-center gap-2">
-                        <Button 
-                            variant="outline" 
+                        <Button
+                            variant="outline"
                             size="sm"
-                            onClick={() => onReport(jobData.id)}
+                            disabled={isReporting}
+                            onClick={async () => {
+                                try {
+                                    setIsReporting(true)
+                                    await onReport(jobData.id)
+                                } finally {
+                                    setIsReporting(false)
+                                }
+                            }}
                         >
                             <FileText className="w-4 h-4 mr-2" />
-                            Report
+                            {isReporting ? "Reporting..." : "Report"}
                         </Button>
-                        <Button 
-                            variant="default" 
+                        <Button
+                            variant="default"
                             size="sm"
-                            onClick={() => onApply(jobData.id)}
+                            disabled={isApplying || hasApplied}
+                            onClick={async () => {
+                                try {
+                                    setIsApplying(true)
+                                    await onApply(jobData.id)
+                                    setHasApplied(true)
+                                } finally {
+                                    setIsApplying(false)
+                                }
+                            }}
                             className="gap-2"
                         >
                             <UserCheck className="w-4 h-4" />
-                            Apply Now
+                            {hasApplied ? "Applied" : isApplying ? "Applying..." : "Apply Now"}
                         </Button>
                     </div>
                 </div>

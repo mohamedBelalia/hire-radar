@@ -5,6 +5,7 @@ import {
   useJob,
   useApplyJob,
   useRecommendedCandidates,
+  useReportJob,
 } from "@/features/jobs/hooks";
 import { useCurrentUser } from "@/features/auth/hook";
 import TopNavbar from "@/components/TopNavbar";
@@ -47,8 +48,12 @@ export default function JobDetailsPage() {
     useRecommendedCandidates(jobId);
 
   const applyMutation = useApplyJob();
+  const reportMutation = useReportJob();
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
   const [coverLetter, setCoverLetter] = useState("");
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [selectedReason, setSelectedReason] = useState("");
+  const [customReason, setCustomReason] = useState("");
 
   const handleApply = async () => {
     try {
@@ -82,6 +87,20 @@ export default function JobDetailsPage() {
 
   const isEmployer = currentUser?.role === "employer";
   const isCandidate = currentUser?.role === "candidate";
+
+  const reportReasons = [
+    "Spam or scam",
+    "Discriminatory content",
+    "Misleading or fake",
+    "Expired or closed",
+    "Salary not disclosed",
+    "Offensive language",
+    "Requires payment",
+    "Wrong location",
+    "Wrong company",
+    "Duplicate listing",
+    "Other",
+  ];
 
   if (isLoading) {
     return (
@@ -206,6 +225,13 @@ export default function JobDetailsPage() {
                       Apply by {new Date(job.application_deadline).toLocaleDateString()}
                     </p>
                   )}
+                  <Button
+                    variant="ghost"
+                    className="w-full text-sm"
+                    onClick={() => setIsReportModalOpen(true)}
+                  >
+                    Report job
+                  </Button>
                 </div>
               )}
             </div>
@@ -422,6 +448,74 @@ export default function JobDetailsPage() {
                 {applyMutation.isPending
                   ? "Submitting..."
                   : "Submit Application"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={isReportModalOpen} onOpenChange={setIsReportModalOpen}>
+          <DialogContent className="border-border max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Report this job</DialogTitle>
+              <DialogDescription>
+                Tell us why this job is inappropriate or incorrect.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {reportReasons.map((reason) => (
+                  <Button
+                    key={reason}
+                    variant={selectedReason === reason ? "default" : "outline"}
+                    className="justify-start"
+                    onClick={() => setSelectedReason(reason)}
+                  >
+                    {reason}
+                  </Button>
+                ))}
+              </div>
+              {selectedReason === "Other" && (
+                <div className="space-y-2">
+                  <Label htmlFor="customReason">Add a reason</Label>
+                  <Textarea
+                    id="customReason"
+                    placeholder="Describe the issue..."
+                    value={customReason}
+                    onChange={(e) => setCustomReason(e.target.value)}
+                    className="bg-background border-border"
+                  />
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsReportModalOpen(false);
+                  setSelectedReason("");
+                  setCustomReason("");
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={
+                  reportMutation.isPending ||
+                  !selectedReason ||
+                  (selectedReason === "Other" && !customReason.trim())
+                }
+                onClick={async () => {
+                  const reason =
+                    selectedReason === "Other"
+                      ? customReason.trim()
+                      : selectedReason;
+                  await reportMutation.mutateAsync({ jobId, reason });
+                  setIsReportModalOpen(false);
+                  setSelectedReason("");
+                  setCustomReason("");
+                }}
+              >
+                {reportMutation.isPending ? "Submitting..." : "Submit report"}
               </Button>
             </DialogFooter>
           </DialogContent>

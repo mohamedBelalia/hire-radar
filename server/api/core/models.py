@@ -275,6 +275,22 @@ class Notification(Base):
 
 
 # ============================================================
+# REPORT MODEL
+# ============================================================
+class Report(Base):
+    __tablename__ = "reports"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    job_id = Column(Integer, ForeignKey("jobs.id", ondelete="CASCADE"), nullable=False)
+    reason = Column(Text, nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+    user = relationship("User", backref="reports")
+    job = relationship("Job", backref="reports")
+
+
+# ============================================================
 # CONNECTION REQUEST MODEL
 # ============================================================
 class ConnectionRequest(Base):

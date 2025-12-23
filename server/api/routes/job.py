@@ -72,3 +72,8 @@ def create_or_get_skill_route():
 @job.route("/<int:job_id>/apply", methods=["POST"])
 def apply_to_job_route(job_id: int):
     return apply_to_job(job_id)
+
+
+@job.route("/<int:job_id>/report", methods=["POST"])
+def report_job_route(job_id: int):
+    return report_job(job_id)

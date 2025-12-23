@@ -5,9 +5,12 @@ import LeftSidebar from "@/app/(home)/components/LeftSidebar";
 import RightSidebar from "@/app/(home)/components/RightSidebar";
 import PostCreator from "@/app/(home)/components/PostCreator";
 import { JobCard } from "./components/job-card";
-import apiClient from "@/lib/apiClient"; // Axios instance
-import { Job } from "@/interfaces";
+import apiClient from "@/lib/apiClient";
+import { Job } from "@/types";
 import { getToken } from "@/lib";
+import { useApplyJob, useReportJob } from "@/features/jobs/hooks";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -15,6 +18,9 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const applyMutation = useApplyJob();
+  const reportMutation = useReportJob();
+  const router = useRouter();
 
   // Replace this with your auth token
   const token = getToken()
@@ -30,10 +36,11 @@ export default function Home() {
         },
       });
 
-      console.log(res);
-      
-
-      const newJobs: Job[] = res.data.jobs || [];
+      const newJobs: Job[] = (res.data.jobs || []).map((j: any) => ({
+        ...j,
+        id: Number(j.id),
+        employer_id: Number(j.employer_id),
+      }));
 
       // Check if there are more jobs
       if (newJobs.length < 10) setHasMore(false);
@@ -81,12 +88,40 @@ export default function Home() {
               <h2 className="text-lg font-bold mb-3">Suggested Jobs</h2>
               {jobs.map((job) => (
                 <JobCard
-                  key={job.id}
+          key={job.id}
                   jobData={job}
                   onOpenDelete={() => {}}
                   onOpenUpdate={() => {}}
-                  onApply={() => {}}
-                  onReport={() => {}}
+          onApply={async (jobId) => {
+            try {
+              await applyMutation.mutateAsync({ jobId });
+              toast.success("Applied successfully");
+            } catch (err) {
+              const msg =
+                (err as any)?.response?.data?.error ||
+                (err as any)?.message ||
+                "Failed to apply";
+              toast.error(msg);
+              console.error(err);
+            }
+          }}
+          onReport={async (jobId) => {
+            try {
+              await reportMutation.mutateAsync({
+                jobId,
+                reason: "Inappropriate content",
+              });
+              toast.success("Report submitted");
+            } catch (err) {
+              const msg =
+                (err as any)?.response?.data?.error ||
+                (err as any)?.message ||
+                "Failed to report";
+              toast.error(msg);
+              console.error(err);
+            }
+          }}
+          onViewDetails={(jobId) => router.push(`/jobs/${jobId}`)}
                 />
               ))}
             </div>

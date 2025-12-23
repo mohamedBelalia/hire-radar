@@ -59,6 +59,7 @@ export type Job = {
   posted_at?: string;
   created_at?: string; // Legacy field - use posted_at
   updated_at?: string;
+  applicants_count?: number;
   is_saved?: boolean; // Frontend-only flag
   is_applied?: boolean; // Frontend-only flag
 };

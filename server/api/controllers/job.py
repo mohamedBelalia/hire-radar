@@ -3,7 +3,16 @@ from werkzeug.utils import secure_filename
 from sqlalchemy import or_, and_
 from sqlalchemy.orm import Session
 from config.db import SessionLocal
-from core.models import Job, User, SavedJob, Application, Skill, job_skills
+from core.models import (
+    Job,
+    User,
+    SavedJob,
+    Application,
+    Skill,
+    job_skills,
+    Notification,
+    Report,
+)
 from controllers.utils import get_user_id_from_token
 from typing import Optional, List
 from decimal import Decimal
@@ -66,7 +75,7 @@ def get_jobs_for_user():
                 "id": job.id,
                 "title": job.title,
                 "company": job.company,
-                "category": job.category.name,
+                "category": job.category.name if job.category else None,
                 "location": job.location,
                 "salary_range": job.salary_range,
                 "emp_type": job.emp_type,
@@ -504,9 +513,17 @@ def apply_to_job(job_id: int):
             data = request.get_json()
             cover_letter = data.get("cover_letter")
 
-        job = db.query(Job).filter(Job.id == job_id).first()
+        job = (
+            db.query(Job)
+            .options()
+            .filter(Job.id == job_id)
+            .first()
+        )
         if not job:
             return jsonify({"error": "Job not found"}), 404
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
         existing = (
             db.query(Application)
             .filter(Application.user_id == user_id, Application.job_id == job_id)
@@ -549,11 +566,27 @@ def apply_to_job(job_id: int):
             job_id=job_id,
             user_id=user_id,
             cover_letter=cover_letter,
-            cv_file_path=cv_file_path,
+            resume_url=cv_file_path,
             status="pending",
         )
 
         db.add(application)
+
+        # Track applicants relationship
+        if user not in job.applicants:
+            job.applicants.append(user)
+
+        # Notify employer (avoid self-notify)
+        if job.employer_id and job.employer_id != user_id:
+            notification = Notification(
+                sender_id=user_id,
+                receiver_id=job.employer_id,
+                type="job_application",
+                title=f"New application for {job.title}",
+                message=f"{user.full_name} applied to your job \"{job.title}\"",
+            )
+            db.add(notification)
+
         db.commit()
         db.refresh(application)
 
@@ -566,6 +599,47 @@ def apply_to_job(job_id: int):
             ),
             201,
         )
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db.close()
+
+
+def report_job(job_id: int):
+    """Report a job with a reason"""
+    db: Session = next(get_db())
+
+    try:
+        try:
+            user_id = get_user_id_from_token()
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 401
+
+        data = request.get_json() or {}
+        reason = (data.get("reason") or "").strip()
+        if not reason:
+            return jsonify({"error": "Reason is required"}), 400
+
+        job = db.query(Job).filter(Job.id == job_id).first()
+        if not job:
+            return jsonify({"error": "Job not found"}), 404
+
+        # Prevent duplicate reports by same user for same job
+        existing = (
+            db.query(Report)
+            .filter(Report.user_id == user_id, Report.job_id == job_id)
+            .first()
+        )
+        if existing:
+            return jsonify({"error": "You already reported this job"}), 400
+
+        report = Report(user_id=user_id, job_id=job_id, reason=reason)
+        db.add(report)
+        db.commit()
+
+        return jsonify({"message": "Report submitted"}), 201
 
     except Exception as e:
         db.rollback()
@@ -650,6 +724,7 @@ def get_employer_jobs():
 def job_to_dict(job: Job) -> dict:
     """Convert Job model to dictionary"""
     employer = getattr(job, "employer", None)
+    category = getattr(job, "category", None)
     return {
         "id": job.id,
         "title": job.title,
@@ -667,6 +742,7 @@ def job_to_dict(job: Job) -> dict:
         if employer
         else None,
         "location": job.location,
+        "category": category.name if category else None,
         "salary_range": job.salary_range,
         "emp_type": job.emp_type,
         "responsibilities": job.responsibilities,
@@ -675,6 +751,7 @@ def job_to_dict(job: Job) -> dict:
         ],
         "created_at": job.created_at.isoformat() if job.created_at else None,
         "updated_at": job.updated_at.isoformat() if job.updated_at else None,
+        "applicants_count": len(job.applicants) if job.applicants else 0,
     }
 
 
