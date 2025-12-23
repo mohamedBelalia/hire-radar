@@ -19,8 +19,8 @@ from core.models import (
     Notification,
     ConnectionRequest,
     DeleteRequest,
-    job_skills,
-    user_skills,
+    Conversation,
+    Message,
     job_applicants,
     ReportedJob
 )
@@ -91,7 +91,7 @@ for _ in range(100):
         webSite=faker.url()[:150],
         resume_url=faker.url(),
         github_url=faker.url()[:100],
-        created_at=faker.date_time_between(start_date='-3M', end_date='now')  # last 3 months
+        created_at=faker.date_time_between(start_date='-5M', end_date='now')  # last 3 months
     )
     users_list.append(user)
 session.add_all(users_list)
@@ -116,7 +116,7 @@ if not employers:
         password=generate_password_hash("12341234"),
         role="employer",
         companyName=faker.company(),
-        created_at=faker.date_time_between(start_date='-3M', end_date='now')
+        created_at=faker.date_time_between(start_date='-5M', end_date='now')
     )
     session.add(employer)
     session.commit()
@@ -134,7 +134,7 @@ for _ in range(100):
         emp_type=random.choice(["full-time", "part-time", "contract", "internship"]),
         description=faker.text(max_nb_chars=500),
         responsibilities=[faker.sentence() for _ in range(random.randint(2, 5))],
-        created_at=faker.date_time_between(start_date='-3M', end_date='now')
+        created_at=faker.date_time_between(start_date='-5M', end_date='now')
     )
     jobs_list.append(job)
 session.add_all(jobs_list)
@@ -165,7 +165,7 @@ for _ in range(min(100, len(candidates) * 5)):
             resume_url=faker.url(),
             cover_letter=faker.text(max_nb_chars=300),
             status=random.choice(["pending", "reviewed", "accepted", "rejected"]),
-            applied_at=faker.date_time_between(start_date='-3M', end_date='now')
+            applied_at=faker.date_time_between(start_date='-5M', end_date='now')
         )
         applications_list.append(app)
 session.add_all(applications_list)
@@ -182,7 +182,7 @@ for _ in range(100):
         saved_jobs_list.append(SavedJob(
             job_id=job.id,
             user_id=user.id,
-            saved_at=faker.date_time_between(start_date='-3M', end_date='now')
+            saved_at=faker.date_time_between(start_date='-5M', end_date='now')
         ))
 session.add_all(saved_jobs_list)
 session.commit()
@@ -241,7 +241,7 @@ for _ in range(100):
         title=faker.sentence()[:255],
         message=faker.text(max_nb_chars=300),
         is_read=random.randint(0, 1),
-        created_at=faker.date_time_between(start_date='-3M', end_date='now')
+        created_at=faker.date_time_between(start_date='-5M', end_date='now')
     ))
 session.add_all(notifications_list)
 session.commit()
@@ -259,7 +259,7 @@ for _ in range(100):
             sender_id=sender.id,
             receiver_id=receiver.id,
             status=random.choice(["pending", "accepted", "rejected"]),
-            created_at=faker.date_time_between(start_date='-3M', end_date='now')
+            created_at=faker.date_time_between(start_date='-5M', end_date='now')
         ))
 session.add_all(connections_list)
 session.commit()
@@ -274,7 +274,7 @@ for _ in range(20):
         delete_requests_list.append(DeleteRequest(
             user_id=user.id,
             reason=faker.text(max_nb_chars=200),
-            created_at=faker.date_time_between(start_date='-3M', end_date='now')
+            created_at=faker.date_time_between(start_date='-5M', end_date='now')
         ))
 session.add_all(delete_requests_list)
 session.commit()
@@ -291,7 +291,7 @@ for _ in range(20):
             user_id=user.id,
             job_id=job.id,
             reason=faker.text(max_nb_chars=200),
-            created_at=faker.date_time_between(start_date='-3M', end_date='now')
+            created_at=faker.date_time_between(start_date='-5M', end_date='now')
         ))
 session.add_all(reported_jobs_list)
 session.commit()
@@ -313,7 +313,7 @@ for _ in range(min(100, len(candidates) * 5)):
             resume_url=faker.url(),
             cover_letter=faker.text(max_nb_chars=300),
             status=random.choice(["pending", "reviewed", "accepted", "rejected"]),
-            applied_at=faker.date_time_between(start_date='-3M', end_date='now')
+            applied_at=faker.date_time_between(start_date='-5M', end_date='now')
         )
         applications_list.append(app)
 session.add_all(applications_list)
@@ -322,6 +322,87 @@ session.commit()
 
 print(f"✓ Seeded {len(applications_list)} job applicants")
 
+print("Seeding conversations and messages...")
+
+# ================== FETCH USERS ==================
+users = session.query(User).all()
+user_ids = [u.id for u in users]
+
+if len(users) < 2:
+    print("Not enough users to seed conversations.")
+    session.close()
+    exit()
+
+# ================== SEED CONVERSATIONS ==================
+conversations = []
+conversation_pairs = set()
+
+NUM_CONVERSATIONS = 50
+
+for _ in range(NUM_CONVERSATIONS):
+    user1, user2 = random.sample(users, 2)
+    pair_key = tuple(sorted([user1.id, user2.id]))
+
+    if pair_key in conversation_pairs:
+        continue
+
+    conversation_pairs.add(pair_key)
+
+    convo = Conversation(
+        created_by=user1.id,
+        is_group=0,
+        created_at=faker.date_time_between(start_date="-5M", end_date="now"),
+    )
+
+    convo.participants.append(user1)
+    convo.participants.append(user2)
+
+    conversations.append(convo)
+
+session.add_all(conversations)
+session.commit()
+
+print(f"✓ Seeded {len(conversations)} conversations")
+
+# ================== SEED MESSAGES ==================
+messages = []
+
+for convo in conversations:
+    participants = convo.participants
+    num_messages = random.randint(5, 20)
+
+    last_time = convo.created_at
+
+    for _ in range(num_messages):
+        sender = random.choice(participants)
+
+        created_at = last_time + timedelta(
+            minutes=random.randint(1, 120)
+        )
+
+        is_read = random.choice([0, 1])
+        read_at = created_at + timedelta(minutes=random.randint(1, 60)) if is_read else None
+
+        msg = Message(
+            conversation_id=convo.id,
+            sender_id=sender.id,
+            content=faker.text(max_nb_chars=300),
+            is_read=is_read,
+            read_at=read_at,
+            created_at=created_at,
+        )
+
+        messages.append(msg)
+        last_time = created_at
+
+session.add_all(messages)
+session.commit()
+
+print(f"✓ Seeded {len(messages)} messages")
+
+print("\n" + "=" * 50)
+print("✓ CONVERSATIONS & MESSAGES SEEDING COMPLETED")
+print("=" * 50)
 
 
 print("\n" + "="*50)

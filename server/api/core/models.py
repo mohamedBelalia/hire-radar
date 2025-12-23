@@ -48,6 +48,33 @@ user_skills = Table(
     ),
 )
 
+
+
+# ============================================================
+# MANY-TO-MANY: CONVERSATION ↔ USERS
+# ============================================================
+conversation_participants = Table(
+    "conversation_participants",
+    Base.metadata,
+    Column(
+        "conversation_id",
+        Integer,
+        ForeignKey("conversations.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column(
+        "user_id",
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column(
+        "joined_at",
+        DateTime,
+        server_default=func.now(),
+    ),
+)
+
 # ============================================================
 # MANY-TO-MANY: JOB ↔ USERS (Applicants)
 # ============================================================
@@ -343,6 +370,72 @@ class ReportedJob(Base):
     user = relationship("User", backref="reported_jobs")
     job = relationship("Job", backref="reported_jobs")
 
+
+# ============================================================
+# Conversation MODEL
+# ============================================================
+class Conversation(Base):
+    __tablename__ = "conversations"
+
+    id = Column(Integer, primary_key=True)
+
+    created_by = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
+    is_group = Column(Integer, server_default="0") 
+    title = Column(String(255)) 
+
+    created_at = Column(DateTime, server_default=func.now())
+
+    participants = relationship(
+        "User",
+        secondary=conversation_participants,
+        backref="conversations",
+    )
+
+    messages = relationship(
+        "Message",
+        backref="conversation",
+        cascade="all, delete-orphan",
+    )
+
+    creator = relationship("User", foreign_keys=[created_by])
+
+# ============================================================
+# Message MODEL
+# ============================================================
+class Message(Base):
+    __tablename__ = "messages"
+
+    id = Column(Integer, primary_key=True)
+
+    conversation_id = Column(
+        Integer,
+        ForeignKey("conversations.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+
+    sender_id = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+
+    content = Column(Text, nullable=False)
+
+    is_read = Column(Integer, server_default="0")  # 0 = unread, 1 = read
+    read_at = Column(DateTime)
+
+    created_at = Column(DateTime, server_default=func.now())
+
+    sender = relationship(
+        "User",
+        foreign_keys=[sender_id],
+        backref="sent_messages",
+    )
 
 Base.metadata.create_all(engine)
 print("Tables created successfully!")
