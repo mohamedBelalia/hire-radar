@@ -6,9 +6,10 @@ import { useTheme } from 'next-themes'
 interface Point {
     x: number;
     y: number;
+    vx: number;
+    vy: number;
     originX: number;
     originY: number;
-    angle: number;
 }
 
 export const GravityParticles = () => {
@@ -26,11 +27,15 @@ export const GravityParticles = () => {
         let points: Point[] = []
         let width = window.innerWidth
         let height = window.innerHeight
-        let mouseX = -100 // Initialize off-screen
-        let mouseY = -100
+        let mouseX = width / 2; // Start center
+        let mouseY = height / 2;
 
-        const spacing = 40 // Grid spacing
-        const connectionRadius = 150 // Mouse influence radius
+        const spacing = 45
+        // "Cloud" parameters
+        const mouseRadius = 400 // Large radius for cloud effect
+        const mouseStrength = 0.003 // Gentle pull force
+        const anchorStrength = 0.02 // Spring back to origin (stiffness)
+        const friction = 0.92 // Damping
 
         const init = () => {
             width = window.innerWidth
@@ -39,15 +44,15 @@ export const GravityParticles = () => {
             canvas.height = height
 
             points = []
-            // Create grid of points
-            for (let x = 0; x < width; x += spacing) {
-                for (let y = 0; y < height; y += spacing) {
+            for (let x = 0; x < width + spacing; x += spacing) {
+                for (let y = 0; y < height + spacing; y += spacing) {
                     points.push({
                         x: x,
                         y: y,
+                        vx: 0,
+                        vy: 0,
                         originX: x,
                         originY: y,
-                        angle: Math.random() * Math.PI * 2
                     })
                 }
             }
@@ -56,45 +61,46 @@ export const GravityParticles = () => {
         const animate = () => {
             ctx.clearRect(0, 0, width, height)
 
-            // Color based on theme
+            // "Darker" colors as requested
             const isDark = theme === 'dark' || document.documentElement.classList.contains('dark')
-            // Made brighter/lighter as requested
-            ctx.fillStyle = isDark ? 'rgba(200, 230, 255, 0.5)' : 'rgba(14, 165, 233, 0.6)' // Lighter cyan/white in dark, stronger sky blue in light
+            ctx.fillStyle = isDark ? 'rgba(148, 163, 184, 0.5)' : 'rgba(2, 132, 199, 0.5)'
 
             points.forEach(point => {
-                // Calculate distance to mouse
+                // 1. Vector to Mouse
                 const dx = mouseX - point.x
                 const dy = mouseY - point.y
-                const distance = Math.sqrt(dx * dx + dy * dy)
+                const dist = Math.sqrt(dx * dx + dy * dy)
 
-                // Mouse interaction physics
-                if (distance < connectionRadius) {
-                    // Repel/Attract logic simulating "gravity" or "distortion"
-                    // The google example seems to have a "Lens" effect where points move OUTWARDS or Rotate around
-                    const force = (connectionRadius - distance) / connectionRadius
-                    const angle = Math.atan2(dy, dx)
-
-                    // Push away
-                    const pushX = Math.cos(angle) * force * 40
-                    const pushY = Math.sin(angle) * force * 40
-
-                    point.x += (point.originX - pushX - point.x) * 0.1
-                    point.y += (point.originY - pushY - point.y) * 0.1
-                } else {
-                    // Return to origin
-                    point.x += (point.originX - point.x) * 0.05
-                    point.y += (point.originY - point.y) * 0.05
+                // 2. Mouse Attraction (Cloud Pull)
+                if (dist < mouseRadius) {
+                    // Pull towards mouse, stronger when closer, but smoothened
+                    const force = (mouseRadius - dist) / mouseRadius
+                    point.vx += dx * force * mouseStrength
+                    point.vy += dy * force * mouseStrength
                 }
 
-                // Draw "Tick" or small rect to look like the reference image
+                // 3. Anchor Pull (Spring back to grid)
+                const ax = point.originX - point.x
+                const ay = point.originY - point.y
+                point.vx += ax * anchorStrength
+                point.vy += ay * anchorStrength
+
+                // 4. Physics Integration
+                point.vx *= friction
+                point.vy *= friction
+                point.x += point.vx
+                point.y += point.vy
+
                 ctx.save()
                 ctx.translate(point.x, point.y)
 
-                // Rotate towards mouse for compass effect
-                const rotAngle = Math.atan2(mouseY - point.y, mouseX - point.x)
-                ctx.rotate(rotAngle)
+                // Rotate to velocity (flow direction) or mouse?
+                // Let's face the mouse for "attention"
+                const angle = Math.atan2(mouseY - point.y, mouseX - point.x)
+                ctx.rotate(angle)
 
-                ctx.fillRect(-1.5, -0.5, 3, 1) // Small tick
+                // Draw tick
+                ctx.fillRect(-1, -1, 3, 3)
                 ctx.restore()
             })
 
