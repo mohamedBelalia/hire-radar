@@ -10,10 +10,9 @@ from routes.employers import employers
 from routes.applications import applications
 import os
 from pathlib import Path
-from sockethh import socketio
 from routes.connections import connections
 from routes.notifications import notifications
-
+from routes.messages_convs import mssg
 load_dotenv()
 
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -48,8 +47,8 @@ app.register_blueprint(employers, url_prefix="/api/employers")
 app.register_blueprint(applications, url_prefix="/api/applications")
 app.register_blueprint(connections, url_prefix="/api/connections")
 app.register_blueprint(notifications, url_prefix="/api/notifications")
+app.register_blueprint(mssg, url_prefix="/api/mssgs")
 
-socketio.init_app(app)
 
 @app.route("/")
 def home():

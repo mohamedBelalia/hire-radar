@@ -188,3 +188,21 @@ export type SuggestedPerson = {
   company_name?: string | null;
   role?: string | null;
 };
+
+
+export interface Message {
+  _id: string;
+  text: string;
+  sender: number | string;
+  conversation: number | string;
+  createdAt: string;
+}
+
+
+export interface Conversation {
+  _id: string;
+  participants: number[] | string[];
+  lastMessage?: Message;
+  updatedAt: string;
+  createdAt: string;
+}

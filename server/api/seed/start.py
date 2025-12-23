@@ -2,6 +2,7 @@ import random
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from faker import Faker
+from datetime import timedelta
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -19,6 +20,8 @@ from core.models import (
     ConnectionRequest,
     DeleteRequest,
     job_applicants,
+    Conversation,
+    Message,
     ReportedJob
 )
 from werkzeug.security import generate_password_hash
@@ -320,6 +323,87 @@ session.commit()
 print(f"✓ Seeded {len(applications_list)} job applicants")
 
 print("Seeding conversations and messages...")
+
+# ================== FETCH USERS ==================
+users = session.query(User).all()
+user_ids = [u.id for u in users]
+
+if len(users) < 2:
+    print("Not enough users to seed conversations.")
+    session.close()
+    exit()
+
+# ================== SEED CONVERSATIONS ==================
+conversations = []
+conversation_pairs = set()
+
+NUM_CONVERSATIONS = 50
+
+for _ in range(NUM_CONVERSATIONS):
+    user1, user2 = random.sample(users, 2)
+    pair_key = tuple(sorted([user1.id, user2.id]))
+
+    if pair_key in conversation_pairs:
+        continue
+
+    conversation_pairs.add(pair_key)
+
+    convo = Conversation(
+        created_by=user1.id,
+        is_group=0,
+        created_at=faker.date_time_between(start_date="-3M", end_date="now"),
+    )
+
+    convo.participants.append(user1)
+    convo.participants.append(user2)
+
+    conversations.append(convo)
+
+session.add_all(conversations)
+session.commit()
+
+print(f"✓ Seeded {len(conversations)} conversations")
+
+# ================== SEED MESSAGES ==================
+messages = []
+
+for convo in conversations:
+    participants = convo.participants
+    num_messages = random.randint(5, 20)
+
+    last_time = convo.created_at
+
+    for _ in range(num_messages):
+        sender = random.choice(participants)
+
+        created_at = last_time + timedelta(
+            minutes=random.randint(1, 120)
+        )
+
+        is_read = random.choice([0, 1])
+        read_at = created_at + timedelta(minutes=random.randint(1, 60)) if is_read else None
+
+        msg = Message(
+            conversation_id=convo.id,
+            sender_id=sender.id,
+            content=faker.text(max_nb_chars=300),
+            is_read=is_read,
+            read_at=read_at,
+            created_at=created_at,
+        )
+
+        messages.append(msg)
+        last_time = created_at
+
+session.add_all(messages)
+session.commit()
+
+print(f"✓ Seeded {len(messages)} messages")
+
+print("\n" + "=" * 50)
+print("✓ CONVERSATIONS & MESSAGES SEEDING COMPLETED")
+print("=" * 50)
+
 
 print("\n" + "="*50)
 print("✓ SEEDING COMPLETED SUCCESSFULLY!")

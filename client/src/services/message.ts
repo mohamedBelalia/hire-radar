@@ -1,16 +1,52 @@
-import { expressServer } from "@/lib/express-server";
+import apiClient from "@/lib/apiClient";
+import { Conversation, Message } from "@/types";
 
-export const _getMessages = async (conversationId: string) =>{
-    const response = await expressServer.get(`/api/message/get/${conversationId}`);
-    return response;
-}
+/**
+ * Get messages of a conversation
+ */
+export const _getMessages = async (
+  conversationId: string
+): Promise<Message[]> => {
+  const { data } = await apiClient.get(
+    `/api/mssgs/${conversationId}`
+  );
+  return data.messages;
+};
 
-export const _sendMessage  = async (conversationId: string, text: string) =>{
-    const response = await expressServer.post(`/api/message/sendMessage`, {conversationId, text});
-    return response;
-}
 
-export const _deleteMessage = async (messageId: string) =>{
-    const response = await expressServer.delete(`/api/message/deleteMessage/${messageId}`)
-    return response;
-}
+
+
+/**
+ * Get conversations of authenticated user
+ */
+export const getConvs = async (): Promise<Conversation[]> => {
+  const { data } = await apiClient.get(`/api/mssgs/conversations`);
+  return data.conversations;
+};
+
+
+/**
+ * Send a message
+ */
+export const _sendMessage = async (
+  conversationId: string,
+  text: string
+): Promise<Message> => {
+  const { data } = await apiClient.post(
+    `/api/mssgs/send`,
+    { conversationId, text }
+  );
+  return data.message;
+};
+
+/**
+ * Delete a message
+ */
+export const _deleteMessage = async (
+  messageId: string
+): Promise<{ success: boolean }> => {
+  const { data } = await apiClient.delete(
+    `/api/mssgs/delete/${messageId}`
+  );
+  return data;
+};

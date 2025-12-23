@@ -1,393 +1,502 @@
 'use client'
 
-
-import { useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
-import { type Conversation, type Message } from '@/interfaces';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Avatar } from '@/components/ui/avatar';
-import { Search, Send, Trash2 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { cn } from '@/lib/utils';
-import { Loading } from '@/components/ui/Loading';
-import socket from '@/socket';
-import { _deleteMessage, _getMessages, _sendMessage } from '@/services/message';
-import { getConvs } from '@/services/conversation';
-import { useCurrentUser } from '@/features/auth/hook';
-import { getToken } from '@/lib';
-import Image from 'next/image';
-
+import { useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
+import { Conversation, Message } from '@/interfaces'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Avatar } from '@/components/ui/avatar'
+import { Search, Send, Trash2 } from 'lucide-react'
+import { formatDistanceToNow } from 'date-fns'
+import { cn } from '@/lib/utils'
+import { Loading } from '@/components/ui/Loading'
+import { _deleteMessage, _getMessages, _sendMessage, getConvs } from '@/services/message'
+import { useCurrentUser } from '@/features/auth/hook'
+import Image from 'next/image'
+import { User } from '@/types'
 
 export default function Inbox() {
-    const [conversations, setConversations] = useState<Conversation[]>([]);
-    const [filteredConversations,setFilteredConversations] = useState<Conversation[]>([])
-    const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
-    const [messages, setMessages] = useState<Message[]>([]);
-    const [newMessage, setNewMessage] = useState('');
-    const [otherParticipant,setOtherParticipant] = useState<UserI>();
-    const [query,setQuery] = useState<string>('')
-    const messagesEndRef = useRef<HTMLDivElement>(null);
-    const conversationsToShow = query ? filteredConversations : conversations;
-    const selectedConversationRef = useRef<Conversation | null>(null);
-    const [loadConvs,setLoadConvs] = useState<boolean>(true);
-    const [loadMssgs,setLoadMssgs] = useState<boolean>(false);
-    const { data : userData } = useCurrentUser(getToken()!)
+  const [conversations, setConversations] = useState<Conversation[]>([])
+  const [filteredConversations, setFilteredConversations] = useState<Conversation[]>([])
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
+  const [messages, setMessages] = useState<Message[]>([])
+  const [newMessage, setNewMessage] = useState('')
+  const [query, setQuery] = useState('')
+  const [loadConvs, setLoadConvs] = useState(true)
+  const [loadMsgs, setLoadMsgs] = useState(false)
 
-    const scrollToBottom = () => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
-    const sendMessage = async () => {
-      if (!newMessage.trim()) return;
-      const newMsg: Message = {
-        _id: String(Date.now()),
-        text: newMessage,
-        conversationId: selectedConversation?._id,
-        sender: { _id: userData.id },
-        createdAt: new Date(),
-      };
+  const { data } = useCurrentUser()
+  const currentUser = data as User | undefined
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  /* ---------------- FETCH CONVERSATIONS ---------------- */
+
+  useEffect(() => {
+    const fetchConversations = async () => {
       try {
-        await _sendMessage(selectedConversation._id, newMessage);
-        socket.emit("send_message", {
-          conversationId: selectedConversation?._id,
-          message: newMsg,
-        });
-        setConversations((prev) => {
-          const updatedConversation = {
-            ...selectedConversation,
-            lastMessage: newMessage,
-            updatedAt: new Date().toISOString(),
-          };
-    
-          const filtered = prev.filter((c) => c._id !== selectedConversation._id);
-          return [updatedConversation, ...filtered];
-        });
-    
-      } catch {
-        toast.error('Failed to send message');
-      }      
-      setNewMessage('');
-    };
-
-    const deleteMessage = (messageId: string) =>{
-      try{
-        toast.promise(_deleteMessage(messageId),{
-          loading: '...Deleting message',
-          success: (res) => {
-            const newMessages = messages.filter((message) => message._id !== messageId);
-            setMessages(newMessages)
-            return res.data.message
-          },
-          error: (err) => err.response.data.message
-        })
-
-      }catch{
-        toast.error('Operation failed',{
-          description: 'Failed to delete message'
-        })
+        setLoadConvs(true)
+        const res = await getConvs()
+        console.log('API Response:', res)
+        
+        // Handle different response formats
+        let conversationsData = []
+        
+        if (Array.isArray(res)) {
+          // Direct array response
+          conversationsData = res
+        } else if (res?.data?.conversations) {
+          // Nested in data.conversations
+          conversationsData = res.data.conversations
+        } else if (res?.conversations) {
+          // Nested in conversations
+          conversationsData = res.conversations
+        } else if (res?.data && Array.isArray(res.data)) {
+          // Nested in data as array
+          conversationsData = res.data
+        }
+        
+        // Normalize the data to ensure _id exists
+        conversationsData = conversationsData.map(conv => ({
+          ...conv,
+          _id: conv._id || conv.id, // Use _id if exists, otherwise use id
+          participants: conv.participants?.map(p => ({
+            ...p,
+            _id: p._id || p.id
+          })) || []
+        }))
+        
+        
+        setConversations(conversationsData)
+        console.log(conversationsData);
+        
+        setFilteredConversations(conversationsData)
+        setSelectedConversation(conversationsData[0] ?? null)
+        
+      } catch (error) {
+        console.error('Error loading conversations:', error)
+        toast.error(`Failed to load conversations: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      } finally {
+        setLoadConvs(false)
       }
     }
 
-    useEffect(() => {
-      const fetchConversations = async () => {
-        try {
-          setLoadConvs(true)
-          const response = await getConvs();
-          if (response.status === 200) {
-            setConversations(response.data.conversations);
-            const first = response.data.conversations[0];
-            setSelectedConversation(first);
-          }
-        } catch {
-          toast.error('Operation failed', {
-            description: 'Failed to load your conversations',
-          });
-        }finally{
-          setLoadConvs(false);
-        }
-      };
-      fetchConversations();
-    }, []);
+    if (currentUser?.id) {
+      fetchConversations()
+    }
+  }, [currentUser?.id])
 
-    useEffect(() => {
-      const searchConv = () => {
-        const lowerTerm = query.toLowerCase();
-    
-        return conversations.filter((conversation) => {
-          const otherParticipant = conversation.participants.find(
-            (p) => p._id !== userData.id
-          );
-          if (!otherParticipant) return false;
-    
-          return (
-            otherParticipant.name?.toLowerCase().includes(lowerTerm) ||
-            otherParticipant.username?.toLowerCase().includes(lowerTerm)
-          );
-        });
-      };
-    
-      if (query !== '') {
-        const results = searchConv();
-        setFilteredConversations(results);
-      } else {
-        setFilteredConversations(conversations);
+  /* ---------------- FETCH MESSAGES ---------------- */
+
+  useEffect(() => {
+    if (!selectedConversation) return
+
+    const fetchMessages = async () => {
+      try {
+        setLoadMsgs(true)
+        const res = await _getMessages(selectedConversation._id)
+        console.log(res);
+        
+        console.log('Messages response:', res)
+        
+        // Handle different response formats
+        let messagesData = []
+        
+        if (Array.isArray(res)) {
+          // Direct array response
+          messagesData = res
+        } else if (res?.data?.messages) {
+          // Nested in data.messages
+          messagesData = res.data.messages
+        } else if (res?.messages) {
+          // Nested in messages
+          messagesData = res.messages
+        } else if (res?.data && Array.isArray(res.data)) {
+          // Nested in data as array
+          messagesData = res.data
+        }
+        
+        // Normalize the data
+        messagesData = messagesData.map(msg => ({
+          ...msg,
+          _id: msg._id || msg.id,
+          sender: {
+            ...msg.sender,
+            _id: msg.sender?._id || msg.sender?.id
+          }
+        }))
+        
+        console.log('Normalized messages:', messagesData)
+        setMessages(messagesData)
+        
+      } catch (error) {
+        console.error('Error loading messages:', error)
+        toast.error(`Failed to load messages: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        setMessages([])
+      } finally {
+        setLoadMsgs(false)
       }
-    }, [query, conversations, userData.id]);
-    
+    }
 
-    useEffect(() => {
-      const fetchMessages = async () => {
-        if (!selectedConversation) return;
-        socket.emit("join_conversation", selectedConversation?._id);
+    fetchMessages()
+  }, [selectedConversation])
 
-        try {
-          setLoadMssgs(true);
-          const response = await _getMessages(selectedConversation._id);
-          
-          if (response.status === 200) {
-            setMessages(response.data.messages);
-          }
-        } catch {
-          toast.error('Operation failed', {
-            description: 'Failed to load your messages',
-          });
-        }finally{
-          setLoadMssgs(false);
-        }
-      };
-      fetchMessages();
-    }, [selectedConversation]);
+  /* ---------------- SEND MESSAGE ---------------- */
 
-    useEffect(() =>{
-        setOtherParticipant(selectedConversation?.participants.find((p) => p._id !== userData.id))
-    },[selectedConversation,userData.id])    
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !selectedConversation) return
 
-    useEffect(() => {
-      selectedConversationRef.current = selectedConversation;
-    }, [selectedConversation]);
-  
-    useEffect(() => {
+    const tempMessage = newMessage
+    setNewMessage('')
+
+    try {
+      const res = await _sendMessage(selectedConversation._id, tempMessage)
+      console.log('Send message response:', res)
+      console.log('Response type:', typeof res, 'Is array:', Array.isArray(res))
+
+      // Handle different response formats - check all possible locations
+      let messageData = null
       
-      const handler = (message: Message) => {
-        if (selectedConversationRef.current?._id === message.conversationId) {
-          setMessages((prev) => [...prev, message])
+      // Check if response has the message directly
+      if (res?._id || res?.id) {
+        messageData = res
+      }
+      // Check if it's nested in data
+      else if (res?.data) {
+        messageData = res.data
+      }
+      // Check if the entire response IS the data (from axios)
+      else if (res) {
+        messageData = res
+      }
+
+      console.log('Extracted messageData:', messageData)
+
+      if (messageData && (messageData._id || messageData.id)) {
+        // Get the current user ID - handle both formats
+        const currentUserId = String(currentUser?.id || currentUser?._id || '')
+        
+        // Normalize the message data
+        const normalizedMessage = {
+          _id: String(messageData._id || messageData.id),
+          text: messageData.text || messageData.content || tempMessage,
+          sender: {
+            _id: String(messageData.sender?._id || messageData.sender?.id || currentUserId),
+            name: messageData.sender?.name || currentUser?.name || currentUser?.full_name || 'You'
+          },
+          createdAt: messageData.createdAt || new Date().toISOString()
         }
+
+        console.log('Normalized new message:', normalizedMessage)
+        console.log('Current messages count:', messages.length)
+        
+        // Add to messages
+        setMessages(prev => {
+          const updated = [...prev, normalizedMessage]
+          console.log('Updated messages count:', updated.length)
+          return updated
+        })
+
+        // Update conversation list
+        setConversations(prev => {
+          const updated = prev.map(c => {
+            if (c._id === selectedConversation._id || String(c._id) === String(selectedConversation._id)) {
+              return {
+                ...c,
+                lastMessage: normalizedMessage.text,
+                updatedAt: normalizedMessage.createdAt,
+              }
+            }
+            return c
+          })
+          
+          // Sort by updatedAt
+          return updated.sort((a, b) => 
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+          )
+        })
+
+        // Force scroll after state update
+        setTimeout(scrollToBottom, 100)
+        
+        toast.success('Message sent')
+      } else {
+        console.error('Invalid message response - no ID found:', res)
+        console.error('MessageData:', messageData)
+        
+        // Still try to add the message with a temporary ID
+        const tempId = `temp-${Date.now()}`
+        const tempMessageObj = {
+          _id: tempId,
+          text: tempMessage,
+          sender: {
+            _id: String(currentUser?.id || currentUser?._id || ''),
+            name: currentUser?.name || currentUser?.full_name || 'You'
+          },
+          createdAt: new Date().toISOString()
+        }
+        
+        setMessages(prev => [...prev, tempMessageObj])
+        setTimeout(scrollToBottom, 100)
+      }
+    } catch (error) {
+      console.error('Error sending message:', error)
+      toast.error(`Failed to send message: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      setNewMessage(tempMessage)
+    }
+  }
+
+  /* ---------------- DELETE MESSAGE ---------------- */
+
+  const deleteMessage = async (id: string) => {
+    if (!id) {
+      toast.error('Invalid message ID')
+      return
+    }
     
-        setConversations((prevConversations) => {
-          const index = prevConversations.findIndex(c => c._id === message.conversationId);
-          if (index === -1) return prevConversations;
-    
-          const updated = [...prevConversations];
-          const target = updated.splice(index, 1)[0];
-          target.lastMessage = message.text;
-          target.updatedAt = new Date().toISOString();
-    
-          return [target, ...updated];
-        });
-      };
-    
-      socket.on("new_message", handler);
+    console.log('Attempting to delete message:', id)
 
-      return () => {
-        socket.off("new_message");
-      };
-    }, []);
+    // Optimistically remove from UI
+    const originalMessages = [...messages]
+    setMessages(prev => prev.filter(m => m._id !== id))
 
-    useEffect(() => {
-      scrollToBottom();
-    }, [messages]);
+    try {
+      const res = await _deleteMessage(id)
+    } catch (error) {
+      console.error('Error deleting message:', error)
+      // Restore messages on error
+      setMessages(originalMessages)
+      toast.error(`Failed to delete message: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
 
-    if(status === 'loading') return <Loading />
+  /* ---------------- SEARCH ---------------- */
 
-    return (
-        <>
-            <div className="flex h-[90vh] bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-950 text-gray-900 dark:text-gray-100">
-                <div className="w-1/3 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex flex-col">
-                    <div className="p-6 border-b border-gray-200 dark:border-gray-800">
-                    <h2 className="text-2xl font-bold">Messages</h2>
-                    <div className="relative mt-4">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <Input
-                        placeholder="Search conversations..."
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        className="pl-10 py-2 rounded-full bg-gray-100 dark:bg-gray-800 border-none focus:ring-2 focus:ring-blue-500 transition"
-                        />
-                    </div>
-                    </div>
+  useEffect(() => {
+    if (!query.trim()) {
+      setFilteredConversations(conversations)
+      return
+    }
 
-                    <div className="flex-1 overflow-y-auto custom-scrollbar">
-                    {conversationsToShow.map((conv) => {
-                        const participant = conv.participants.find((p) => p._id !== userData.id);
+    const q = query.toLowerCase()
 
-                        return (
-                        <div
-                            key={conv._id}
-                            className={cn(
-                            'flex items-center p-4 gap-3 cursor-pointer transition-all duration-200 hover:bg-blue-50 dark:hover:bg-blue-900/20',
-                            selectedConversation?._id === conv._id && 'bg-blue-100/30 dark:bg-blue-800/30 border-l-4 border-blue-500'
-                            )}
-                            onClick={() => setSelectedConversation(conv)}
-                        >
-                            <Avatar className="w-12 h-12 shadow-md ring-2 ring-blue-300 dark:ring-blue-600">
-                                {
-                                    participant.profilePictureUrl ? 
-                                        <Image
-                                            src={participant.profilePictureUrl}
-                                            alt="Profile"
-                                            width={30}
-                                            height={30}
-                                            className="w-12 h-12 rounded-full object-cover transition border-2 border-white"
-                                        />
-                                    : <Image
-                                            src={'/icons/default-image.png'}
-                                            alt="Profile"
-                                            width={30}
-                                            height={30}
-                                            className="w-12 h-12 rounded-full object-cover transition border-2 border-white"
-                                        />
-                                }
-                            </Avatar>
-                            <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-center">
-                                <h3 className="font-semibold truncate">{participant?.name}</h3>
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {formatDistanceToNow(new Date(conv.updatedAt), { addSuffix: true })}
-                                </span>
-                            </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400 truncate">{conv.lastMessage}</div>
-                            </div>
-                        </div>
-                        );
-                    })}
-                    {
-                        loadConvs ?
-                        <h1 className='text-xl mt-2 ml-2'>Loading your conversations...</h1>
-                        :null
-                    }
-                    {
-                        conversations.length === 0 && !loadConvs &&(
-                            <h1 className='text-xl mt-2 ml-2'>Loading your conversations...</h1>
-                        )
-                    }
-                    </div>
-                </div>
+    setFilteredConversations(
+      conversations.filter(conv =>
+        conv.participants.some(
+          p =>
+            p._id !== currentUser?.id &&
+            p.name?.toLowerCase().includes(q)
+        )
+      )
+    )
+  }, [query, conversations, currentUser?.id])
 
-                <div className="w-2/3 flex flex-col">
-                    {selectedConversation && (
-                    <>
-                        <div className="flex items-center justify-between w-full border-b border-gray-200 dark:border-gray-800 p-4">
-                        <div className='flex gap-4'>
-                            <Avatar className="w-12 h-12 shadow-md ring-2 ring-blue-300 dark:ring-blue-600">
-                                {
-                                    otherParticipant?.profilePictureUrl ? 
-                                        <img
-                                            src={otherParticipant.profilePictureUrl}
-                                            alt="Profile"
-                                            className="w-12 h-12 rounded-full object-cover transition border-2 border-white"
-                                        />
-                                    : <img
-                                            src={defaultImage}
-                                            alt="Profile"
-                                            className="w-12 h-12 rounded-full object-cover transition border-2 border-white"
-                                        />
-                                }
-                            </Avatar>
+  useEffect(scrollToBottom, [messages])
 
-                            <div className="flex-1">
-                            <div className="font-semibold text-lg">
-                                <span>
-                                {otherParticipant?.name}
-                                </span>
-                            </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                                Last active{' '}
-                                {selectedConversation?.updatedAt
-                                ? formatDistanceToNow(new Date(selectedConversation.updatedAt), {
-                                    addSuffix: true,
-                                    })
-                                : 'unknown'}
-                            </div>
-                            </div>
-                        </div>
-                        </div>
+  if (!currentUser) return <Loading />
 
-                        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50 dark:bg-gray-950 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] dark:bg-[url('https://www.transparenttextures.com/patterns/dark-cubes.png')] bg-opacity-5 custom-scrollbar">
-                        {messages.map((msg) => {
-                            const isOwnMessage = msg.sender._id === userData.id;
+  /* ---------------- UI ---------------- */
 
-                            return (
-                            <div
-                                key={msg._id}
-                                className={cn(
-                                'flex transition-all duration-200 group',
-                                !isOwnMessage ? 'justify-start' : 'justify-end'
-                                )}
-                            >
-                                <div
-                                className={cn(
-                                    'relative max-w-xl p-4 rounded-2xl shadow transition-all duration-200',
-                                    !isOwnMessage
-                                    ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-tl-none'
-                                    : 'bg-blue-600 text-white rounded-tr-none'
-                                )}
-                                >
-                                    {isOwnMessage && (
-                                        <button
-                                        onClick={() => deleteMessage(msg._id)}
-                                        className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow cursor-pointer"
-                                        title="Delete message"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    )}
+  return (
+    <div className="flex h-[90vh]">
+      {/* LEFT - Conversations List */}
+      <div className="w-1/3 border-r flex flex-col">
+        <div className="p-4 border-b">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search conversations..."
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
 
-                                    <p className="leading-relaxed break-words">{msg.text}</p>
-
-                                    <div
-                                        className={cn(
-                                        'text-xs mt-2 opacity-70',
-                                        !isOwnMessage ? 'text-gray-500 dark:text-gray-400' : 'text-blue-100'
-                                        )}
-                                    >
-                                        {formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}
-                                    </div>
-                                </div>
-                            </div>
-                            );
-                        })}
-                        {
-                            loadMssgs ?
-                            <h1 className='text-xl text-center mt-2'>Loading your messages...</h1>
-                            :null
-                        }
-                        <div ref={messagesEndRef} />
-                        </div>
-
-                        <div className="border-t border-gray-200 dark:border-gray-800 p-4 bg-white dark:bg-gray-900">
-                        <div className="flex gap-3 items-center">
-                            <Input
-                            placeholder="Type your message..."
-                            value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                            className="flex-1 rounded-full bg-gray-100 dark:bg-gray-800 border-none px-4 py-2 focus:ring-2 focus:ring-blue-500 transition"
-                            />
-                            <Button
-                            onClick={sendMessage}
-                            className="rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition disabled:opacity-50"
-                            disabled={!newMessage.trim()}
-                            >
-                            <Send className="h-5 w-5" />
-                            </Button>
-                        </div>
-                        </div>
-                    </>
-                    )}
-                </div>
+        <div className="flex-1 overflow-y-auto">
+          {loadConvs ? (
+            <div className="p-4 text-center text-muted-foreground">
+              Loading conversations...
             </div>
-        </>        
-  );
+          ) : filteredConversations.length === 0 ? (
+            <div className="p-4 text-center text-muted-foreground">
+              {query ? 'No conversations found' : 'No conversations yet'}
+            </div>
+          ) : (
+            filteredConversations.map(conv => {
+              const other = conv.participants.find(p => p._id !== currentUser.id)
+
+              return (
+                <div
+                  key={conv._id}
+                  onClick={() => setSelectedConversation(conv)}
+                  className={cn(
+                    'flex items-center gap-3 p-4 cursor-pointer hover:bg-muted/50 transition-colors border-b',
+                    selectedConversation?._id === conv._id && 'bg-muted'
+                  )}
+                >
+                  <Avatar className="w-10 h-10">
+                    <Image
+                      src={other?.profilePictureUrl || '/icons/default-image.png'}
+                      alt={other?.name || 'User'}
+                      width={40}
+                      height={40}
+                      className="rounded-full object-cover"
+                    />
+                  </Avatar>
+
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{other?.name || 'Unknown User'}</p>
+                    <p className="text-sm text-muted-foreground truncate">
+                      {conv.lastMessage || 'No messages yet'}
+                    </p>
+                  </div>
+
+                  {conv.updatedAt && (
+                    <span className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(conv.updatedAt), { addSuffix: true })}
+                    </span>
+                  )}
+                </div>
+              )
+            })
+          )}
+        </div>
+      </div>
+
+      {/* RIGHT - Messages */}
+      <div className="w-2/3 flex flex-col">
+        {selectedConversation ? (
+          <>
+            {/* Header */}
+            <div className="p-4 border-b">
+              <div className="flex items-center gap-3">
+                {(() => {
+                  const other = selectedConversation.participants.find(
+                    p => p._id !== currentUser.id
+                  )
+                  return (
+                    <>
+                      <Avatar className="w-10 h-10">
+                        <Image
+                          src={other?.profilePictureUrl || '/icons/default-image.png'}
+                          alt={other?.name || 'User'}
+                          width={40}
+                          height={40}
+                          className="rounded-full object-cover"
+                        />
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{other?.name || 'Unknown User'}</p>
+                        <p className="text-xs text-muted-foreground">{other?.headline || 'headline'}</p>
+                      </div>
+                    </>
+                  )
+                })()}
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {loadMsgs ? (
+                <div className="text-center text-muted-foreground">
+                  Loading messages...
+                </div>
+              ) : messages.length === 0 ? (
+                <div className="text-center text-muted-foreground">
+                  No messages yet. Start the conversation!
+                </div>
+              ) : (
+                messages.map(msg => {
+                  // Normalize IDs for comparison
+                  const senderId = msg.sender?._id || msg.sender?.id
+                  const currentUserId = currentUser?.id || currentUser?._id
+                  const isMine = senderId === currentUserId || String(senderId) === String(currentUserId)
+
+                  console.log('Message check:', { 
+                    senderId, 
+                    currentUserId, 
+                    isMine,
+                    msgText: msg.text?.substring(0, 30) 
+                  })
+
+                  return (
+                    <div
+                      key={msg._id}
+                      className={cn(
+                        'flex',
+                        isMine ? 'justify-end' : 'justify-start'
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          'max-w-[70%] p-3 rounded-lg relative group',
+                          isMine 
+                            ? 'bg-blue-600 text-white rounded-br-none' 
+                            : 'bg-muted rounded-bl-none'
+                        )}
+                      >
+                        {isMine && (
+                          <button
+                            onClick={() => deleteMessage(msg._id)}
+                            className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                            title="Delete message"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        )}
+                        <p className="break-words">{msg.text}</p>
+                        <span
+                          className={cn(
+                            'text-xs block mt-1',
+                            isMine ? 'text-blue-100' : 'text-muted-foreground'
+                          )}
+                        >
+                          {formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input */}
+            <div className="p-4 border-t">
+              <div className="flex gap-2">
+                <Input
+                  value={newMessage}
+                  onChange={e => setNewMessage(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault()
+                      sendMessage()
+                    }
+                  }}
+                  placeholder="Type a message..."
+                  className="flex-1"
+                />
+                <Button 
+                  onClick={sendMessage} 
+                  disabled={!newMessage.trim()}
+                  className="px-4"
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center text-muted-foreground">
+            Select a conversation to start messaging
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }
