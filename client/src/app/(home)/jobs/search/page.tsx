@@ -9,7 +9,6 @@ import JobCard from "@/components/jobs/JobCard";
 import JobCardSkeleton from "@/components/jobs/JobCardSkeleton";
 import JobFilters from "@/components/jobs/JobFilters";
 import EmptyState from "@/components/jobs/EmptyState";
-import TopNavbar from "@/components/TopNavbar";
 import { useInfiniteJobs, useApplyJob } from "@/features/jobs/hooks";
 import { Job } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -101,8 +100,7 @@ export default function SearchJobsPage() {
   const hasActiveFilters = !!(location || salaryMin || skill);
 
   return (
-    <div className="min-h-screen bg-background">
-      <TopNavbar />
+    <div className="min-h-screen bg-background text-foreground">
       <div className="container mx-auto px-4 md:px-6 py-8 max-w-7xl pt-24">
         {/* Header */}
         <div className="mb-8">

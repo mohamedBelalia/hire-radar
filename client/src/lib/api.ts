@@ -132,11 +132,29 @@ export const jobsApi = {
   // Stubbing them out for now - they will return errors
   apply: async (
     jobId: number,
-    applicationData?: { cover_letter?: string },
+    applicationData?: { cover_letter?: string; cv_file?: File },
   ) => {
-    const { data } = await apiClient.post<{ application_id: number }>(
+    if (applicationData?.cv_file) {
+      const formData = new FormData();
+      if (applicationData.cover_letter) {
+        formData.append("cover_letter", applicationData.cover_letter);
+      }
+      formData.append("cv_file", applicationData.cv_file);
+      const { data } = await apiClient.post(
+        `/api/jobs/${jobId}/apply`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
+      return data;
+    }
+
+    const { data } = await apiClient.post(
       `/api/jobs/${jobId}/apply`,
-      applicationData || {},
+      applicationData,
     );
     return data;
   },
@@ -147,14 +165,6 @@ export const jobsApi = {
 
   unsave: async (jobId: number): Promise<void> => {
     await apiClient.delete(`/api/jobs/${jobId}/save`);
-  },
-
-  report: async (jobId: number, reason: string): Promise<{ message: string }> => {
-    const { data } = await apiClient.post<{ message: string }>(
-      `/api/jobs/${jobId}/report`,
-      { reason },
-    );
-    return data;
   },
 };
 
@@ -189,14 +199,57 @@ export const candidatesApi = {
     throw new Error("CV upload endpoint not implemented in backend");
   },
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getSavedJobs: async (_id: number): Promise<SavedJob[]> => {
-    throw new Error("Saved jobs endpoint not implemented in backend");
+  getSavedJobs: async (id: number): Promise<SavedJob[]> => {
+    const { data } = await apiClient.get<
+      Array<{
+        id: number;
+        title: string;
+        description: string;
+        company: string;
+        employer_id: number;
+        location: string;
+        salary_range: string;
+        emp_type: string;
+        responsibilities: string[];
+        skills: Array<{ id: number; name: string }>;
+        created_at: string;
+        updated_at: string;
+        saved_at: string;
+      }>
+    >(`/api/candidates/${id}/saved-jobs`);
+
+    return data.map((job) => ({
+      id: job.id,
+      user_id: id,
+      job_id: job.id,
+      candidate_id: id,
+      saved_at: job.saved_at,
+      job: {
+        id: job.id,
+        title: job.title,
+        description: job.description,
+        company: job.company,
+        employer_id: job.employer_id,
+        location: job.location,
+        salary_range: job.salary_range,
+        emp_type: job.emp_type,
+        responsibilities: job.responsibilities,
+        skills: job.skills.map((s) => s.name),
+        created_at: job.created_at,
+        updated_at: job.updated_at,
+      } as Job,
+    }));
   },
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getApplications: async (_id: number): Promise<Application[]> => {
-    throw new Error("Applications endpoint not implemented in backend");
+  getApplications: async (id: number): Promise<Application[]> => {
+    try {
+      const { data } = await apiClient.get<Application[]>(
+        `/api/candidates/${id}/applications`,
+      );
+      return data;
+    } catch {
+      return [];
+    }
   },
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

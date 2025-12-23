@@ -1,4 +1,5 @@
 export interface Job {
+  id: number;
   _id?: string;                  // Database ID
   title: string;                  // Job title
   company: string;                // Company name
@@ -10,4 +11,13 @@ export interface Job {
   skills?: string[];              // Array of skill names required for the job
   createdAt?: string;             // Creation timestamp
   updatedAt?: string;             // Updated timestamp
+  category?: string;
+  applicants?: number;
+  employer_id?: number;
+  employer?: {
+    id: number;
+    full_name: string;
+    image?: string;
+    headLine?: string;
+  };
 }

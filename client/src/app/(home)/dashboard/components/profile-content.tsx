@@ -24,10 +24,15 @@ import {
   useUploadCandidateCV,
 } from "@/features/profile/hooks";
 import { useEmployerProfile } from "@/features/profile/hooks";
-import type { User } from "@/types";
+import {
+  useNotifications,
+  useMarkNotificationRead,
+} from "@/features/notifications/hooks";
+import type { User, Notification } from "@/types";
 import { useCurrentUserId } from "@/hooks/useCurrentUserId";
 import apiClient from "@/lib/apiClient";
 import { getToken } from "@/lib";
+import { formatDistanceToNow } from "date-fns";
 import { DeleteAccount } from "@/components/delete-account";
 import CareerTab from "@/components/career-tab";
 import UploadCV from "@/components/profile/UploadCV";
@@ -81,6 +86,24 @@ export default function ProfileContent({
   const [updateCandidateLoading, setUpdateCandidateLoading] = useState(false);
   const [updateEmployerLoading, setUpdateEmployerLoading] = useState(false);
   const uploadCV = useUploadCandidateCV(userId);
+
+  const { data: notificationsData, isLoading: isLoadingNotifications } =
+    useNotifications();
+  const markAsReadMutation = useMarkNotificationRead();
+
+  const notifications = (notificationsData || []) as Notification[];
+
+  const handleMarkAllRead = async () => {
+    const unreadNotifications = notifications.filter((n) => !n.is_read);
+    try {
+      await Promise.all(
+        unreadNotifications.map((n) => markAsReadMutation.mutateAsync(n.id)),
+      );
+      toast.success("All notifications marked as read");
+    } catch {
+      toast.error("Failed to mark all notifications as read");
+    }
+  };
 
   const handleUpdatePassword = async () => {
     setError(null);
@@ -408,11 +431,10 @@ export default function ProfileContent({
 
                 {/* Website / Location / Github */}
                 <div
-                  className={`grid gap-6 md:col-span-2 ${
-                    currentUser?.role === "candidate"
-                      ? "grid-cols-1 md:grid-cols-3"
-                      : "grid-cols-1 md:grid-cols-2"
-                  }`}
+                  className={`grid gap-6 md:col-span-2 ${currentUser?.role === "candidate"
+                    ? "grid-cols-1 md:grid-cols-3"
+                    : "grid-cols-1 md:grid-cols-2"
+                    }`}
                 >
                   <div className="space-y-2">
                     <Label htmlFor="website">Website</Label>
@@ -622,54 +644,77 @@ export default function ProfileContent({
               </p>
             </div>
 
-            <Button variant="outline" size="sm">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleMarkAllRead}
+              disabled={
+                isLoadingNotifications ||
+                !notifications.some((n) => !n.is_read)
+              }
+            >
               Mark all as read
             </Button>
           </CardHeader>
 
-          <CardContent className="space-y-2">
-            <div className="flex items-start gap-4 rounded-lg border p-4 transition hover:bg-muted/50">
-              <span className="mt-2 h-2 w-2 rounded-full bg-primary" />
-
-              <div className="flex-1 space-y-1">
-                <div className="flex items-center justify-between">
-                  <p className="font-medium">Connection Request</p>
-                  <span className="text-xs text-muted-foreground">
-                    2 minutes ago
-                  </span>
-                </div>
-
-                <p className="text-sm text-muted-foreground">
-                  John Doe sent you a connection request.
-                </p>
-
-                <div className="flex gap-2 pt-2">
-                  <Button size="sm">Accept</Button>
-                  <Button size="sm" variant="outline">
-                    Ignore
-                  </Button>
-                </div>
+          <CardContent className="space-y-4">
+            {isLoadingNotifications ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
-            </div>
-
-            <Separator />
-
-            <div className="flex items-start gap-4 rounded-lg p-4 opacity-70">
-              <span className="mt-2 h-2 w-2 rounded-full bg-transparent" />
-
-              <div className="flex-1 space-y-1">
-                <div className="flex items-center justify-between">
-                  <p className="font-medium">Application Status Updated</p>
-                  <span className="text-xs text-muted-foreground">
-                    Yesterday
-                  </span>
-                </div>
-
-                <p className="text-sm text-muted-foreground">
-                  Your application for “Frontend Developer” was accepted.
-                </p>
+            ) : notifications.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No notifications yet.
               </div>
-            </div>
+            ) : (
+              notifications.map((notification) => (
+                <div key={notification.id} className="space-y-4">
+                  <div
+                    className={`flex items-start gap-4 rounded-lg p-4 transition ${!notification.is_read
+                        ? "border bg-muted/30"
+                        : "opacity-70"
+                      }`}
+                  >
+                    <span
+                      className={`mt-2 h-2 w-2 rounded-full ${!notification.is_read ? "bg-primary" : "bg-transparent"
+                        }`}
+                    />
+
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <p className="font-medium">{notification.title}</p>
+                        <span className="text-xs text-muted-foreground">
+                          {notification.created_at
+                            ? formatDistanceToNow(
+                              new Date(notification.created_at),
+                              { addSuffix: true },
+                            )
+                            : ""}
+                        </span>
+                      </div>
+
+                      <p className="text-sm text-muted-foreground">
+                        {notification.message}
+                      </p>
+
+                      {!notification.is_read && (
+                        <div className="flex gap-2 pt-2">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() =>
+                              markAsReadMutation.mutate(notification.id)
+                            }
+                          >
+                            Mark as read
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
       </TabsContent>

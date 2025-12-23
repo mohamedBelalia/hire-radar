@@ -1,35 +1,18 @@
 "use client"
 
-import { Job } from "@/types"
-import React from "react"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  Ellipsis,
-  Pencil,
-  Trash2,
-  Users,
-  FileText,
-  MapPin,
-  Clock,
-  DollarSign,
-  Briefcase,
-  Calendar,
-  UserCheck,
-  ExternalLink,
-} from "lucide-react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { statusIndicator } from "@/constants/status-indicator"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import Image from "next/image"
-import { Icon } from "@iconify/react"
+import { Job } from '@/interfaces'
+import React from 'react'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Ellipsis, Pencil, Trash2, Users, FileText, MapPin, Building, Clock, DollarSign, Briefcase, Calendar, CheckCircle, Award, Layers, Target, UserCheck, ExternalLink } from 'lucide-react'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { statusIndicator } from '@/constants/status-indicator'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader } from '@/components/ui/card'
+import Image from 'next/image'
+import Link from 'next/link'
+import { Icon } from '@iconify/react'
 
 interface JobCardProps {
     jobData: Job
@@ -57,37 +40,37 @@ export const JobCard = ({ jobData, onOpenDelete, onOpenUpdate, onApply, onReport
                         <div className="flex items-start justify-between">
                             <div className="space-y-2">
                                 {/* Company Info */}
-                                <div className="flex items-center gap-3">
+                                <Link href={`/user/${employer?.id}`} className="flex items-center gap-3 transition-colors hover:text-primary group/employer">
                                     {employer?.image && (
                                         <Image
-                                            width={20}
-                                            height={20}
-                                            src={employer.image} 
-                                            alt={employer.full_name[0].toLowerCase()} 
-                                            className="w-12 h-12 rounded-full object-cover border-2 border-primary/20"
+                                            width={48}
+                                            height={48}
+                                            src={employer.image}
+                                            alt={employer.full_name[0].toLowerCase()}
+                                            className="w-12 h-12 rounded-full object-cover border-2 border-primary/20 transition-transform group-hover/employer:scale-105"
                                         />
                                     )}
                                     <div className="space-y-1">
                                         <div className="flex flex-col">
-                                            <span className="font-semibold text-left">{employer?.full_name || jobData.company}</span>
-                                            <p>{employer?.headLine || "Employer"}</p>
+                                            <span className="font-semibold text-left group-hover/employer:text-primary transition-colors">{employer?.full_name || jobData.company}</span>
+                                            <p className="text-sm text-muted-foreground">{employer?.headLine || "Employer"}</p>
                                         </div>
                                     </div>
-                                </div>
+                                </Link>
                             </div>
 
                             {/* Status Indicator */}
                             <div className="flex flex-col items-end gap-2">
-                                {statusIndicator[emp_type]?.icon && (
+                                {emp_type && (statusIndicator as any)[emp_type]?.icon && (
                                     <Tooltip>
                                         <TooltipTrigger>
                                             <Badge variant="outline" className="gap-1.5 px-3 py-1.5">
-                                                {statusIndicator[emp_type].icon}
+                                                {(statusIndicator as any)[emp_type].icon}
                                                 <span className="text-xs">{emp_type?.replace("-", " ") || "Full-time"}</span>
                                             </Badge>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            <p>{statusIndicator[emp_type].description}</p>
+                                            <p>{(statusIndicator as any)[emp_type].description}</p>
                                         </TooltipContent>
                                     </Tooltip>
                                 )}
@@ -103,13 +86,13 @@ export const JobCard = ({ jobData, onOpenDelete, onOpenUpdate, onApply, onReport
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-48" align="end">
-                            <DropdownMenuItem className="gap-2" onClick={() => onOpenUpdate({open: true, jobData: jobData})}>
+                            <DropdownMenuItem className="gap-2" onClick={() => onOpenUpdate({ open: true, jobData: jobData })}>
                                 <Pencil className="w-4 h-4" /> Edit Job
                             </DropdownMenuItem>
                             <DropdownMenuItem className="gap-2 text-green-600" onClick={() => onApply(jobData.id)}>
                                 <UserCheck className="w-4 h-4" /> Apply Now
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="gap-2" onClick={() => onViewDetails?.(jobData.id)}>
+                            <DropdownMenuItem className="gap-2" onClick={() => {/* View Details */ }}>
                                 <ExternalLink className="w-4 h-4" /> View Details
                             </DropdownMenuItem>
                             <DropdownMenuItem className="gap-2 text-red-500" onClick={async () => {
@@ -124,7 +107,7 @@ export const JobCard = ({ jobData, onOpenDelete, onOpenUpdate, onApply, onReport
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 className="gap-2 text-red-500 focus:text-red-500"
-                                onClick={() => onOpenDelete({open:true,jobId: jobData.id})}
+                                onClick={() => onOpenDelete({ open: true, jobId: jobData._id! })}
                             >
                                 <Trash2 className="w-4 h-4" /> Delete Job
                             </DropdownMenuItem>
@@ -135,7 +118,7 @@ export const JobCard = ({ jobData, onOpenDelete, onOpenUpdate, onApply, onReport
 
             <Separator />
 
-                                
+
             <div className='flex-1 space-y-3 px-10'>
                 <div className="flex items-center gap-3">
                     <h3 className="text-xl font-bold tracking-tight group-hover:text-primary transition-colors leading-tight">
@@ -152,26 +135,26 @@ export const JobCard = ({ jobData, onOpenDelete, onOpenUpdate, onApply, onReport
                         <MapPin className="w-4 h-4 text-primary" />
                         <span className="font-medium">{jobData.location || "Remote"}</span>
                     </div>
-                    
+
                     {jobData.salary_range && (
                         <div className="flex items-center gap-2 text-sm">
                             <DollarSign className="w-4 h-4" />
                             <span className="font-medium">{jobData.salary_range}</span>
                         </div>
                     )}
-                    
+
                     <div className="flex items-center gap-2 text-sm">
                         <Briefcase className="w-4 h-4" />
                         <span className="font-medium">{emp_type?.replace("-", " ") || "Full-time"}</span>
                     </div>
-                    
+
                     <div className="flex items-center gap-2 text-sm">
                         <Clock className="w-4 h-4" />
                         <span className="font-medium">{createdAt ? formatRelativeTime(createdAt) : "Recently posted"}</span>
                     </div>
                 </div>
             </div>
-                                
+
             <Separator />
 
             <CardContent className="space-y-6">
@@ -209,8 +192,8 @@ export const JobCard = ({ jobData, onOpenDelete, onOpenUpdate, onApply, onReport
                         </div>
                         <div className="flex flex-wrap gap-2 pl-6">
                             {skills.map((skill: string, index: number) => (
-                                <Badge 
-                                    key={index} 
+                                <Badge
+                                    key={index}
                                     variant="secondary"
                                     className="px-3 py-1.5 text-sm font-medium hover:bg-primary/10 transition-colors cursor-pointer"
                                 >
@@ -239,11 +222,11 @@ export const JobCard = ({ jobData, onOpenDelete, onOpenUpdate, onApply, onReport
                                     {applicantsCount} {applicantsCount === 1 ? 'Applicant' : 'Applicants'}
                                 </p>
                                 <p className="text-xs text-muted-foreground">
-                                    Apply before {getApplicationDeadline(createdAt)}
+                                    Apply before {getApplicationDeadline(createdAt || new Date().toISOString())}
                                 </p>
                             </div>
                         </div>
-                        
+
                         {/* Posted Time */}
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Calendar className="w-4 h-4" />
@@ -298,14 +281,14 @@ function formatRelativeTime(dateString: string) {
     const date = new Date(dateString)
     const now = new Date()
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-    
+
     if (diffInSeconds < 60) return "just now"
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`
     if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`
-    
-    return date.toLocaleDateString('en-US', { 
-        month: 'short', 
+
+    return date.toLocaleDateString('en-US', {
+        month: 'short',
         day: 'numeric',
         year: (date.getFullYear() !== now.getFullYear()) ? 'numeric' : undefined
     })
@@ -314,7 +297,7 @@ function formatRelativeTime(dateString: string) {
 function getApplicationDeadline(dateString: string) {
     const date = new Date(dateString)
     date.setDate(date.getDate() + 30) // Add 30 days for deadline
-    
+
     return date.toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',

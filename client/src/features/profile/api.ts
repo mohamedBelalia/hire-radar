@@ -97,3 +97,8 @@ export async function uploadEmployerImage(
   );
   return data;
 }
+// Public Profile API
+export async function getPublicProfile(id: string): Promise<any> {
+  const { data } = await apiClient.get<any>(`/api/candidates/${id}`);
+  return data;
+}
