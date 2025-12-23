@@ -1,141 +1,152 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { motion, useMotionValue, useSpring, useTransform, MotionValue } from 'framer-motion'
+import { useEffect, useState, useRef } from 'react'
 import { useTheme } from 'next-themes'
 
-interface Point {
-    x: number;
-    y: number;
-    vx: number;
-    vy: number;
-    originX: number;
-    originY: number;
+/**
+ * GravityParticles Component
+ * 
+ * Implements a "Gravity Halo" effect.
+ * The cursor acts as a gravity center, but particles are constrained to a minimum radius,
+ * forming a floating cloud/ring around the cursor that never collapses to the center.
+ */
+
+interface ParticleConfig {
+    id: number
+    initialX: number
+    initialY: number
+    // Polar coordinates relative to cursor for the "Halo" target
+    targetRadius: number
+    targetAngle: number
+    scale: number
+    mass: number
+    floatDuration: number
 }
 
 export const GravityParticles = () => {
-    const canvasRef = useRef<HTMLCanvasElement>(null)
     const { theme } = useTheme()
 
+    // Track cursor position
+    const mouseX = useMotionValue(0)
+    const mouseY = useMotionValue(0)
+
+    // Strength of the pull: 0 = Idle (distributed), 1 = Active (Halo)
+    const gravityStrength = useMotionValue(0)
+
+    const [particles, setParticles] = useState<ParticleConfig[]>([])
+    const containerRef = useRef<HTMLDivElement>(null)
+
     useEffect(() => {
-        const canvas = canvasRef.current
-        if (!canvas) return
+        // Initialize particles
+        // Use a decent count for the "cloud" feel, but keep performant
+        const count = window.innerWidth < 768 ? 40 : 120
+        const newParticles: ParticleConfig[] = []
 
-        const ctx = canvas.getContext('2d')
-        if (!ctx) return
+        for (let i = 0; i < count; i++) {
+            newParticles.push({
+                id: i,
+                initialX: Math.random() * window.innerWidth,
+                initialY: Math.random() * window.innerHeight,
+                // The "Halo" zone: 80px to 220px from cursor
+                targetRadius: Math.random() * 140 + 80,
+                targetAngle: Math.random() * Math.PI * 2,
+                scale: Math.random() * 0.5 + 0.5, // 0.5 to 1.0 scale
+                mass: Math.random() * 2 + 1, // varied internal inertia
+                floatDuration: Math.random() * 4 + 3
+            })
+        }
+        setParticles(newParticles)
 
-        let animationFrame: number
-        let points: Point[] = []
-        let width = window.innerWidth
-        let height = window.innerHeight
-        let mouseX = width / 2; // Start center
-        let mouseY = height / 2;
-
-        const spacing = 45
-        // "Cloud" parameters
-        const mouseRadius = 400 // Large radius for cloud effect
-        const mouseStrength = 0.003 // Gentle pull force
-        const anchorStrength = 0.02 // Spring back to origin (stiffness)
-        const friction = 0.92 // Damping
-
-        const init = () => {
-            width = window.innerWidth
-            height = window.innerHeight
-            canvas.width = width
-            canvas.height = height
-
-            points = []
-            for (let x = 0; x < width + spacing; x += spacing) {
-                for (let y = 0; y < height + spacing; y += spacing) {
-                    points.push({
-                        x: x,
-                        y: y,
-                        vx: 0,
-                        vy: 0,
-                        originX: x,
-                        originY: y,
-                    })
-                }
+        const handleMouseMove = (e: MouseEvent) => {
+            mouseX.set(e.clientX)
+            mouseY.set(e.clientY)
+            // Activate gravity on first move
+            if (gravityStrength.get() === 0) {
+                gravityStrength.set(1)
             }
         }
 
-        const animate = () => {
-            ctx.clearRect(0, 0, width, height)
-
-            // "Darker" colors as requested
-            const isDark = theme === 'dark' || document.documentElement.classList.contains('dark')
-            ctx.fillStyle = isDark ? 'rgba(148, 163, 184, 0.5)' : 'rgba(2, 132, 199, 0.5)'
-
-            points.forEach(point => {
-                // 1. Vector to Mouse
-                const dx = mouseX - point.x
-                const dy = mouseY - point.y
-                const dist = Math.sqrt(dx * dx + dy * dy)
-
-                // 2. Mouse Attraction (Cloud Pull)
-                if (dist < mouseRadius) {
-                    // Pull towards mouse, stronger when closer, but smoothened
-                    const force = (mouseRadius - dist) / mouseRadius
-                    point.vx += dx * force * mouseStrength
-                    point.vy += dy * force * mouseStrength
-                }
-
-                // 3. Anchor Pull (Spring back to grid)
-                const ax = point.originX - point.x
-                const ay = point.originY - point.y
-                point.vx += ax * anchorStrength
-                point.vy += ay * anchorStrength
-
-                // 4. Physics Integration
-                point.vx *= friction
-                point.vy *= friction
-                point.x += point.vx
-                point.y += point.vy
-
-                ctx.save()
-                ctx.translate(point.x, point.y)
-
-                // Rotate to velocity (flow direction) or mouse?
-                // Let's face the mouse for "attention"
-                const angle = Math.atan2(mouseY - point.y, mouseX - point.x)
-                ctx.rotate(angle)
-
-                // Draw tick
-                ctx.fillRect(-1, -1, 3, 3)
-                ctx.restore()
-            })
-
-            animationFrame = requestAnimationFrame(animate)
+        const handleMouseLeave = () => {
+            // optional: gravityStrength.set(0)
         }
 
-        const handleResize = () => {
-            init()
-        }
-
-        const handleMouseMove = (e: MouseEvent) => {
-            // Need relative coordinates if canvas is not fixed full screen, 
-            // but we plan to make it fixed/absolute covering the section.
-            const rect = canvas.getBoundingClientRect()
-            mouseX = e.clientX - rect.left
-            mouseY = e.clientY - rect.top
-        }
-
-        init()
-        animate()
-
-        window.addEventListener('resize', handleResize)
         window.addEventListener('mousemove', handleMouseMove)
+        document.addEventListener('mouseleave', handleMouseLeave)
 
         return () => {
-            cancelAnimationFrame(animationFrame)
-            window.removeEventListener('resize', handleResize)
             window.removeEventListener('mousemove', handleMouseMove)
+            document.removeEventListener('mouseleave', handleMouseLeave)
         }
-    }, [theme])
+    }, [gravityStrength, mouseX, mouseY])
 
     return (
-        <canvas
-            ref={canvasRef}
-            className="absolute inset-0 z-0 opacity-40 pointer-events-none"
-        />
+        <div
+            ref={containerRef}
+            className="absolute inset-0 z-0 overflow-hidden pointer-events-none"
+            aria-hidden="true"
+        >
+            {particles.map((p) => (
+                <Particle
+                    key={p.id}
+                    config={p}
+                    mouseX={mouseX}
+                    mouseY={mouseY}
+                    gravityStrength={gravityStrength}
+                />
+            ))}
+        </div>
+    )
+}
+
+const Particle = ({
+    config,
+    mouseX,
+    mouseY,
+    gravityStrength
+}: {
+    config: ParticleConfig,
+    mouseX: MotionValue<number>,
+    mouseY: MotionValue<number>,
+    gravityStrength: MotionValue<number>
+}) => {
+    // 1. Calculate Target Position
+    // Idle: Initial grid/random position
+    // Active: Cursor Pos + (Radius * cos(angle))
+
+    const targetX = useTransform(() => {
+        const strength = gravityStrength.get()
+        const haloX = mouseX.get() + Math.cos(config.targetAngle) * config.targetRadius
+        return config.initialX * (1 - strength) + haloX * strength
+    })
+
+    const targetY = useTransform(() => {
+        const strength = gravityStrength.get()
+        const haloY = mouseY.get() + Math.sin(config.targetAngle) * config.targetRadius
+        return config.initialY * (1 - strength) + haloY * strength
+    })
+
+    // 2. Physics (Spring)
+    // Smooth, airy, with slight "lag" (damping)
+    const springConfig = {
+        stiffness: 40, // Low stiffness = loose spring
+        damping: 15,   // Medium damping = some oscillation but settles
+        mass: config.mass
+    }
+
+    const x = useSpring(targetX, springConfig)
+    const y = useSpring(targetY, springConfig)
+
+    return (
+        <motion.div
+            style={{
+                x,
+                y,
+                scale: config.scale
+            }}
+            // Style: Tiny dot (2px)
+            className="absolute top-0 left-0 w-1 h-1 bg-slate-400/60 dark:bg-slate-300/60 rounded-full"
+        >
+        </motion.div>
     )
 }
