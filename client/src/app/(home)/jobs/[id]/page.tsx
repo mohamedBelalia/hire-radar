@@ -30,6 +30,7 @@ import {
   Calendar,
   ExternalLink,
   Users,
+  ArrowLeft,
 } from "lucide-react";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -110,11 +111,11 @@ export default function JobDetailsPage() {
                 Job not found or failed to load.
               </p>
               <Button
-                onClick={() => router.push("/jobs/search")}
+                onClick={() => router.push("/search")}
                 variant="outline"
                 className="border-border"
               >
-                Back to Jobs
+                Back to search
               </Button>
             </CardContent>
           </Card>
@@ -126,76 +127,73 @@ export default function JobDetailsPage() {
   return (
     <div className="min-h-screen bg-background">
       <TopNavbar />
-      <div className="container mx-auto px-4 md:px-6 py-8 max-w-5xl pt-24">
-        <div className="mb-6">
+      <div className="container mx-auto px-4 md:px-6 py-10 max-w-6xl pt-24 space-y-6">
+        <div className="flex items-center gap-3">
           <Button
             variant="ghost"
+            size="sm"
             onClick={() => router.back()}
-            className="mb-4"
+            className="px-2"
           >
-            ← Back
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            Back
           </Button>
+          <Badge variant="outline">Job #{job.id}</Badge>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Job Header */}
-            <Card className="border-border">
-              <CardContent className="p-8">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="flex-1">
-                    <h1 className="text-4xl font-bold mb-4">{job.title}</h1>
-                    <div className="flex items-center gap-4 mb-4 text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <Building2 className="w-5 h-5" />
-                        <span className="font-semibold text-foreground">
-                          {job.company_name || job.company}
-                        </span>
-                      </div>
-                      {job.location && (
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4" />
-                          <span>{job.location}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {formatSalary() && (
-                        <Badge
-                          variant="secondary"
-                          className="flex items-center gap-1"
-                        >
-                          <DollarSign className="w-3 h-3" />
-                          {formatSalary()}
-                        </Badge>
-                      )}
-                      {(job.employment_type || job.emp_type) && (
-                        <Badge
-                          variant="secondary"
-                          className="flex items-center gap-1"
-                        >
-                          <Briefcase className="w-3 h-3" />
-                          {(job.employment_type || job.emp_type || "").replace(
-                            "-",
-                            " ",
-                          )}
-                        </Badge>
-                      )}
-                      {job.created_at && (
-                        <Badge
-                          variant="secondary"
-                          className="flex items-center gap-1"
-                        >
-                          <Calendar className="w-3 h-3" />
-                          Posted {new Date(job.created_at).toLocaleDateString()}
-                        </Badge>
-                      )}
-                    </div>
+        <Card className="border-border">
+          <CardContent className="p-6 lg:p-8">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <Building2 className="w-5 h-5 text-muted-foreground" />
+                  <div className="text-sm text-muted-foreground">
+                    {job.company_name || job.company || "Company"}
                   </div>
                 </div>
+                <h1 className="text-3xl lg:text-4xl font-bold leading-tight">
+                  {job.title}
+                </h1>
+                <div className="flex flex-wrap gap-3 text-muted-foreground">
+                  {job.location && (
+                    <span className="inline-flex items-center gap-1 text-sm">
+                      <MapPin className="w-4 h-4" />
+                      {job.location}
+                    </span>
+                  )}
+                  {(job.employment_type || job.emp_type) && (
+                    <span className="inline-flex items-center gap-1 text-sm">
+                      <Briefcase className="w-4 h-4" />
+                      {(job.employment_type || job.emp_type || "").replace(
+                        "-",
+                        " ",
+                      )}
+                    </span>
+                  )}
+                  {job.created_at && (
+                    <span className="inline-flex items-center gap-1 text-sm">
+                      <Calendar className="w-4 h-4" />
+                      Posted {new Date(job.created_at).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {formatSalary() && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      <DollarSign className="w-3 h-3" />
+                      {formatSalary()}
+                    </Badge>
+                  )}
+                  {job.experience_level && (
+                    <Badge variant="secondary" className="capitalize">
+                      {job.experience_level}
+                    </Badge>
+                  )}
+                </div>
+              </div>
 
-                {isCandidate && (
+              {isCandidate && (
+                <div className="flex flex-col gap-2 w-full lg:w-auto">
                   <Button
                     onClick={() => setIsApplyModalOpen(true)}
                     className="w-full bg-foreground text-background hover:bg-foreground/90"
@@ -203,25 +201,42 @@ export default function JobDetailsPage() {
                   >
                     Apply Now
                   </Button>
+                  {job.application_deadline && (
+                    <p className="text-xs text-muted-foreground text-center">
+                      Apply by {new Date(job.application_deadline).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2 space-y-6">
+            <Card className="border-border">
+              <CardHeader>
+                <CardTitle>About the role</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                  {job.description || "No description provided."}
+                </p>
+                {job.skills && job.skills.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-foreground">Key skills</p>
+                    <div className="flex flex-wrap gap-2">
+                      {job.skills.map((skill, index) => (
+                        <Badge key={index} variant="secondary" className="capitalize">
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </CardContent>
             </Card>
 
-            {/* Job Description */}
-            <Card className="border-border">
-              <CardHeader>
-                <CardTitle>Job Description</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="prose prose-sm max-w-none">
-                  <p className="text-muted-foreground whitespace-pre-wrap">
-                    {job.description || "No description provided."}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Responsibilities */}
             {job.responsibilities && job.responsibilities.length > 0 && (
               <Card className="border-border">
                 <CardHeader>
@@ -236,50 +251,79 @@ export default function JobDetailsPage() {
                 </CardContent>
               </Card>
             )}
+          </div>
 
-            {/* Skills */}
-            {job.skills && job.skills.length > 0 && (
+          <div className="space-y-6">
+            <Card className="border-border">
+              <CardHeader>
+                <CardTitle>Job details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm text-muted-foreground">
+                <div className="flex items-center justify-between">
+                  <span>Company</span>
+                  <span className="text-foreground font-medium">
+                    {job.company_name || job.company || "—"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Employment</span>
+                  <span className="text-foreground font-medium capitalize">
+                    {(job.employment_type || job.emp_type || "—").replace("-", " ")}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Location</span>
+                  <span className="text-foreground font-medium">
+                    {job.location || "Remote / Flexible"}
+                  </span>
+                </div>
+                {formatSalary() && (
+                  <div className="flex items-center justify-between">
+                    <span>Compensation</span>
+                    <span className="text-foreground font-medium">{formatSalary()}</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {job.employer && (
               <Card className="border-border">
                 <CardHeader>
-                  <CardTitle>Required Skills</CardTitle>
+                  <CardTitle>Posted by</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {job.skills.map((skill, index) => (
-                      <Badge key={index} variant="secondary">
-                        {skill}
-                      </Badge>
-                    ))}
+                <CardContent className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={job.employer.image || undefined} />
+                      <AvatarFallback className="bg-foreground text-background">
+                        {(job.employer.full_name || "HR").slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="font-semibold">
+                        {job.employer.full_name || "Hiring Manager"}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {job.employer.headLine || job.employer.role || "Employer"}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      className="flex-1"
+                      variant="secondary"
+                      onClick={() =>
+                        job.employer?.id &&
+                        router.push(`/connections?userId=${job.employer.id}`)
+                      }
+                    >
+                      View profile
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
             )}
-          </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Company Info */}
-            <Card className="border-border">
-              <CardHeader>
-                <CardTitle>Company</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="font-semibold mb-2">
-                  {job.company_name || job.company}
-                </p>
-                {/* Note: Employer profile endpoint doesn't exist in backend yet */}
-                <Button
-                  variant="outline"
-                  disabled
-                  className="w-full border-border"
-                >
-                  View Company Profile
-                  <ExternalLink className="w-4 h-4 ml-2" />
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Recommended Candidates (for employers) */}
             {isEmployer &&
               recommendedCandidates &&
               recommendedCandidates.length > 0 && (
@@ -302,7 +346,7 @@ export default function JobDetailsPage() {
                         recommendedCandidates.slice(0, 5).map((candidate) => (
                           <div
                             key={candidate.id}
-                            className="flex items-center gap-3 p-3 rounded-md hover:bg-accent transition-colors cursor-not-allowed opacity-50"
+                            className="flex items-center gap-3 p-3 rounded-md hover:bg-accent transition-colors cursor-not-allowed opacity-60"
                           >
                             <Avatar className="h-10 w-10">
                               <AvatarImage
@@ -339,7 +383,6 @@ export default function JobDetailsPage() {
           </div>
         </div>
 
-        {/* Apply Modal */}
         <Dialog open={isApplyModalOpen} onOpenChange={setIsApplyModalOpen}>
           <DialogContent className="border-border">
             <DialogHeader>

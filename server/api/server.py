@@ -1,6 +1,5 @@
 from dotenv import load_dotenv
 
-load_dotenv()
 
 from flask import Flask, jsonify, send_from_directory, redirect, request
 from flask_cors import CORS
@@ -13,6 +12,7 @@ from routes.applications import applications
 import os
 from pathlib import Path
 
+load_dotenv()
 
 # Get the project root directory (where uploads folder is located)
 # This file is in server/api/, so we go up 2 levels to get to project root
@@ -52,9 +52,11 @@ app.register_blueprint(applications, url_prefix="/api/applications")
 
 from routes.connections import connections
 from routes.notifications import notifications
+from routes.search import search
 
 app.register_blueprint(connections, url_prefix="/api/connections")
 app.register_blueprint(notifications, url_prefix="/api/notifications")
+app.register_blueprint(search, url_prefix="/api/search")
 
 
 

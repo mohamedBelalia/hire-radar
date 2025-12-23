@@ -40,6 +40,17 @@ import {
 } from "@/features/connections/hooks";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandSeparator,
+} from "@/components/ui/command";
+import { searchApi } from "@/lib/api";
+import { useEffect, useRef } from "react";
 
 export default function TopNavbar() {
   const router = useRouter();
@@ -51,19 +62,54 @@ export default function TopNavbar() {
   const rejectConnection = useRejectConnection();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [isCommandOpen, setIsCommandOpen] = useState(false);
+  const [results, setResults] = useState<any>({ employers: [], candidates: [], jobs: [] });
+  const debounceRef = useRef<number | null>(null);
 
   const unreadCount = notifications?.filter((n) => n.is_read === 0).length || 0;
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(
-        `/jobs/search?search=${encodeURIComponent(searchQuery.trim())}`,
-      );
-    } else {
-      router.push("/jobs/search");
-    }
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const term = searchQuery.trim();
+    const url = term
+      ? `/search?query=${encodeURIComponent(term)}`
+      : "/search";
+    router.push(url);
+    setIsCommandOpen(false);
   };
+
+  // open command with Ctrl+K
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsCommandOpen(true);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  useEffect(() => {
+    // debounce search
+    if (!isCommandOpen) return;
+    if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    debounceRef.current = window.setTimeout(async () => {
+      if (!searchQuery || searchQuery.trim().length === 0) {
+        setResults({ employers: [], candidates: [], jobs: [] });
+        return;
+      }
+      try {
+        const data = await searchApi.search(searchQuery.trim());
+        setResults(data);
+      } catch (err) {
+        console.error("Search failed", err);
+      }
+    }, 200);
+    return () => {
+      if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    };
+  }, [searchQuery, isCommandOpen]);
 
   const handleLogout = () => {
     document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
@@ -133,34 +179,112 @@ export default function TopNavbar() {
           <span className="hidden sm:inline">Hire Radar</span>
         </Link>
 
-        {/* Search Bar - Desktop */}
-        <form
-          onSubmit={handleSearch}
-          className="hidden md:flex flex-1 max-w-md mx-8"
-        >
+        {/* Search Bar - Desktop (opens Command dialog) */}
+        <div className="hidden md:flex flex-1 max-w-md mx-8">
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              type="text"
-              placeholder="Search jobs..."
+              readOnly
+              onFocus={() => setIsCommandOpen(true)}
+              placeholder="Try typing... (press Ctrl+K)"
+              className="pl-9 h-9 bg-background border-border cursor-text"
+              aria-label="Open search"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleSearch(e);
-                }
-              }}
-              className="pl-9 h-9 bg-background border-border"
-              aria-label="Search jobs"
             />
           </div>
-        </form>
+        </div>
+
+        <CommandDialog open={isCommandOpen} onOpenChange={setIsCommandOpen}>
+          <CommandInput
+            placeholder="Try typing..."
+            value={searchQuery}
+            onValueChange={(val: string) => setSearchQuery(val)}
+          />
+          <CommandList>
+            <CommandEmpty>Try typing to search users and jobs</CommandEmpty>
+
+            <CommandGroup heading="Quick actions">
+              <CommandItem
+                disabled={!searchQuery.trim()}
+                onSelect={() => handleSearch()}
+              >
+                <Search className="mr-2 h-4 w-4" />
+                View all results for “{searchQuery || "…"}”
+              </CommandItem>
+            </CommandGroup>
+
+            <CommandGroup heading="Employers">
+              {results.employers && results.employers.length > 0 ? (
+                results.employers.map((e: any) => (
+                  <CommandItem
+                    key={`emp-${e.id}`}
+                    onSelect={() => {
+                      setIsCommandOpen(false);
+                      router.push(`/connections?userId=${e.id}`);
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <img src={e.image || "/radar.svg"} alt={e.full_name} className="w-8 h-8 rounded-full object-cover" />
+                      <div>
+                        <div className="font-medium">{e.full_name}</div>
+                        <div className="text-xs text-muted-foreground">{e.headLine || e.role}</div>
+                      </div>
+                    </div>
+                  </CommandItem>
+                ))
+              ) : null}
+            </CommandGroup>
+
+            <CommandGroup heading="Candidates">
+              {results.candidates && results.candidates.length > 0 ? (
+                results.candidates.map((c: any) => (
+                  <CommandItem
+                    key={`cand-${c.id}`}
+                    onSelect={() => {
+                      setIsCommandOpen(false);
+                      router.push(`/connections?userId=${c.id}`);
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <img src={c.image || "/radar.svg"} alt={c.full_name} className="w-8 h-8 rounded-full object-cover" />
+                      <div>
+                        <div className="font-medium">{c.full_name}</div>
+                        <div className="text-xs text-muted-foreground">{c.headLine || c.role}</div>
+                      </div>
+                    </div>
+                  </CommandItem>
+                ))
+              ) : null}
+            </CommandGroup>
+
+            <CommandSeparator />
+
+            <CommandGroup heading="Jobs">
+              {results.jobs && results.jobs.length > 0 ? (
+                results.jobs.map((j: any) => (
+                  <CommandItem
+                    key={`job-${j.id}`}
+                    onSelect={() => {
+                      setIsCommandOpen(false);
+                      router.push(`/jobs/${j.id}`);
+                    }}
+                  >
+                    <div>
+                      <div className="font-medium">{j.title}</div>
+                      <div className="text-xs text-muted-foreground">{j.description}</div>
+                    </div>
+                  </CommandItem>
+                ))
+              ) : null}
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
 
         {/* Right Side Actions */}
         <div className="flex items-center gap-2">
           {/* Search Icon - Mobile */}
           <Link
-            href="/jobs/search"
+            href="/search"
             className="md:hidden p-2 rounded-md hover:bg-accent transition-colors"
             aria-label="Search jobs"
           >

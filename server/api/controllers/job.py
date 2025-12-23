@@ -649,12 +649,23 @@ def get_employer_jobs():
 
 def job_to_dict(job: Job) -> dict:
     """Convert Job model to dictionary"""
+    employer = getattr(job, "employer", None)
     return {
         "id": job.id,
         "title": job.title,
         "description": job.description,
         "company": job.company,
         "employer_id": job.employer_id,
+        "employer": {
+            "id": employer.id if employer else None,
+            "full_name": getattr(employer, "full_name", None) if employer else None,
+            "email": getattr(employer, "email", None) if employer else None,
+            "role": getattr(employer, "role", None) if employer else None,
+            "headLine": getattr(employer, "headLine", None) if employer else None,
+            "image": getattr(employer, "image", None) if employer else None,
+        }
+        if employer
+        else None,
         "location": job.location,
         "salary_range": job.salary_range,
         "emp_type": job.emp_type,

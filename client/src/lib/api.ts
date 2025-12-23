@@ -83,13 +83,33 @@ export const jobsApi = {
     const { data } = await apiClient.get<{
       id: string;
       employer_id: string;
+      company?: string;
+      company_name?: string;
+      employer?: {
+        id?: number | null;
+        full_name?: string | null;
+        email?: string | null;
+        role?: string | null;
+        headLine?: string | null;
+        image?: string | null;
+      } | null;
+      skills?: Array<{ id?: number; name?: string } | string> | null;
       [key: string]: unknown;
     }>(`/api/jobs/${id}`);
+
+    // Normalize skills to string array
+    const normalizedSkills =
+      (data.skills || [])?.map((s) =>
+        typeof s === "string" ? s : (s?.name as string),
+      ) || [];
+
     // Backend returns string IDs, convert to numbers
     return {
       ...data,
       id: parseInt(data.id),
       employer_id: parseInt(data.employer_id),
+      company_name: data.company_name || (data as { company?: string }).company || "",
+      skills: normalizedSkills,
     } as Job;
   },
 
@@ -266,6 +286,21 @@ export const notificationsApi = {
 
   markAsRead: async (notificationId: number): Promise<void> => {
     await apiClient.put(`/api/notifications/${notificationId}/read`);
+  },
+};
+
+// Search API
+export const searchApi = {
+  search: async (query: string) => {
+    const params = new URLSearchParams();
+    if (query) params.append("query", query);
+    const { data } = await apiClient.get<{
+      employers: Array<{ id: number; role: string; full_name: string; headLine: string; image?: string }>;
+      candidates: Array<{ id: number; role: string; full_name: string; headLine: string; image?: string }>;
+      jobs: Array<{ id: number; title: string; description: string }>;
+    }>(`/api/search?${params.toString()}`);
+
+    return data;
   },
 };
 
