@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useCurrentUser } from "@/features/auth/hook";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getValidImageUrl } from "@/lib/image-utils";
@@ -115,6 +115,14 @@ export default function TopNavbar() {
   const savedJobsUrl =
     currentUser?.role === "candidate" ? "/dashboard/candidate/saved-jobs" : "#";
 
+  const pathname = usePathname();
+  const token = getToken();
+
+  // Hide TopNavbar on Landing Page (unauthenticated root)
+  if (pathname === "/" && !token) {
+    return null;
+  }
+
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur mb-2">
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
@@ -203,10 +211,10 @@ export default function TopNavbar() {
                   const relatedReq =
                     notif.type === "connection_request" && senderId
                       ? connectionRequests?.received.find(
-                          (r) =>
-                            Number(r.sender?.id) === Number(senderId) &&
-                            r.status === "pending",
-                        )
+                        (r) =>
+                          Number(r.sender?.id) === Number(senderId) &&
+                          r.status === "pending",
+                      )
                       : null;
 
                   return (

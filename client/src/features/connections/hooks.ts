@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { connectionsApi } from "@/lib/api";
 import { toast } from "sonner";
+import { getToken } from "@/lib";
 
 export function useSendConnectionRequest() {
   const queryClient = useQueryClient();
@@ -23,9 +24,11 @@ export function useSendConnectionRequest() {
 }
 
 export function useConnectionRequests() {
+  const token = getToken();
   return useQuery({
     queryKey: ["connection-requests"],
     queryFn: () => connectionsApi.getAll(),
+    enabled: !!token,
   });
 }
 
