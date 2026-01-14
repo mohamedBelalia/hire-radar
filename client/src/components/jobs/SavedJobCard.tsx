@@ -22,6 +22,14 @@ interface SavedJobCardProps {
   onUnsave?: (jobId: string) => void;
 }
 
+/**
+ * Renders a saved job card showing job details (title, company, description, location, salary, employment type, and skills) and actions to apply, view details, or remove the job from saved list.
+ *
+ * @param job - The job object to display.
+ * @param onApply - Optional callback invoked with the `job` when the "Apply Now" button is clicked.
+ * @param onUnsave - Optional callback invoked with the job id (as a string) after the job is successfully unsaved.
+ * @returns A card element containing the job information and action controls.
+ */
 export default function SavedJobCard({
   job,
   onApply,

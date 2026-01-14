@@ -3,6 +3,11 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
+/**
+ * Render a skeleton placeholder layout for a user profile including an avatar header, content lines, and pill-shaped tag placeholders.
+ *
+ * @returns A React element containing skeleton UI for a profile page: a header with circular avatar and title/subtitle placeholders, a content section with multiple line placeholders, and a tag/chip section with rounded pill placeholders.
+ */
 export default function ProfileSkeleton() {
   return (
     <div className="space-y-6">

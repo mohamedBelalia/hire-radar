@@ -26,6 +26,15 @@ interface ApplyModalProps {
   ) => Promise<void>;
 }
 
+/**
+ * Render a modal dialog that lets a user submit an application for a job with an optional cover letter and CV upload.
+ *
+ * @param isOpen - Whether the modal is open
+ * @param onClose - Callback to close the modal
+ * @param job - The job to apply for; if `null` the component renders `null`
+ * @param onApply - Callback invoked when the form is submitted. Called with the job id (string), optional cover letter, and optional `File` for the CV; implementer should perform the actual submission.
+ * @returns The modal's JSX element when `job` is provided, or `null` otherwise
+ */
 export default function ApplyModal({
   isOpen,
   onClose,

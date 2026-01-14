@@ -12,6 +12,16 @@ import { Bookmark, Search } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 
+/**
+ * Render the saved jobs page for a candidate, showing saved job cards and controls for managing them.
+ *
+ * Renders a top navigation, a sidebar with saved jobs count, and a main content area that handles loading,
+ * error, empty, and populated states. If the current user is not a candidate, an informational card with a
+ * link home is shown instead. Each saved job includes a Remove control which triggers the unsave mutation
+ * and displays success or failure toasts.
+ *
+ * @returns The page's React element tree for the saved jobs view.
+ */
 export default function SavedJobsPage() {
   const { data: currentUser } = useCurrentUser();
   // Note: candidate_id is not available from /auth/me endpoint

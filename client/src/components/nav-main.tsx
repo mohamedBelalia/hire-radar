@@ -19,6 +19,17 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
 
+/**
+ * Render the main "Platform" navigation group from a list of navigation items.
+ *
+ * @param items - Array of navigation items. Each item includes:
+ *   - `title`: visible label for the item
+ *   - `url`: link target for the item
+ *   - `icon`: icon component to display alongside the title
+ *   - `isActive` (optional): if true, the item's collapsible section is open by default
+ *   - `items` (optional): array of sub-items, each with `title` and `url`
+ * @returns The SidebarGroup JSX element containing menu items and optional collapsible submenus.
+ */
 export function NavMain({
   items,
 }: {

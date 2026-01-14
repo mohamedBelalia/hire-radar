@@ -48,6 +48,17 @@ interface DataTableProps<TData> {
   }[]
 }
 
+/**
+ * Render a configurable data table with sorting, filtering, column visibility, pagination, row selection, and optional per-row actions.
+ *
+ * @param data - Array of row objects to display.
+ * @param columns - Column definitions for the table.
+ * @param showMenu - Whether to show the column visibility menu (defaults to `true`).
+ * @param content - Context string passed to delete/edit dialogs rendered by row actions.
+ * @param actions - Optional list of per-row action descriptors; supported action labels include `"Delete"` (renders DeleteDialog) and `"Edit"` (renders EditSkillCategory).
+ * @param addComponent - Optional React node rendered alongside the column filters (e.g., an "Add" button or form).
+ * @returns A React element containing the interactive data table UI.
+ */
 export function DataTable<TData extends { id: number, name?: string }>({ data, columns, showMenu= true, content, actions, addComponent }: DataTableProps<TData>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])

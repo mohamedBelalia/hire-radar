@@ -35,6 +35,13 @@ import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 
+/**
+ * Renders the Job Details page with job information, company details, and role-specific actions.
+ *
+ * Shows loading skeletons while data is fetched and an error card if loading fails. When a job is available it presents the title, company, location, salary, employment type, posting date, description, responsibilities, and required skills; candidates see an "Apply" modal with an optional cover letter field and employers see a recommended candidates sidebar. The apply flow closes the modal and clears the cover letter on successful submission.
+ *
+ * @returns The page's JSX element tree for the job details view.
+ */
 export default function JobDetailsPage() {
   const params = useParams();
   const router = useRouter();

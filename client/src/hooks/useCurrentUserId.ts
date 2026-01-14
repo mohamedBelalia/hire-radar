@@ -4,12 +4,11 @@ import { useParams } from "next/navigation";
 import { useCurrentUser } from "@/features/auth/hook";
 
 /**
- * Hook to get the current user ID
+ * Selects the user ID to use for client requests.
  *
- * This hook attempts to get the user ID from:
- * 1. URL params (if viewing another user's profile)
- * 2. Current user from auth (OAuth/login)
- * 3. Fallback to 'current' (which the API should handle)
+ * Prefers an `id` URL parameter, then the authenticated user's `id`, and finally the literal `"current"`.
+ *
+ * @returns The chosen user ID as a string: the `id` URL param if present, otherwise the current user's `id` converted to a string, otherwise `"current"`.
  */
 export function useCurrentUserId(): string {
   const params = useParams();

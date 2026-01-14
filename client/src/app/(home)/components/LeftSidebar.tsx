@@ -14,6 +14,13 @@ import { useCurrentUser } from "@/features/auth/hook";
 import type { User } from "@/types";
 import ProfileHeader from "@/app/profile/components/profile-header";
 
+/**
+ * Render the left-side application sidebar with a compact profile header, primary navigation, and followed hashtags.
+ *
+ * Uses current user data to populate the compact ProfileHeader and displays navigation items (including a secondary "New" Badge on Gaming) and a static list of hashtag links.
+ *
+ * @returns The sidebar as an `<aside>` JSX element containing profile, navigation, and followed-hashtags sections.
+ */
 export default function LeftSidebar() {
   const { data } = useCurrentUser();
   const currentUser = data as User | undefined;

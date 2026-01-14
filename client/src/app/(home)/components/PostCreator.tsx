@@ -14,6 +14,13 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCurrentUser } from "@/features/auth/hook";
 
+/**
+ * Renders a post creation UI containing the user's avatar, a text input, action buttons, and a submit button.
+ *
+ * The avatar displays the current user's image when available; otherwise it shows up to two initials derived from the user's full name or the fallback "ME".
+ *
+ * @returns A JSX element for the post creator interface
+ */
 export default function PostCreator() {
   const { data: currentUser } = useCurrentUser();
 

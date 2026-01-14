@@ -20,6 +20,13 @@ import { Separator } from "@/components/ui/separator";
 import { useCurrentUser } from "@/features/auth/hook";
 import type { User } from "@/types";
 
+/**
+ * Render a profile sidebar showing the current user's avatar, name, role, contact and join date, plus settings navigation, contextual quick links, and account actions.
+ *
+ * The navigation links update the URL hash and dispatch a "tab-change" CustomEvent when clicked to enable in-page tab switching.
+ *
+ * @returns The sidebar element containing profile summary, settings navigation, quick links (conditional on user role), and account actions.
+ */
 export default function ProfileSidebar() {
   const { data } = useCurrentUser();
   const currentUser = data as User | undefined;

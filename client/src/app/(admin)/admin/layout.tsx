@@ -1,5 +1,3 @@
-
-
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -16,6 +14,12 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 
+/**
+ * Root layout that provides admin page chrome with a sidebar, header (including breadcrumb), and a main content area.
+ *
+ * @param children - Content to render inside the layout's main content area
+ * @returns The layout element that wraps the provided `children` with sidebar and header UI
+ */
 export default function RootLayout({
   children,
 }: Readonly<{

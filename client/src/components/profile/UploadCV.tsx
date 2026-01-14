@@ -11,6 +11,14 @@ interface UploadCVProps {
   isUploading?: boolean;
 }
 
+/**
+ * Render a CV upload UI that supports drag-and-drop and file picker, accepts PDF files only, and shows the current or selected CV.
+ *
+ * @param profile - Candidate profile; if `profile.cv_url` is present a link to the currently uploaded CV is shown.
+ * @param onUpload - Callback invoked with the selected `File` when the user confirms an upload; the component clears the selection after a successful call.
+ * @param isUploading - When true, disables the upload button and updates its label to indicate upload progress (default: `false`).
+ * @returns The component's JSX element representing the upload UI.
+ */
 export default function UploadCV({
   profile,
   onUpload,

@@ -1,6 +1,13 @@
 import apiClient from "@/lib/apiClient";
 import { NextRequest, NextResponse } from "next/server";
 
+/**
+ * Handle the Google OAuth callback: exchange the `code` query parameter for an authentication token and redirect the user based on the outcome.
+ *
+ * If the `code` query parameter is missing or token exchange fails, redirects to `/login` with an `error` query parameter. If a token is obtained, redirects to `/` and sets a `token` cookie (path "/", maxAge 24 hours, httpOnly false, sameSite "lax").
+ *
+ * @returns The `NextResponse` performing the redirect described above.
+ */
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const code = url.searchParams.get("code");

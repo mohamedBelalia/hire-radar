@@ -6,6 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
+/**
+ * Render a fixed right sidebar with a premium offer, suggested people, skills/interests, and a messages widget.
+ *
+ * The sidebar is positioned on the right edge and contains four cards: a Premium call-to-action, a
+ * "People you may know" list generated from an internal array, a Skills/Interests list with actions,
+ * and a Messages widget anchored near the bottom-right.
+ *
+ * @returns An aside JSX element containing the sidebar and its child widgets
+ */
 export default function RightSidebar() {
   const suggestedPeople = [
     { name: "Steve Jobs", title: "CEO of Apple", avatar: "SJ" },

@@ -7,6 +7,13 @@ import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
+/**
+ * Login page component that renders the site branding and the login form.
+ *
+ * Reads the `error` URL search parameter and, if present, displays a user-friendly toast message for Google OAuth errors.
+ *
+ * @returns The page's JSX element containing the header (logo + link) and a centered login form.
+ */
 export default function LoginPage() {
   const searchParams = useSearchParams();
 

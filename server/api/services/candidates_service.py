@@ -7,6 +7,23 @@ UPLOAD_FOLDER = "uploads"
 
 
 def get_all_candidates():
+    """
+    Retrieve simplified profiles for all users with the role "candidate".
+    
+    Each returned item is a dictionary containing the candidate's id, full name, email, phone, location, bio, headline, resume URL, and a list of skill names.
+    
+    Returns:
+        list[dict]: A list of candidate dictionaries with keys:
+            - id (int)
+            - full_name (str)
+            - email (str)
+            - phone (str | None)
+            - location (str | None)
+            - bio (str | None)
+            - headline (str | None)
+            - resume_url (str | None)
+            - skills (list[str])
+    """
     session = SessionLocal()
     try:
         candidates = session.query(User).filter(User.role == "candidate").all()
@@ -31,6 +48,20 @@ def get_all_candidates():
 
 
 def get_candidate_by_id(candidate_id: int):
+    """
+    Retrieve a candidate's profile by id.
+    
+    Parameters:
+        candidate_id (int): The user's id to look up (must be a candidate).
+    
+    Returns:
+        dict: Candidate data with keys:
+            - id, full_name, email, phone, location, bio, headline, resume_url
+            - skills: list of skill name strings
+            - educations: list of dicts with keys `school_name`, `degree`, `field_of_study`, `start_date`, `end_date`, `description`
+            - experiences: list of dicts with keys `job_title`, `company`, `start_date`, `end_date`, `description`
+        None: If no candidate with the given id exists.
+    """
     session = SessionLocal()
     try:
         candidate = (
@@ -78,6 +109,18 @@ def get_candidate_by_id(candidate_id: int):
 
 
 def update_candidate_info(candidate_id: int, update_data: dict):
+    """
+    Update allowed fields of a candidate and return the updated basic profile.
+    
+    Parameters:
+        candidate_id (int): ID of the candidate to update.
+        update_data (dict): Mapping of fields to update. Allowed keys: "full_name", "phone", "location", "bio", "headLine", "resume_url".
+            Note: the "headLine" key on the model is returned as "headline" in the result.
+    
+    Returns:
+        dict: Updated candidate summary with keys "id", "full_name", "phone", "location", "bio", "headline", and "resume_url" if the candidate exists.
+        None: If no candidate with the given `candidate_id` and role "candidate" is found.
+    """
     session = SessionLocal()
     try:
         candidate = (
@@ -116,6 +159,17 @@ def update_candidate_info(candidate_id: int, update_data: dict):
 
 
 def save_candidate_cv(candidate_id: int, resume_url: str):
+    """
+    Update a candidate's stored resume URL.
+    
+    Parameters:
+        candidate_id (int): ID of the candidate whose resume URL will be updated.
+        resume_url (str): Publicly accessible URL or path of the candidate's uploaded CV.
+    
+    Returns:
+        dict: Dictionary with `id` and updated `resume_url` for the candidate if found.
+        None: If no candidate with the given ID and role "candidate" exists.
+    """
     session = SessionLocal()
     try:
         candidate = (
@@ -135,7 +189,10 @@ def save_candidate_cv(candidate_id: int, resume_url: str):
 
 def get_candidate_cv_path(candidate_id: int):
     """
-    Returns the CV file path for a candidate if exists
+    Find the candidate's CV filename in the uploads folder.
+    
+    Returns:
+        str: Matching filename (e.g., "cv_123.pdf") if a supported CV file exists in UPLOAD_FOLDER, `None` otherwise.
     """
     for ext in ["pdf", "doc", "docx"]:
         filename = f"cv_{candidate_id}.{ext}"

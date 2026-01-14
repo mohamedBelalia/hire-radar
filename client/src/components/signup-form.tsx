@@ -24,6 +24,12 @@ import {
   SelectValue,
 } from "./ui/select";
 
+/**
+ * Renders a signup form with client-side validation, submission handling, loading state, and OAuth sign-in options.
+ *
+ * @param className - Optional additional class names applied to the form element
+ * @returns The form JSX element for creating a new account
+ */
 export function SignupForm({
   className,
   ...props

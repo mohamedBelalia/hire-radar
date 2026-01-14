@@ -21,6 +21,19 @@ interface EditProfileModalProps {
   ) => Promise<void>;
 }
 
+/**
+ * Modal form for editing either a candidate or an employer profile.
+ *
+ * Initializes form state from the provided `profile`, lets the user edit role-specific fields,
+ * and invokes `onSave` with an appropriate update payload when the form is submitted.
+ *
+ * @param isOpen - Controls whether the modal is visible
+ * @param onClose - Closes the modal
+ * @param profile - The current profile data (candidate or employer) used to prefill the form
+ * @param role - `"candidate"` or `"employer"`; determines which fields are shown and the shape of the saved payload
+ * @param onSave - Async callback invoked with the updated profile data; for candidates, `skills` are passed as an array parsed from the comma-separated input
+ * @returns The modal element when `isOpen` is true, otherwise `null`
+ */
 export default function EditProfileModal({
   isOpen,
   onClose,

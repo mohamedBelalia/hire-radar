@@ -7,6 +7,13 @@ import { useCurrentUser } from "@/features/auth/hook";
 import type { User } from "@/types";
 import { useEffect, useState } from "react";
 
+/**
+ * Render the employer profile page and keep the active profile tab in sync with the URL hash and "tab-change" events.
+ *
+ * The component reads the current user, initializes the active tab from the URL hash (if it equals "profile", "security", or "notifications"), and updates the active tab when the URL hash changes or when a "tab-change" CustomEvent is dispatched.
+ *
+ * @returns The page's React element containing ProfileHeader, ProfileSidebar, and ProfileContent where `ProfileContent` receives the currently active tab as its `defaultTab` prop.
+ */
 export default function Page() {
   const { data } = useCurrentUser();
   const currentUser = data as User | undefined;

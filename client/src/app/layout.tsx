@@ -21,6 +21,14 @@ export const metadata: Metadata = {
     "Connect with professionals, discover opportunities, and grow your career",
 };
 
+/**
+ * Provides the application's root HTML layout and context providers.
+ *
+ * Wraps the app content in <html> and <body>, applies global fonts and antialiasing, supplies query and theme context, and renders the global Toaster.
+ *
+ * @param children - The content to render inside the layout's providers.
+ * @returns The root HTML element containing the application layout.
+ */
 export default function RootLayout({
   children,
 }: Readonly<{

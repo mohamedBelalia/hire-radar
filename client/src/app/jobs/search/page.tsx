@@ -24,6 +24,14 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
+/**
+ * Render the job search and results page with filters, infinite scrolling, and an application workflow.
+ *
+ * The page synchronizes filter state with the URL, fetches paginated job results, shows loading/error/empty states,
+ * and provides a modal to submit job applications with an optional cover letter.
+ *
+ * @returns The React element for the jobs search page UI.
+ */
 export default function SearchJobsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();

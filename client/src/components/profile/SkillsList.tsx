@@ -6,6 +6,12 @@ interface SkillsListProps {
   profile: CandidateProfile;
 }
 
+/**
+ * Render a card displaying a candidate's skills as badges or a placeholder when no skills are present.
+ *
+ * @param profile - CandidateProfile whose `skills` array will be shown as badge elements
+ * @returns A JSX element containing a "Skills" card with skill badges when `profile.skills` has items, or a message stating no skills have been added otherwise
+ */
 export default function SkillsList({ profile }: SkillsListProps) {
   if (!profile.skills || profile.skills.length === 0) {
     return (

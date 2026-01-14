@@ -42,6 +42,12 @@ interface ProfileContentProps {
   defaultTab?: string;
 }
 
+/**
+ * Renders the tabbed profile settings UI and manages loading, editing, and saving of candidate or employer profile data.
+ *
+ * @param defaultTab - Initial active tab value; defaults to "profile".
+ * @returns The rendered profile settings UI as a React element.
+ */
 export default function ProfileContent({
   defaultTab = "profile",
 }: ProfileContentProps) {

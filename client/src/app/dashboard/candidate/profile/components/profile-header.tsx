@@ -12,6 +12,13 @@ interface ProfileHeaderProps {
   compact?: boolean;
 }
 
+/**
+ * Render a profile header in either a compact (sidebar) or full (account settings) layout.
+ *
+ * @param user - Optional user data used to populate avatar, initials fallback, display name, role badge, email row, and joined date.
+ * @param compact - When `true`, render the compact sidebar-style card with avatar, details, and edit button; when `false`, render the full account settings header.
+ * @returns The JSX element representing the profile header.
+ */
 export default function ProfileHeader({
   user,
   compact = false,

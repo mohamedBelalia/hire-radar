@@ -46,6 +46,16 @@ interface ProfileContentProps {
   defaultTab?: string;
 }
 
+/**
+ * Render the account profile interface with Profile, Security, and Notifications tabs.
+ *
+ * The component loads candidate or employer profile data based on the current user's role,
+ * synchronizes an editable form with that profile data, handles profile updates, manages
+ * connected account toggles, and responds to external "tab-change" events to switch tabs.
+ *
+ * @param defaultTab - Initial active tab value (e.g., "profile", "security", "notifications")
+ * @returns A React element containing the profile management UI
+ */
 export default function ProfileContent({
   defaultTab = "profile",
 }: ProfileContentProps) {

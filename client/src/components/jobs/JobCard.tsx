@@ -23,6 +23,18 @@ interface JobCardProps {
   showDetails?: boolean;
 }
 
+/**
+ * Renders a job overview card with actions to save/unsave, apply, and view details.
+ *
+ * Displays job title, company, description, location, salary, employment type, and up to five skills.
+ * Clicking the save button toggles the saved state and shows a success or error toast.
+ * Clicking the apply button invokes `onApply` with the job. When `showDetails` is true, a Details link is shown.
+ *
+ * @param job - The job data to display.
+ * @param onApply - Optional callback invoked with the job when the user clicks "Apply Now".
+ * @param showDetails - Whether to show the Details link (defaults to true).
+ * @returns A React element representing the job card.
+ */
 export default function JobCard({
   job,
   onApply,

@@ -42,6 +42,17 @@ interface ProfileContentProps {
   defaultTab?: string;
 }
 
+/**
+ * Renders the profile and account settings UI with Profile, Security, and Notifications tabs.
+ *
+ * The component syncs its active tab with the optional `defaultTab` prop and listens for external
+ * "tab-change" custom events. It populates and manages editable profile form state from the
+ * current user's profile data, handles saving updates for candidate and employer roles, and
+ * manages local connected-account state (GitHub, Google, Twitter) with user feedback via toasts.
+ *
+ * @param defaultTab - Initial active tab identifier ("profile" | "security" | "notifications"); defaults to "profile".
+ * @returns A JSX element that renders the tabbed profile/settings interface, including forms, connected accounts controls, and placeholder security/notification panels.
+ */
 export default function ProfileContent({
   defaultTab = "profile",
 }: ProfileContentProps) {

@@ -11,6 +11,15 @@ import { useCurrentUser } from "@/features/auth/hook";
 import JobCardSkeleton from "@/components/jobs/JobCardSkeleton";
 import { Card, CardContent } from "@/components/ui/card";
 
+/**
+ * Render the home feed page with recent job listings and surrounding layout.
+ *
+ * Displays the top navigation, left and right sidebars, a post creator, and a feed composed from the most recent jobs.
+ * While jobs are loading it renders skeleton placeholders; on fetch failure it renders an error card; when no jobs are available it renders an empty-state card.
+ * Each job is presented as a feed post including author metadata (name, title, avatar/avatarUrl), the job title, the description, and up to six skill chips.
+ *
+ * @returns The React element for the Home feed page.
+ */
 export default function Home() {
   const { data: currentUser } = useCurrentUser();
   const {

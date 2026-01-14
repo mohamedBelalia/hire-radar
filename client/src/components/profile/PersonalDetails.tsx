@@ -14,6 +14,12 @@ interface PersonalDetailsProps {
   profile: CandidateProfile;
 }
 
+/**
+ * Render a card displaying a candidate's personal details and optional social links.
+ *
+ * @param profile - Candidate profile object; used fields: `email`, `phone`, `location`, `experience_years`, `education`, `linkedin_url`, `github_url`, `portfolio_url`
+ * @returns A React element containing the formatted personal details and, if present, linked social buttons
+ */
 export default function PersonalDetails({ profile }: PersonalDetailsProps) {
   const details = [
     { icon: Mail, label: "Email", value: profile.email },
